@@ -9,6 +9,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@supabase/supabase-js": "^2.45.6",
     "express": "^4.21.1",
     "socket.io": "^4.8.0"
   }
