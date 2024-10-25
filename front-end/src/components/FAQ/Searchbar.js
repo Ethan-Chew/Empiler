@@ -10,9 +10,9 @@ export default function Searchbar({ showTitle }) {
             <h3 className={showTitle ? "font-semibold text-lg mb-2" : "hidden"}>How can we help you today?</h3>
             <div className='bg-white rounded-xl px-5 py-3'>
                 <div className='flex flex-row gap-3 items-center'>
-                    <FaMagnifyingGlass className='fill-ocbcred' />
-                    <input 
-                        className='w-full outline-none'
+                    <FaMagnifyingGlass className='text-lg fill-ocbcred' />
+                    <input
+                        className='w-full outline-none text-lg'
                         placeholder='Example: How do I reset my password?'
                         onChange={(e) => setSearchQuery(e.target.value)}
                         onFocus={() => setIsFocused(true)}

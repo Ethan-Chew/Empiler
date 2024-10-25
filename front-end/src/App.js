@@ -1,28 +1,21 @@
-import ActionsContainer from "./components/FAQ/ActionsContainer";
+import SectionContainer from "./components/FAQ/SectionContainer";
 import Searchbar from "./components/FAQ/Searchbar";
 import Footer from "./components/Footer";
-
-import { FAQRoutes } from "./utils/FAQRoutes";
+import NavigationBar from "./components/Navbar";
 
 export default function App() {
   return (
     <main className="bg-gray-100">
-      <header className="z-10 min-w-screen p-10 shadow-md">
-        <h1 className="font-bold text-3xl md:text-4xl">Welcome to OCBC Support</h1>
+      <NavigationBar />
+      <header className="min-w-full px-10 py-16 bg-red-100">
+        <h1 className="text-3xl md:text-4xl font-semibold mb-5 md:mb-6">How can we help you today?</h1>
+        <Searchbar showTitle={false} />
       </header>
 
       {/* Main Content */}
-      <div className="p-10">
-        <section id="search-faq" className="mt-5 mb-16 w-full">
-          <Searchbar showTitle={true} />
-        </section>
-
-        <section id="landing-actions" className="grid grid-cols-1 sm:grid-cols-2 py-5 content-center place-items-center sm:place-items-start gap-20">
-          {FAQRoutes.map((route, index) => (
-            <ActionsContainer key={index} title={route.title} description={route.description} />
-          ))}
-        </section>
-      </div>
+      <section className="p-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10">
+        <SectionContainer title="Some Title" description="this is a description" />
+      </section>
 
       <Footer />
     </main>
