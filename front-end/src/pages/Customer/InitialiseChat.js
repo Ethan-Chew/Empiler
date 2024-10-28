@@ -6,15 +6,12 @@ export default function InitialiseChat() {
     const navigate = useNavigate();
     const [isConnected, setIsConnected] = useState(socket.connected);
     const [caseID, setCaseID] = useState(null);
-    const [waitingTime, setWaitingTime] = useState(2);
+    const [waitingTime, setWaitingTime] = useState(0);
 
     // Search Params Data
     const [faqSection, setFaqSection] = useState('');
     const [faqQuestion, setFaqQuestion] = useState('');
 
-    const handleConnected = (caseID) => {
-        // Handle a Connection to a Live Chat
-    }
 
     // WIP: Write code to initialise the connection to backend and await a response
     useEffect(() => {
@@ -28,7 +25,8 @@ export default function InitialiseChat() {
         // Handle Connect and Disconnect Events
         const handleConnection = () => {
             setIsConnected(true);
-            socket.emit('customer:join', { faqSection, faqQuestion });
+            console.log("Connected to Socket.IO Backend");
+            socket.emit('customer:join', faqSection, faqQuestion);
         }
         const handleDisconnection = () => {
             setIsConnected(false);
@@ -39,6 +37,7 @@ export default function InitialiseChat() {
 
         // Handle Utility Events
         socket.on('utils:waiting-time', (time) => {
+            console.log(time)
             setWaitingTime(time);
         })
 

@@ -1,4 +1,3 @@
-import { Server } from "socket.io";
 import cookie from "cookie";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
@@ -20,7 +19,7 @@ export default function (io) {
                     console.log("Error: " + err.message);
                     return next(new Error("Authentication Error"));
                 }
-                socket.decoded = decoded;
+                socket.user = decoded;
                 return next();
             });
         }

@@ -58,3 +58,29 @@ export const removeAvailStaff = async (db, staffSocketId) => {
     )
     await db.write()
 }
+
+// Handle Active Chats
+/*
+activeChat
+- caseID: String
+- customerSocketID: String
+- staffSocketID: String
+- customerID: String
+- staffID: String
+*/
+export const startActiveChat = async (db, activeChat) => {
+    db.data.activeChats.push(activeChat)
+    await db.write()
+}
+export const endActiveChat = async (db, caseID) => {
+    db.data.activeChats = db.data.activeChats.filter(
+        (chat) => chat.caseID !== caseID
+    )
+    await db.write()
+
+    // TODO: Save the Chat to the Chat History DB
+}
+export const searchActiveChat = async (db, caseID) => {
+    await db.read()
+    return db.data.activeChats.find((chat) => chat.caseID === caseID)
+}

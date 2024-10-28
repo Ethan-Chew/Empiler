@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 import cookieParser from 'cookie-parser';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import supabase from './supabase.js';
+import supabase from './utils/supabase.js';
 import cors from 'cors';
 import { initialiseDB, addWaitingCustomers, retrieveWaitingCustomers } from './utils/localDB.js';
 
@@ -16,6 +16,7 @@ import faq from './routes/faq.route.js';
 import staffHandler from './chatHandlers/staffHandler.js';
 import customerHandler from './chatHandlers/customerHandler.js';
 import authoriseSocket from './middleware/authoriseSocket.js';
+import utilsHandler from './chatHandlers/utilsHandler.js';
 
 dotenv.config();
 
@@ -62,6 +63,7 @@ authoriseSocket(io);
 io.on("connection", (socket) => {
     console.log(`Socket ${socket.id} connected from origin: ${socket.handshake.headers.origin}`);
 
+    utilsHandler(io, db, socket);
     try {
         if (socket.user.role === "staff") staffHandler(io, db, socket);
     } catch (err) {

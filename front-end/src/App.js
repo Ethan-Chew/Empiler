@@ -1,46 +1,27 @@
 import { socket } from './utils/chatSocket';
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 // ALL CODE IN THIS FILE IS OVERWRITABLE, FOR DEBUG USE ONLY. TO BE REPLACED.
 export default function App() {
-  const [isConnected, setIsConnected] = useState(socket.connected);
+  const navigate = useNavigate();
+  const [faqSection, setFaqSection] = useState('');
+  const [faqQuestion, setFaqQuestion] = useState('');
 
-  useEffect(() => {
-    console.log(socket)
-    // Handle Connect and Disconnect Events
-    function handleConnection() {
-      setIsConnected(true);
-      console.log("Connected")
-      socket.emit('customer:join', "Section", "Question");
-    }
-    function handleDisconnection() {
-      setIsConnected(false);
-      socket.emit('customer:leave');
-    };
-    socket.on('connect', handleConnection);
-    socket.on('disconnect', handleDisconnection);
-    socket.on("connect_error", (err) => {
-      // the reason of the error, for example "xhr poll error"
-      console.log(err.message);
-    
-      // some additional description, for example the status code of the initial HTTP response
-      console.log(err.description);
-    
-      // some additional context, for example the XMLHttpRequest object
-      console.log(err.context);
-    });
+  const initChat = () => {
+    sessionStorage.setItem('faqSection', faqSection);
+    sessionStorage.setItem('faqQuestion', faqQuestion);
 
-    if (socket.connected) handleConnection();
-
-    return () => {
-        socket.off('connect', handleConnection);
-        socket.off('disconnect', handleDisconnection);
-    }
-  }, []);
+    navigate('/awaitchat');
+  }
 
   return (
     <div>
-      <a>Connection Status: { "" + isConnected }</a>
+      <input placeholder='Section' onChange={(e) => setFaqQuestion(e.target.value)} />
+      <input placeholder='QUestion' onChange={(e) => setFaqSection(e.target.value)} />
+      <button onClick={initChat}>
+        Fire Request go WEEEEEEEEEEEEEEEE
+      </button>
     </div>
   );
 }

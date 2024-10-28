@@ -1,12 +1,44 @@
 import NavigationBar from "../../components/Navbar";
 import MessageContainer from "../../components/Chat/MessageContainer";
+import { socket } from "../../utils/chatSocket";
 import { useSearchParams } from "react-router-dom";
 import { FaArrowCircleUp } from "react-icons/fa";
-import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 export default function CustomerChat() {
+    const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();  
+    const [messages, setMessages] = useState([]);
+    const [sentMessage, setSentMessage] = useState("");
     const caseID = searchParams.get("caseID");
+
+    useEffect(() => {
+        // If there is no Case ID, redirect the Customer back to the Landing Page
+        if (!caseID) {
+            navigate("/");
+        }
+
+        // Socket.IO Event Handlers
+        const handleDisconnection = () => {
+
+        }
+
+        const handleReceiveMessage = (msg) => {
+            
+        }
+
+        socket.on("disconnect", handleDisconnection);
+        socket.on("utils:receiveMsg")
+
+        return () => {
+            socket.off("disconnect", handleDisconnection);
+        }
+    }, []);
+
+    function sendMessage() {
+
+    }
 
     return (
         <div className="flex flex-col min-h-screen">
@@ -50,6 +82,7 @@ export default function CustomerChat() {
                         <input 
                             className="p-3 border-2 w-full rounded-xl outline-none mr-5"
                             placeholder="Enter a Message.."
+                            onChange={(e) => setSentMessage(e.target.value)}
                         />
                         <button className="border-2 rounded-xl px-4 hover:border-neutral-500 duration-200">
                             <FaArrowCircleUp className="text-2xl text-neutral-400 hover:text-neutral-500" />
