@@ -6,13 +6,15 @@
 
 export default function MessageContainer({ isSender, messages, timestamp }) {
     return (
-        <div className={`${!isSender && "mr-auto"} flex flex-col`}>
-            {messages.map((message, index) => (
-                <div key={index} className={`p-2 ${isSender ? "bg-blue-500 rounded-br-none" : "bg-gray-500 rounded-bl-none"} rounded-lg`}>
-                    <p className="text-white">{message}</p>
-                </div>
-            ))}
-            <p>{ timestamp }</p>
+        <div className={`${isSender && "ml-auto"} flex flex-col max-w-sm md:max-w-xl`}>
+            <div className="flex flex-col gap-1">
+                {messages.map((message, index) => (
+                    <div key={index} className={`${isSender ? "bg-blue-500" : "bg-gray-500"} ${messages.length > 1 && index < messages.length ? "" : ""} p-2 rounded-lg`}>
+                        <p className="text-white">{message}</p>
+                    </div>
+                ))}
+            </div>
+            <p className={`${isSender && "ml-auto"}`}>{ timestamp }</p>
         </div>
     );
 }

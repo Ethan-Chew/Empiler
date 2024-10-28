@@ -37,3 +37,24 @@ export const removeWaitingCustomer = async (db, customerSocketId) => {
     )
     await db.write()
 }
+
+// Create, Read and Delete Available Staff
+/*
+staffData
+- socketId: String
+- staffId: String
+*/
+export const addAvailStaff = async (db, staffData) => {
+    db.data.availStaff.push(staffData)
+    await db.write()
+}
+export const retrieveAvailStaff = async (db) => {
+    await db.read()
+    return db.data.availStaff;
+}
+export const removeAvailStaff = async (db, staffSocketId) => {
+    db.data.availStaff = db.data.availStaff.filter(
+        (staff) => staff.socketId !== staffSocketId
+    )
+    await db.write()
+}
