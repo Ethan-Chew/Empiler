@@ -81,8 +81,66 @@ const getChatByStaffId = async (req, res) => {
     }
 }
 
+const createChatHistory = async (req, res) => {
+    const { customerId, staffId, chatLog } = req.body;
+
+    try {
+        const chat = await chatHistory.createChatHistory(customerId, staffId, chatLog);
+
+        if (!chat) {
+            return res.status(500).json({
+                status: 'Error',
+                message: 'Failed to create chat history.'
+            });
+        }
+
+        res.status(201).json({
+            status: 'Success',
+            message: 'Chat history created successfully.',
+            chat: chat
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            status: 'Error',
+            message: 'Internal Server Error',
+            error: error
+        });
+    }
+}
+
+const deleteChatHistory = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const chat = await chatHistory.deleteChatHistory(id);
+
+        if (!chat) {
+            return res.status(404).json({
+                status: 'Error',
+                message: `Chat with id ${id} not found.`
+            });
+        }
+
+        res.status(200).json({
+            status: 'Success',
+            message: 'Chat history deleted successfully.',
+            chat: chat
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            status: 'Error',
+            message: 'Internal Server Error',
+            error: error
+        });
+    }
+}
+
 export default {
     getChatById,
     getChatByCustomerId,
-    getChatByStaffId
+    getChatByStaffId,
+    createChatHistory,
+    deleteChatHistory
 }

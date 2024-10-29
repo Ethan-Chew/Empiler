@@ -8,12 +8,20 @@ router.route("/chats/:id")
     .get(ChatHistoryController.getChatById);
 
 // Route to get chat by customer ID
-router.route("/customer/:customerId")
+router.route("/chats/:customerId")
     .get(ChatHistoryController.getChatByCustomerId);
 
 // Route to get chat by staff ID
-router.route("/staff/:staffId")
+router.route("/chats/:staffId")
     .get(ChatHistoryController.getChatByStaffId);
+
+// Route to create chat history
+router.route("/chats/create")
+    .post(ChatHistoryController.createChatHistory);
+
+// Route to delete chat history
+router.route("/chats/delete/:id")
+    .delete(ChatHistoryController.deleteChatHistory);
 
 router.route("/")
 

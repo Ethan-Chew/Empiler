@@ -50,4 +50,32 @@ export default class chatHistory {
 
         return data;
     }
+
+    static async createChatHistory(customerId, staffId, chatLog) {
+        const { data, error } = await supabase
+            .from('chat_history')
+            .insert([{ customerId, staffId, chatLog }])
+            .single();
+
+        if (error) {
+            console.log(error);
+            return null;
+        }
+
+        return data
+    }
+
+    static async deleteChatHistory() {
+        const { data, error } = await supabase
+            .from('chat_history')
+            .delete()
+            .eq('id', this.id);
+
+        if (error) {
+            console.log(error)
+            return null;
+        }
+
+        return data
+    }
 }
