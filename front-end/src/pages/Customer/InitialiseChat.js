@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { socket } from '../../utils/chatSocket';
 import { useNavigate } from 'react-router-dom';
+import * as CryptoJS from 'crypto-js';
 
 export default function InitialiseChat() {
     const navigate = useNavigate();
     const [isConnected, setIsConnected] = useState(socket.connected);
-    const [caseID, setCaseID] = useState(null);
     const [waitingTime, setWaitingTime] = useState(0);
 
     // Search Params Data
@@ -22,11 +22,15 @@ export default function InitialiseChat() {
             // TODO: Handle nothing saved
         }
 
+        // Generate a Unique Identifier for this Customer Session
+        const customerSessionIdentifier = CryptoJS.lib.WordArray.random(16).toString(CryptoJS.enc.Hex);
+        sessionStorage.setItem('customerSessionIdentifier', customerSessionIdentifier);
+
         // Handle Connect and Disconnect Events
         const handleConnection = () => {
             setIsConnected(true);
             console.log("Connected to Socket.IO Backend");
-            socket.emit('customer:join', faqSection, faqQuestion);
+            socket.emit('customer:join', customerSessionIdentifier, faqSection, faqQuestion);
         }
         const handleDisconnection = () => {
             setIsConnected(false);
@@ -37,12 +41,11 @@ export default function InitialiseChat() {
 
         // Handle Utility Events
         socket.on('utils:waiting-time', (time) => {
-            console.log(time)
             setWaitingTime(time);
         })
 
-        socket.on('utils:joined-chat', () => {
-            navigate(`/chat?caseID=${caseID}`);
+        socket.on('utils:joined-chat', (caseId) => {
+            navigate(`/chat?caseID=${caseId}`);
         })
 
         return () => {
@@ -53,7 +56,7 @@ export default function InitialiseChat() {
 
     return (
         <div className="min-w-screen min-h-screen flex items-center md:justify-center">
-            <div className="p-5 rounded-xl bg-white md:drop-shadow-[0_0px_4px_rgba(0,0,0,.3)] md:w-1/2">
+            <div className="p-5 md:p-10 rounded-xl bg-white md:drop-shadow-[0_0px_4px_rgba(0,0,0,.3)] md:w-1/2">
                 <div className="flex flex-col gap-5">
                     <div>
                         <img src="/ocbc.png" className="w-1/3 lg:w-1/6 mb-2" />

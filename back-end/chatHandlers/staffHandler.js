@@ -1,44 +1,58 @@
-import { addAvailStaff } from "../utils/localDB.js";
+import { addAvailStaff, searchForWaitingCustomer, searchForAvailStaff, removeWaitingCustomer, startActiveChat } from "../utils/localDB.js";
 import crypto from "crypto";
 
 export default function (io, db, socket) {
-    socket.on("staff:avail", async () => {
+    socket.on("staff:avail", async (staffSessionIdentifier) => {
         const staffData = {
-            socketId: socket.id,
+            ssi: staffSessionIdentifier,
             staffId: socket.user.id,
         };
 
+        socket.join(ssi); // Connect the Staff's Socket to a room with ID of SSI
         await addAvailStaff(db, staffData);
     })
 
-    socket.on("staff:join", (customerSocketId, callback) => {
-        const roomId = crypto.randomBytes(16).toString('hex');
+    socket.on("staff:join", async (customerSessionIdentifier, staffSessionIdentifier, callback) => {
+        const caseId = crypto.randomBytes(16).toString('hex');
 
-        // Force the Customer Socket to join the Live Chat (Room)
-        const customerSocket = io.sockets.sockets.get(socketId);
-        if (customerSocket) {
-            customerSocket.join(roomId);
-            socket.join(roomId);
-
-            // Add the Chat to the Active Chats List and Remove from Waiting Customers
-            activeChats.push({ chatId: roomId, customer: customerSocket, staff: socket });
-            waitingCustomers = waitingCustomers.filter((customer) => customer.id !== socketId);
-
-            // Broadcast Chat ID to Customer
-            io.to(customerSocketId).emit('joined-chat', {
-                status: "Success",
-                roomId: roomId,
-            })
-
-            callback({
-                status: "Success",
-                roomId: roomId
-            });
-        } else {
-            callback({
+        // Retrieve all the SocketIDs relating to the csi
+        const customer = await searchForWaitingCustomer(db, customerSessionIdentifier);
+        if (!customer) {
+            return callback({
                 status: "Error",
                 message: "Customer not found"
-            })
+            });
         }
+
+        // Force Customer to join the Live Chat (Room)
+        for (const socketId of customer.socketIDs) {
+            const customerSocket = io.sockets.sockets.get(socketId);
+            if (customerSocket) {
+                customerSocket.join(caseId);
+            }
+        }
+
+        // Allow the Staff to join the Live Chat (Room)
+        socket.join(caseId);
+
+        // Add the Chat to the list of Active Chats
+        const newChat = {
+            chatId: caseId,
+            customer: await searchForWaitingCustomer(db, customerSessionIdentifier),
+            staff: await searchForAvailStaff(db, staffSessionIdentifier),
+        }
+        await startActiveChat(db, newChat);
+
+        // Remove the Customer from the Waiting List
+        await removeWaitingCustomer(db, customerSessionIdentifier);
+
+        // Broadcast CaseID to Customer (notify that connection has been made successfully)
+        io.to(customerSessionIdentifier).emit('utils:joined-chat', caseId);
+
+        // Send a Callback to the Staff (notify successfully started Live Chat)
+        callback({
+            status: "Success",
+            caseId: caseId
+        });
     });
 }

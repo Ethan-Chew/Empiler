@@ -48,6 +48,9 @@ const io = new Server(server, {
         credentials: true,
     },
     debug: true,
+    connectionStateRecovery: {
+        skipMiddlewares: false,
+    }
 });
 
 //Default routes

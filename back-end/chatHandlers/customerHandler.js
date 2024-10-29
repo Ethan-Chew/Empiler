@@ -1,4 +1,4 @@
-import { addWaitingCustomers, removeWaitingCustomer, retrieveWaitingCustomers } from "../utils/localDB.js";
+import { addWaitingCustomers, removeWaitingCustomer, retrieveWaitingCustomers, searchForWaitingCustomer } from "../utils/localDB.js";
 
 export default function (io, db, socket) {
     async function notifyForWaitingCustomers() {
@@ -6,19 +6,29 @@ export default function (io, db, socket) {
         io.emit("staff:availChats", waitingCustomers);
     }
 
-    socket.on("customer:join", async (section, question) => {
+    socket.on("customer:join", async (customerSessionIdentifier, section, question) => {
         const customerData = {
-            socketId: socket.id,
+            csi: customerSessionIdentifier,
             faqSection: section,
             faqQuestion: question,
+            socketId: socket.id,
+            userId: socket.user.id || null,
+            timeConnected: Date.now(),
         };
-        console.log(customerData);
 
+        // If customer is already in the waiting list, and Socket ID is present, ignore the request
+        const requestWaitingCustomer = await searchForWaitingCustomer(db, customerSessionIdentifier);
+        if (requestWaitingCustomer && requestWaitingCustomer.socketIDs.includes(socket.id)) {
+            return;
+        }
+
+        // Else, add the customer to the localDB, and notify the staff
         await addWaitingCustomers(db, customerData);
 
         await notifyForWaitingCustomers();
 
-        io.to(socket.id).emit("utils:waiting-time", Math.floor(Math.random() * 5) + 1); // TODO: Random Number lolxd
+        socket.join(customerSessionIdentifier); // Connect the Customer's Socket to a room with ID of CSI
+        io.to(customerSessionIdentifier).emit("utils:waiting-time", Math.floor(Math.random() * 5) + 1); // TODO: Random Number lolxd
     });
 
     socket.on("customer:leave", async () => {
