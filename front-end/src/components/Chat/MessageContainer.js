@@ -9,12 +9,12 @@ export default function MessageContainer({ isSender, messages, timestamp }) {
         <div className={`${isSender && "ml-auto"} flex flex-col max-w-sm md:max-w-xl`}>
             <div className="flex flex-col gap-1">
                 {messages.map((message, index) => (
-                    <div key={index} className={`${isSender ? "bg-blue-500" : "bg-gray-500"} ${messages.length > 1 && index < messages.length ? "" : ""} p-2 rounded-lg`}>
+                    <div key={index} className={`${isSender ? "bg-chatred" : "bg-gray-500"} ${messages.length > 1 && index < messages.length ? "" : ""} p-2 rounded-lg`}>
                         <p className="text-white">{message}</p>
                     </div>
                 ))}
             </div>
-            <p className={`${isSender && "ml-auto"}`}>{ timestamp }</p>
+            <p className={`${isSender ? "ml-auto text-chatred" : "text-gray-500"}`}>{ timestamp }</p>
         </div>
     );
 }

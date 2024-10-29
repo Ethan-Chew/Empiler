@@ -37,7 +37,7 @@ export default function (io, db, socket) {
 
         // Add the Chat to the list of Active Chats
         const newChat = {
-            chatId: caseId,
+            caseId: caseId,
             customer: await searchForWaitingCustomer(db, customerSessionIdentifier),
             staff: await searchForAvailStaff(db, staffSessionIdentifier),
         }

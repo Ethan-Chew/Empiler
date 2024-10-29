@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 
 export default function CustomerChat() {
     const navigate = useNavigate();
+    const [isConnected, setIsConnected] = useState(false);
     const [searchParams, setSearchParams] = useSearchParams();  
     const [messages, setMessages] = useState([]);
     const [sentMessage, setSentMessage] = useState("");
@@ -20,16 +21,33 @@ export default function CustomerChat() {
         }
 
         // Socket.IO Event Handlers
-        const handleDisconnection = () => {
+        const handleConnection = () => {
+            setIsConnected(true);
+            
+            const customerSessionIdentifier = sessionStorage.getItem("customerSessionIdentifier");
+            if (!customerSessionIdentifier) {
+                navigate("/");
+            }
 
+            socket.emit("utils:verify-activechat", customerSessionIdentifier, (chatExistanceReq) => {
+                if (chatExistanceReq.exist && chatExistanceReq.caseID === caseID) {
+                    socket.emit("utils:add-socket", customerSessionIdentifier, "customer");
+                } else {
+                    navigate("/");
+                }
+            });
+        }
+        const handleDisconnection = () => {
+            setIsConnected(false);
         }
 
         const handleReceiveMessage = (msg) => {
             
         }
 
+        socket.on("connect", handleConnection);
         socket.on("disconnect", handleDisconnection);
-        socket.on("utils:receiveMsg")
+        socket.on("utils:receive-msg")
 
         return () => {
             socket.off("disconnect", handleDisconnection);
@@ -37,7 +55,14 @@ export default function CustomerChat() {
     }, []);
 
     function sendMessage() {
-
+        const formattedMsg = {
+            case: caseID,
+            message: sentMessage,
+            timestamp: Date.now(),
+            sender: "customer",
+            sessionIdentifier: sessionStorage.getItem("customerSessionIdentifier"),
+        }
+        socket.emit("utils:send-msg", formattedMsg);
     }
 
     return (
@@ -84,7 +109,7 @@ export default function CustomerChat() {
                             placeholder="Enter a Message.."
                             onChange={(e) => setSentMessage(e.target.value)}
                         />
-                        <button className="border-2 rounded-xl px-4 hover:border-neutral-500 duration-200">
+                        <button className="border-2 rounded-xl px-4 hover:border-neutral-500 duration-200" onClick={sendMessage}>
                             <FaArrowCircleUp className="text-2xl text-neutral-400 hover:text-neutral-500" />
                         </button>
                     </div>

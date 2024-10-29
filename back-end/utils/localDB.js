@@ -61,7 +61,7 @@ export const searchForWaitingCustomer = async (db, customerSessionIdentifier) =>
 /// availStaff is an array of Objects, with the following structure:
 /*
 {
-    "sstaffSessionIdentifier": "some identifier",
+    "staffSessionIdentifier": "some identifier",
     "socketIDs": [""],
     "staffID": "Staff User ID (nullable)"
 }
@@ -90,11 +90,18 @@ export const searchForAvailStaff = async (db, staffSessionIdentifier) => {
 // Handle Active Chats
 /*
 activeChat
-- caseID: String
-- csi: String
-- ssi: String
-- customerID: String
-- staffID: String
+- caseId: String
+- customer: Object
+    - customerSessionIdentifier: String
+    - socketIDs: [""]
+    - faqSection: String
+    - faqQuestion: String
+    - userId: String
+    - timeConnected: Number
+- staff: Object
+    - staffSessionIdentifier: String
+    - socketIDs: [""]
+    - staffId: String
 */
 export const startActiveChat = async (db, activeChat) => {
     db.data.activeChats.push(activeChat)
@@ -108,7 +115,18 @@ export const endActiveChat = async (db, caseID) => {
 
     // TODO: Save the Chat to the Chat History DB
 }
-export const searchActiveChat = async (db, caseID) => {
-    await db.read()
-    return db.data.activeChats.find((chat) => chat.caseID === caseID)
+export const appendCustSIDToActiveChat = async (db, caseID, socketID) => {
+    const chat = await searchActiveChat(db, caseID);
+    chat.customer.socketIDs.push(socketID)
+    await db.write()
 }
+export const appendStaffSIDToActiveChat = async (db, caseID, socketID) => {
+    const chat = await searchActiveChat(db, caseID);
+    chat.staff.socketIDs.push(socketID)
+    await db.write()
+}
+
+// Search Functions
+export const searchActiveChat = async (db, caseID) => db.data.activeChats.find((chat) => chat.caseID === caseID)
+export const searchCustomerInActiveChat = async (db, customerSessionIdentifier) => db.data.activeChats.find((chat) => chat.customer.customerSessionIdentifier === customerSessionIdentifier)
+export const searchAdminInActiveChat = async (db, staffSessionIdentifier) => db.data.activeChats.find((chat) => chat.staff.staffSessionIdentifier === staffSessionIdentifier)

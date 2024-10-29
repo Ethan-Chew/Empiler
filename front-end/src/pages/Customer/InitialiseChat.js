@@ -29,8 +29,20 @@ export default function InitialiseChat() {
         // Handle Connect and Disconnect Events
         const handleConnection = () => {
             setIsConnected(true);
-            console.log("Connected to Socket.IO Backend");
-            socket.emit('customer:join', customerSessionIdentifier, faqSection, faqQuestion);
+
+            // Check if the Customer already exists on the waiting list.
+            socket.emit('utils:verify-waitinglist', customerSessionIdentifier, (result) => {
+                if (!result) { // If the Customer is not on the Waiting List, request for a new connection
+                    socket.emit('customer:join', customerSessionIdentifier, faqSection, faqQuestion);
+                } else {
+                    // Check if the Customer is already in an active chat. If yes, redirect to the chat page; else, do nothing.
+                    socket.emit('utils:verify-activechat', customerSessionIdentifier, (chatExistanceReq) => {
+                        if (chatExistanceReq.exist) {
+                            navigate(`/chat?caseID=${chatExistanceReq.caseID}`);
+                        }
+                    });
+                }
+            });
         }
         const handleDisconnection = () => {
             setIsConnected(false);

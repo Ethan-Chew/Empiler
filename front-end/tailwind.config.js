@@ -5,7 +5,8 @@ module.exports = {
     extend: {
       colors: {
         "ocbcred": "#da291c",
-        "ocbcdarkred": "#b31f14"
+        "ocbcdarkred": "#b31f14",
+        "chatred": "#FB606A"
       }
     },
     borderWidth: {
