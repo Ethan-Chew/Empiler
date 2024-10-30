@@ -27,6 +27,22 @@ router.route("/faq/update")
 router.route("/faq/delete")
     .delete(FreqAskedQnsController.deleteFaq);
 
+// Route to create an FAQ Section
+router.route("/faqsection/create")
+    .post(FreqAskedQnsController.createFaqSection);
+
+// Route to update an FAQ Section
+router.route("/faqsection/update")
+    .put(FreqAskedQnsController.updateFaqSection);
+
+// Route to delete an FAQ Section
+router.route("/faqsection/delete")
+    .delete(FreqAskedQnsController.deleteFaqSection);
+
+// Route to display all FAQ Section
+router.route("/faqsection")
+    .get(FreqAskedQnsController.getAllSections);
+
 router.route("/routes")
 
 router.route("/questions")

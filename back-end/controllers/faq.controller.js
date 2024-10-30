@@ -163,11 +163,124 @@ const deleteFaq = async (req, res) => {
     }
 }
 
+const createFaqSection = async (req, res) => {
+    const { title, description } = req.body;
+
+    try {
+        const section = await FreqAskedQns.createFaqSection(title, description);
+
+        if (!section) {
+            return res.status(400).json({
+                status: 'Error',
+                message: 'Failed to create FAQ section.'
+            });
+        }
+
+        res.status(201).json({
+            status: 'Success',
+            message: 'FAQ section created successfully.',
+            section: section
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            status: 'Error',
+            message: 'Internal Server Error',
+            error: error
+        });
+    }
+}
+
+const updateFaqSection = async (req, res) => {
+    const { section } = req.params;
+    const { description } = req.body;
+
+    try {
+        const sections = await FreqAskedQns.updateFaqSection(section, description);
+
+        if (!sections) {
+            return res.status(404).json({
+                status: 'Error',
+                message: `FAQ section with title ${sections} not found.`
+            });
+        }
+
+        res.status(200).json({
+            status: 'Success',
+            message: `FAQ section with title ${sections} updated successfully.`,
+            section: sections
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            status: 'Error',
+            message: 'Internal Server Error',
+            error: error
+        });
+    }
+}
+
+const deleteFaqSection = async (req, res) => {
+    const { section } = req.params;
+
+    try {
+        const sections = await FreqAskedQns.deleteFaqSection(section);
+
+        if (!sections) {
+            return res.status(404).json({
+                status: 'Error',
+                message: `FAQ section with title ${sections} not found.`
+            });
+        }
+
+        res.status(200).json({
+            status: 'Success',
+            message: `FAQ section with title ${sections} deleted successfully.`
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            status: 'Error',
+            message: 'Internal Server Error',
+            error: error
+        });
+    }
+}
+
+const getAllSections = async (req, res) => {
+    try {
+        const sections = await FreqAskedQns.getAllSections();
+
+        if (!sections) {
+            return res.status(404).json({
+                status: 'Error',
+                message: 'FAQ sections not found.'
+            });
+        }
+
+        res.status(200).json({
+            status: 'Success',
+            sections: sections
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            status: 'Error',
+            message: 'Internal Server Error',
+            error: error
+        });
+    }
+}
+
 export default {
     createFaq,
     getAllFaqs,
     getFaqByTitle,
     getFaqBySection,
     updateFaq,
-    deleteFaq
+    deleteFaq,
+    createFaqSection,
+    updateFaqSection,
+    deleteFaqSection,
+    getAllSections
 }
