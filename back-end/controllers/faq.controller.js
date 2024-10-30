@@ -21,7 +21,7 @@ const createFaq = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({
-            status: 'Error',
+            status: 'Error Test',
             message: 'Internal Server Error',
             error: error
         });

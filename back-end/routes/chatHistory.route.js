@@ -1,5 +1,5 @@
 import express from "express";
-import ChatHistoryController from "../controllers/chatHistory.controller";
+import ChatHistoryController from "../controllers/chatHistory.controller.js";
 
 const router = express.Router()
 

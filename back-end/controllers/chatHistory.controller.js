@@ -1,10 +1,10 @@
-import chatHistory from "../models/chatHistory";
+import ChatHistory from "../models/chatHistory.js";
 
 const getChatById = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const chat = await chatHistory.getChatById(id);
+        const chat = await ChatHistory.getChatById(id);
 
         if (!chat) {
             return res.status(404).json({
@@ -31,7 +31,7 @@ const getChatByCustomerId = async (req, res) => {
     const { customerId } = req.params;
 
     try {
-        const chat = await chatHistory.getChatByCustomerId(customerId);
+        const chat = await ChatHistory.getChatByCustomerId(customerId);
 
         if (!chat) {
             return res.status(404).json({
@@ -58,7 +58,7 @@ const getChatByStaffId = async (req, res) => {
     const { staffId } = req.params;
 
     try {
-        const chat = await chatHistory.getChatByStaffId(staffId);
+        const chat = await ChatHistory.getChatByStaffId(staffId);
 
         if (!chat) {
             return res.status(404).json({
@@ -85,7 +85,7 @@ const createChatHistory = async (req, res) => {
     const { customerId, staffId, chatLog } = req.body;
 
     try {
-        const chat = await chatHistory.createChatHistory(customerId, staffId, chatLog);
+        const chat = await ChatHistory.createChatHistory(customerId, staffId, chatLog);
 
         if (!chat) {
             return res.status(500).json({
@@ -113,7 +113,7 @@ const deleteChatHistory = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const chat = await chatHistory.deleteChatHistory(id);
+        const chat = await ChatHistory.deleteChatHistory(id);
 
         if (!chat) {
             return res.status(404).json({

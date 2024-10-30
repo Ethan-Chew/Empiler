@@ -1,4 +1,4 @@
-import supabase from "../db/supabase";
+import supabase from "../supabase.js";
 
 export default class faq {
     constructor(title, description, section) {
@@ -9,7 +9,7 @@ export default class faq {
 
     static async createFaq(title, description, section) {
         const { data, error } = await supabase
-            .from('req_asked_qns')
+            .from('freq_asked_qns')
             .insert([{ title, description, section }])
             .single();
 
@@ -23,7 +23,7 @@ export default class faq {
 
     static async getAllFaqs() {
         const { data, error } = await supabase
-            .from('req_asked_qns')
+            .from('freq_asked_qns')
             .select('title, description');
 
         if (error) {
@@ -35,11 +35,11 @@ export default class faq {
     }
 
     static async getFaqByTitle(title) {
+        
         const { data, error } = await supabase
-            .from('req_asked_qns')
+            .from('freq_asked_qns')
             .select('*')
-            .eq('title', title)
-            .single();
+            .ilike('title', '%' + title + '%');
         
         if (error) {
             console.log(error);
@@ -51,7 +51,7 @@ export default class faq {
 
     static async getFaqBySection(section) {
         const { data, error } = await supabase
-            .from('req_asked_qns')
+            .from('freq_asked_qns')
             .select('*')
             .eq('section', section);
         
@@ -65,7 +65,7 @@ export default class faq {
 
     static async updateFaq(title, description, section) {
         const { data, error } = await supabase
-            .from('req_asked_qns')
+            .from('freq_asked_qns')
             .update({ description, section })
             .eq('title', title)
             .single();
@@ -81,7 +81,7 @@ export default class faq {
 
     static async deleteFaq(title) {
         const { data, error } = await supabase
-            .from('req_asked_qns')
+            .from('freq_asked_qns')
             .delete()
             .eq('title', title)
             .single();

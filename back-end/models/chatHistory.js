@@ -1,4 +1,4 @@
-import supabase from '../db/supabase';
+import supabase from '../supabase.js';
 
 export default class chatHistory {
     constructor(id, customerId, staffId, chatLog) {
