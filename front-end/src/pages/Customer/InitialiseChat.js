@@ -7,6 +7,7 @@ export default function InitialiseChat() {
     const navigate = useNavigate();
     const [isConnected, setIsConnected] = useState(socket.connected);
     const [waitingTime, setWaitingTime] = useState(0);
+    const [connectionErr, setConnectionErr] = useState(false);
 
     // Search Params Data
     const [faqSection, setFaqSection] = useState('');
@@ -31,11 +32,13 @@ export default function InitialiseChat() {
 
             // Check if the Customer already exists on the waiting list.
             socket.emit('utils:verify-waitinglist', customerSessionIdentifier, (result) => {
+                console.log(result);
                 if (!result) { // If the Customer is not on the Waiting List, request for a new connection
                     socket.emit('customer:join', customerSessionIdentifier, faqSection, faqQuestion);
                 } else {
                     // Check if the Customer is already in an active chat. If yes, redirect to the chat page; else, do nothing.
                     socket.emit('utils:verify-activechat', customerSessionIdentifier, (chatExistanceReq) => {
+                        console.log(chatExistanceReq.exist)
                         if (chatExistanceReq.exist) {
                             navigate(`/chat?caseID=${chatExistanceReq.caseID}`);
                         }
@@ -65,6 +68,11 @@ export default function InitialiseChat() {
         }
     }, []);
 
+    useEffect(() => {
+        if (!isConnected) setConnectionErr(true);
+        else setConnectionErr(false);
+    }, [isConnected]);
+
     return (
         <div className="min-w-screen min-h-screen flex items-center md:justify-center">
             <img className='z-0 fixed top-0 h-screen w-screen object-cover opacity-30' src='callcenter.jpg' />
@@ -73,7 +81,7 @@ export default function InitialiseChat() {
                     <div>
                         <img src="/ocbc.png" className="w-1/3 lg:w-1/6 mb-2" />
                         <h1 className="font-bold text-2xl mb-2">We're connecting you to an advisor.</h1>
-                        <p><span className="font-bold">Estimated Waiting Time: </span>{waitingTime} minutes</p>
+                        <p><span className="font-bold">Estimated Waiting Time: </span>{connectionErr ? "CONNECTION ERROR" : `${waitingTime} minutes`}</p>
                     </div>
                     <p>Our Customer Support Agents are over capacity right now. Please forgive us as we connect you to an available agent.</p>
                 </div>

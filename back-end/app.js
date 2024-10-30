@@ -7,12 +7,13 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import supabase from './utils/supabase.js';
 import cors from 'cors';
-import { initialiseDB, addWaitingCustomers, retrieveWaitingCustomers } from './utils/localDB.js';
+import { initialiseDB } from './utils/localDB.js';
 
 // Routes
 import user from './routes/user.route.js';
 import chatHistory from './routes/chatHistory.route.js';
 import faq from './routes/faq.route.js';
+import auth from './routes/auth.route.js';
 import staffHandler from './chatHandlers/staffHandler.js';
 import customerHandler from './chatHandlers/customerHandler.js';
 import authoriseSocket from './middleware/authoriseSocket.js';
@@ -39,6 +40,7 @@ const db = await initialiseDB();
 app.use("/api/user", user);
 app.use("/api/chatHistory", chatHistory);
 app.use("/api/faq", faq);
+app.use("/api/auth", auth);
 
 // Handle Socket.IO Connection
 const server = createServer(app);
@@ -67,9 +69,12 @@ io.on("connection", (socket) => {
     console.log(`Socket ${socket.id} connected from origin: ${socket.handshake.headers.origin}`);
 
     utilsHandler(io, db, socket);
-    try {
-        if (socket.user.role === "staff") staffHandler(io, db, socket);
-    } catch (err) {
-        customerHandler(io, db, socket);
-    }
+    customerHandler(io, db, socket);
+    staffHandler(io, db, socket);
+    // TODO: Commented out for Debug Reason
+    // if (socket.user) {
+    //     if (socket.user.role === "staff") {
+    //         staffHandler(io, db, socket);
+    //     }
+    // }
 });

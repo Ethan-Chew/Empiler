@@ -4,17 +4,28 @@ import crypto from "crypto";
 
 export async function notifyForWaitingCustomers(db, io) {
     const waitingCustomers = await retrieveWaitingCustomers(db);
-    io.emit("staff:avail-chats", waitingCustomers);
+
+    // Format the Waiting Customers List into Sections and the rest of the data
+    let formattedWaitingCustomers = {}; // Keys: Sections; Values: Customers
+    for (const customer of waitingCustomers) {
+        if (!(customer.faqSection in formattedWaitingCustomers)) {
+            formattedWaitingCustomers[customer.faqSection] = [customer];
+        } else {
+            formattedWaitingCustomers[customer.faqSection].push(customer);
+        }
+    }
+
+    io.emit("staff:avail-chats", formattedWaitingCustomers);
 }
 
 export default function (io, db, socket) {
     socket.on("staff:avail", async (staffSessionIdentifier) => {
         const staffData = {
             ssi: staffSessionIdentifier,
-            staffId: socket.user.id,
+            staffId: socket.user?.id || null,
         };
-        console.log(staffData);
-        socket.join(ssi); // Connect the Staff's Socket to a room with ID of SSI
+
+        socket.join(staffSessionIdentifier); // Connect the Staff's Socket to a room with ID of SSI
         await addAvailStaff(db, staffData);
         await notifyForWaitingCustomers(db, io);
     })
@@ -59,8 +70,7 @@ export default function (io, db, socket) {
         // Send a Callback to the Staff (notify successfully started Live Chat)
         callback({
             status: "Success",
-            caseId: caseId,
-            customer: customer,
+            ...newChat
         });
     });
 }

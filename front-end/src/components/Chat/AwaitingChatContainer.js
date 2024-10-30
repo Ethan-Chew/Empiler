@@ -4,7 +4,7 @@ import { BsDashSquareFill } from "react-icons/bs";
 import { IoChevronDown, IoChevronUp } from "react-icons/io5";
 
 // Component acts as a popup that displays when a user is waiting for a chat to be accepted by a staff member
-export default function AwaitChatContainer({ addConnectedChat, hideAwaitCustomerList }) {
+export default function AwaitChatContainer({ addConnectedChat, hideAwaitCustomerList, waitingCustomers }) {
     const [searchTerm, setSearchTerm] = useState('');
     const [searchCategory, setSearchCategory] = useState('All');
     const [searchCategoryDropdown, setSearchCategoryDropdown] = useState(false);
@@ -16,6 +16,7 @@ export default function AwaitChatContainer({ addConnectedChat, hideAwaitCustomer
     }
 
     useEffect(() => {
+        console.log(waitingCustomers)
         const handleClickOutside = (e) => {
             e.preventDefault();
             if (boxRef.current && !boxRef.current.contains(e.target)) {
@@ -93,7 +94,9 @@ export default function AwaitChatContainer({ addConnectedChat, hideAwaitCustomer
                 </div>
 
                 <div id="customer-list" className="mb-3 w-full overflow-y-scroll">
-
+                    {Object.keys(waitingCustomers).length > 0 && Object.keys(waitingCustomers).map((section) => (
+                        <FAQSectionCustomer key={section} section={section} requests={waitingCustomers[section]} addConnectedChat={addConnectedChat} />
+                    ))}
                 </div>
             </div>
         </div>

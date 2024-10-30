@@ -1,4 +1,4 @@
-const supabase = require('../db/supabase');
+import supabase from "../utils/supabase.js";
 
 export default class User {
     constructor(id, username, password, email, role) {

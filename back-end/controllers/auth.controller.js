@@ -1,7 +1,9 @@
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
-const User = require('../models/user');
-require("dotenv").config();
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+import User from '../models/user.js';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const authLoginUser = async (req, res) => {
     try {
@@ -66,15 +68,43 @@ const authLoginUser = async (req, res) => {
     }
 }
 
-const authRegisterUser = async (req, res) => {
+const authVerifyToken = async (req, res) => {
     try {
+        const token = req.cookies.jwt;
 
+        if (!token) {
+            return res.status(401).json({
+                status: 'Error',
+                message: "No Token Provided"
+            });
+        }
+
+        jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+            if (err) {
+                return res.status(403).json({
+                    status: 'Error',
+                    message: "Invalid Token"
+                });
+            }
+
+            res.status(200).json({
+                status: 'Success',
+                message: "Token Verified",
+                accountId: decoded.id,
+                role: decoded.role
+            });
+        });
     } catch (err) {
-
+        console.error(err);
+        res.status(500).json({
+            status: "Error",
+            message: "Internal Server Error",
+            error: err
+        });
     }
 }
 
-module.exports = {
+export default {
     authLoginUser,
-    authRegisterUser
+    authVerifyToken
 }
