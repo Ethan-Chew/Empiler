@@ -1,5 +1,11 @@
+import { retrieveWaitingCustomers } from "../utils/localDB.js";
 import { addAvailStaff, searchForWaitingCustomer, searchForAvailStaff, removeWaitingCustomer, startActiveChat } from "../utils/localDB.js";
 import crypto from "crypto";
+
+export async function notifyForWaitingCustomers(db, io) {
+    const waitingCustomers = await retrieveWaitingCustomers(db);
+    io.emit("staff:avail-chats", waitingCustomers);
+}
 
 export default function (io, db, socket) {
     socket.on("staff:avail", async (staffSessionIdentifier) => {
@@ -7,9 +13,10 @@ export default function (io, db, socket) {
             ssi: staffSessionIdentifier,
             staffId: socket.user.id,
         };
-
+        console.log(staffData);
         socket.join(ssi); // Connect the Staff's Socket to a room with ID of SSI
         await addAvailStaff(db, staffData);
+        await notifyForWaitingCustomers(db, io);
     })
 
     socket.on("staff:join", async (customerSessionIdentifier, staffSessionIdentifier, callback) => {
@@ -38,7 +45,7 @@ export default function (io, db, socket) {
         // Add the Chat to the list of Active Chats
         const newChat = {
             caseId: caseId,
-            customer: await searchForWaitingCustomer(db, customerSessionIdentifier),
+            customer: customer,
             staff: await searchForAvailStaff(db, staffSessionIdentifier),
         }
         await startActiveChat(db, newChat);
@@ -52,7 +59,8 @@ export default function (io, db, socket) {
         // Send a Callback to the Staff (notify successfully started Live Chat)
         callback({
             status: "Success",
-            caseId: caseId
+            caseId: caseId,
+            customer: customer,
         });
     });
 }

@@ -12,7 +12,6 @@ export default function InitialiseChat() {
     const [faqSection, setFaqSection] = useState('');
     const [faqQuestion, setFaqQuestion] = useState('');
 
-
     // WIP: Write code to initialise the connection to backend and await a response
     useEffect(() => {
         setFaqSection(sessionStorage.getItem('faqSection'));
@@ -68,6 +67,7 @@ export default function InitialiseChat() {
 
     return (
         <div className="min-w-screen min-h-screen flex items-center md:justify-center">
+            <img className='z-0 fixed top-0 h-screen w-screen object-cover opacity-30' src='callcenter.jpg' />
             <div className="p-5 md:p-10 rounded-xl bg-white md:drop-shadow-[0_0px_4px_rgba(0,0,0,.3)] md:w-1/2">
                 <div className="flex flex-col gap-5">
                     <div>

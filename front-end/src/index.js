@@ -12,8 +12,7 @@ import CustomerChat from './pages/Customer/CustomerChat';
 
 // Staff Routes
 import StaffHome from './pages/Staff/StaffHome';
-import StaffChatList from './pages/Staff/StaffChatList';
-import StaffChat from './pages/Staff/StaffChat';
+import StaffChats from './pages/Staff/StaffChats';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -27,9 +26,11 @@ root.render(
       <Route path="*" element={<h1>404 Not Found</h1>} />
 
       {/* Protected Routes */}
-      <Route path="/staff/home" element={<ProtectedRoute Component={<StaffChatList />} role="staff" />} />
+      <Route path="/staff/home" element={<StaffHome />} />
+      <Route path="/staff/chats" element={<StaffChats />} />
+      {/* <Route path="/staff/home" element={<ProtectedRoute Component={<StaffChatList />} role="staff" />} />
       <Route path="/staff/chats" element={<ProtectedRoute Component={<StaffHome />} role="staff" />} />
-      <Route path="/staff/chat" element={<ProtectedRoute Component={<StaffChat />} role="staff" />} />
+      <Route path="/staff/chat" element={<ProtectedRoute Component={<StaffChat />} role="staff" />} /> */}
     </Routes>
   </BrowserRouter>
 );
