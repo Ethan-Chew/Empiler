@@ -7,7 +7,6 @@
   },
   "author": "",
   "license": "ISC",
-  "description": "",
   "dependencies": {
     "@supabase/supabase-js": "^2.45.6",
     "bcrypt": "^5.1.1",
@@ -23,5 +22,7 @@
     "nodemon": "^3.1.7",
     "socket.io": "^4.8.0"
   },
-  "type": "module"
+  "type": "module",
+  "keywords": [],
+  "description": ""
 }
