@@ -1,7 +1,5 @@
 export default function Footer() {
     return (
-        <div className="min-w-screen bg-neutral-800">
-            <a>aa</a>
-        </div>
+      <hr className="border-gray-300 border-t-3 w-11/12 mx-auto" />
     );
 }
