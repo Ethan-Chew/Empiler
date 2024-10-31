@@ -42,12 +42,12 @@ export default function CustomerChat() {
         }
 
         const handleReceiveMessage = (msg) => {
-            
+            setMessages(prev => [...prev, msg]);
         }
 
         socket.on("connect", handleConnection);
         socket.on("disconnect", handleDisconnection);
-        socket.on("utils:receive-msg")
+        socket.on("utils:receive-msg", handleReceiveMessage);
 
         return () => {
             socket.off("disconnect", handleDisconnection);
@@ -66,7 +66,7 @@ export default function CustomerChat() {
     }
 
     return (
-        <div className="flex flex-col min-h-screen">
+        <div className="flex flex-col min-h-screen max-h-screen">
             <NavigationBar />
 
             <div className="flex-grow flex flex-col p-0 md:p-10">
@@ -74,31 +74,22 @@ export default function CustomerChat() {
                 <div id="support-header" className="w-full p-6 md:p-4 rounded-xl flex flex-row bg-white md:drop-shadow-[0_0px_4px_rgba(0,0,0,.3)]">
                     <div className="flex flex-col">
                         <a className="text-lg font-bold">You are now connected to our Customer Support Representative.</a>
-                        <a className="text-sm text-neutral-400">Case ID: { caseID }</a>
+                        <a className="text-sm text-neutral-400">Case ID: {caseID}</a>
                     </div>
 
-                    <button className="ml-auto">
-                        End Chat
-                    </button>
+                    <button className="ml-auto">End Chat</button>
                 </div>
 
                 {/* Live Chat Container */}
-                <div id="live-chat" className="flex-grow md:mt-10 h-full w-full rounded-xl flex flex-col bg-white md:drop-shadow-[0_0px_4px_rgba(0,0,0,.3)]">
-                    <div className="flex-grow p-6 md:p-4">
+                <div id="live-chat" className="flex-grow h-full md:mt-10 w-full rounded-xl flex flex-col bg-white md:drop-shadow-[0_0px_4px_rgba(0,0,0,.3)]">
+                    <div className="flex-grow overflow-y-scroll p-6 md:p-4 min-h-0">
                         <a>You are now chatting with [insert name].</a>
                         
                         {/* Messages Area */}
-                        <div id="chat-messages" className="h-full my-4">
-                            <MessageContainer 
-                                isSender={true}
-                                messages={["hi u", "hihihi"]}
-                                timestamp="12:00 PM"
-                            />
-                            <MessageContainer 
-                                isSender={false}
-                                messages={["Hello! How can I help you today?"]}
-                                timestamp="12:00 PM"
-                            />
+                        <div id="chat-messages" className="overflow-y-scroll my-4 min-h-0">
+                            {messages.map((msg) => (
+                                <MessageContainer key={msg.timestamp} isSender={msg.sender === "customer"} messages={[msg.message]} timestamp={msg.timestamp} />
+                            ))}
                         </div>
                     </div>
 
@@ -107,6 +98,7 @@ export default function CustomerChat() {
                         <input 
                             className="p-3 border-2 w-full rounded-xl outline-none mr-5"
                             placeholder="Enter a Message.."
+                            value={sentMessage} // Bind input to `sentMessage`
                             onChange={(e) => setSentMessage(e.target.value)}
                         />
                         <button className="border-2 rounded-xl px-4 hover:border-neutral-500 duration-200" onClick={sendMessage}>

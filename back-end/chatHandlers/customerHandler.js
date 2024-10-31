@@ -11,14 +11,13 @@ export default function (io, db, socket) {
             userId: socket?.user?.id || null,
             timeConnected: Date.now(),
         };
-        console.log("ERertgoert")
 
         // If customer is already in the waiting list, and Socket ID is present, ignore the request
         const requestWaitingCustomer = await searchForWaitingCustomer(db, customerSessionIdentifier);
         if (requestWaitingCustomer && requestWaitingCustomer.socketIDs.includes(socket.id)) {
             return;
         }
-        console.log(customerData);
+
         // Else, add the customer to the localDB, and notify the staff
         await addWaitingCustomers(db, customerData);
 

@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { FaArrowCircleUp } from "react-icons/fa";
 import AwaitChatContainer from "../../components/Chat/AwaitingChatContainer";
 import StaffNavigationBar from "../../components/StaffNavbar";
+import MessageContainer from "../../components/Chat/MessageContainer";
 
 export default function StaffChats() {
     const navigate = useNavigate();
@@ -23,6 +24,7 @@ export default function StaffChats() {
 
     // Setter Functions
     const joinChat = async (csi) => {
+        console.log(connectedChats)
         if (connectedChats.length < 7) {
             // Send a request to the server to start the Live Chat between the Staff and the Customer
             try {
@@ -34,8 +36,10 @@ export default function StaffChats() {
                                 ...response.chat,
                                 "messages": []
                             }
-                
-                            saveConnectedChats(formattedChat);
+                            
+                            setConnectedChats(prev => [...prev, formattedChat]);
+                            saveConnectedChats(connectedChats);
+
                             if (selectedChatId === null) setSelectedChatId(formattedChat.caseId);
                             resolve();
                         }
@@ -52,14 +56,24 @@ export default function StaffChats() {
         return false;
     }
 
-    const saveConnectedChats = (newChat) => {
-        setConnectedChats(prev => [...prev, newChat]);
+    const saveConnectedChats = (connectedChats) => {
         sessionStorage.setItem('connectedChats', JSON.stringify(connectedChats));
     }
 
     const showAwaitCustomerList = () => {
         socket.emit("staff:avail-chats");
         setDisplayAwaitCustomerList(true);
+    }
+
+    const sendMessage = () => {
+        const formattedMsg = {
+            case: connectedChats.filter((chat) => chat.caseId === selectedChatId)[0].caseId,
+            message: sentMessage,
+            timestamp: Date.now(),
+            sender: "staff",
+            sessionIdentifier: sessionStorage.getItem("staffSessionIdentifier"),
+        }
+        socket.emit("utils:send-msg", formattedMsg);
     }
 
     useEffect(() => {
@@ -82,11 +96,23 @@ export default function StaffChats() {
         socket.on("staff:avail-chats", (waitingCustomers) => {
             setWaitingCustomers(waitingCustomers);
         })
+        socket.on("utils:receive-msg", (msg) => {
+            console.log(connectedChats);
+            const updatedChats = connectedChats.map((chat) => {
+                if (chat.caseId === msg.case) {
+                    chat.messages.push(msg);
+                }
+                return chat;
+            });
+            console.log(updatedChats);
+            setConnectedChats(updatedChats);
+            saveConnectedChats(updatedChats);
+        });
 
         // Check for Past Data, if exists, load
         const pastConnectedChats = JSON.parse(sessionStorage.getItem('connectedChats'));
-        if (pastConnectedChats) saveConnectedChats(pastConnectedChats);
-
+        if (pastConnectedChats) setConnectedChats(pastConnectedChats);
+        
         return () => {
             socket.off("connect", handleConnection);
             socket.off("disconnect", handleDisconnection);
@@ -119,39 +145,45 @@ export default function StaffChats() {
 
                 {/* Chat Window */}
                 <div id="chat-window" className={`flex flex-col flex-grow ${connectedChats.length === 0 && "items-center justify-center"}`}>
-                    {/* Main Chat Container; Hidden when the user has no Live Chats */}
-                    <div className={`${connectedChats.length === 0 && "hidden"}`}>
-                        <div id="chat-header" className="w-full bg-neutral-100 border-y-2 border-neutral-600 flex flex-row px-4 py-2">
-                            {selectedChatId && connectedChats.filter((chat) => chat.caseId === selectedChatId).map((selectedChat => (
-                                <>
-                                    <div>
-                                        <p className="text-lg font-bold mb-0">{ selectedChat.customer?.faqQuestion }</p>
-                                        <p className="text-neutral-500 text-sm">Case ID: { selectedChat.caseId }{ selectedChat.customer?.userId && " | Logged In" }</p>
-                                    </div>
+                    <div id="chat-header" className={`w-full bg-neutral-100 border-y-2 border-neutral-600 flex flex-row px-4 py-2 ${selectedChatId == null ? "hidden" : ""}`}>
+                        {selectedChatId && connectedChats.filter((chat) => chat.caseId === selectedChatId).map((selectedChat => (
+                            <>
+                                <div>
+                                    <p className="text-lg font-bold mb-0">{ selectedChat.customer?.faqQuestion }</p>
+                                    <p className="text-neutral-500 text-sm">Case ID: { selectedChat.caseId }{ selectedChat.customer?.userId && " | Logged In" }</p>
+                                </div>
 
-                                    <button className="ml-auto px-4 py-1 bg-ocbcred hover:bg-ocbcdarkred text-white rounded-lg">
-                                        End Chat
-                                    </button>
-                                </>
-                            )))}
+                                <button className="ml-auto px-4 py-1 bg-ocbcred hover:bg-ocbcdarkred text-white rounded-lg">
+                                    End Chat
+                                </button>
+                            </>
+                        )))}
+                    </div>
+
+                    <div id="chat" className={`w-full flex-grow flex flex-col ${selectedChatId == null ? "hidden" : ""}`}>
+                        <div id="chat-container" className="flex-grow p-10">
+                            {selectedChatId && 
+                            connectedChats
+                                .filter((chat) => chat.caseId === selectedChatId)
+                                .map((selectedChat) => (
+                                    selectedChat.messages.map((msg) => (
+                                        <MessageContainer key={msg.timestamp} isSender={msg.sender === "staff"} messages={[msg.message]} timestamp={msg.timestamp} />
+                                    ))
+                                ))
+                            }
                         </div>
 
-                        <div id="chat" className="w-full flex-grow flex flex-col">
-                            <div id="chat-container" className="flex-grow">
-
-                            </div>
-
-                            {/* Message Field */}
-                            <div className="px-10 py-6 md:py-4 w-full rounded-b-xl flex flex-row justify-between">
-                                <input 
-                                    className="p-3 border-2 w-full rounded-xl outline-none mr-5"
-                                    placeholder="Enter a Message.."
-                                    onChange={(e) => setSentMessage(e.target.value)}
-                                />
-                                <button className="border-2 rounded-xl px-4 hover:border-neutral-500 duration-200">
-                                    <FaArrowCircleUp className="text-2xl text-neutral-400 hover:text-neutral-500" />
-                                </button>
-                            </div>
+                        {/* Message Field */}
+                        <div className="p-10 px-10 py-6 md:py-4 w-full rounded-b-xl flex flex-row justify-between">
+                            <input 
+                                className="p-3 border-2 w-full rounded-xl outline-none mr-5"
+                                placeholder="Enter a Message.."
+                                value={sentMessage}
+                                onChange={(e) => setSentMessage(e.target.value) }
+                            />
+                            <button className="border-2 rounded-xl px-4 hover:border-neutral-500 duration-200" onClick={sendMessage}>
+                                <FaArrowCircleUp className="text-2xl text-neutral-400 hover:text-neutral-500" />
+                            </button>
                         </div>
                     </div>
                     
@@ -168,10 +200,29 @@ export default function StaffChats() {
                 </div>
             </div>
 
-
-            <div className={`${displayAwaitCustomerList ? "block opacity-100" : "hidden opacity-0"} duration-200`}>
-                <AwaitChatContainer joinChat={joinChat} hideAwaitCustomerList={() => setDisplayAwaitCustomerList(false)} waitingCustomers={waitingCustomers} />
+            <div
+                className={`fixed top-0 left-0 h-screen w-screen bg-neutral-900/20 backdrop-blur-sm flex items-center justify-center duration-200 ${
+                    displayAwaitCustomerList ? "opacity-100 pointer-events-auto z-10" : "opacity-0 pointer-events-none"
+                }`}
+            >
+                <AwaitChatContainer
+                    joinChat={joinChat}
+                    hideAwaitCustomerList={() => setDisplayAwaitCustomerList(false)}
+                    waitingCustomers={waitingCustomers}
+                />       
             </div>
+
+            {/* <div
+                className={`${
+                    displayAwaitCustomerList ? "z-[100] opacity-100 pointer-events-auto" : " z-[-1] opacity-0 pointer-events-none"
+                } duration-200 absolute inset-0 z-10`}
+            >
+                <AwaitChatContainer
+                    joinChat={joinChat}
+                    hideAwaitCustomerList={() => setDisplayAwaitCustomerList(false)}
+                    waitingCustomers={waitingCustomers}
+                />
+            </div> */}
         </div>
     )
 }
@@ -192,6 +243,8 @@ function ChatListItem({ chat, selectedChatId, setSelectedChatId }) {
             isSender: messages[messages.length - 1].sender === "staff",
         }
     }
+
+    if (!chat.customer) return <></>
 
     return (
         <div className={`border-y-2 border-neutral-600 px-5 py-2 flex flex-row gap-5 max-w-full hover:bg-neutral-200 ${(selectedChatId === chat.caseId && (selectedChatId !== undefined && selectedChatId !== null)) && "bg-chatred/20"}`} onClick={handleOnClick}>

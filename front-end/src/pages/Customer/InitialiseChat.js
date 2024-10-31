@@ -37,7 +37,6 @@ export default function InitialiseChat() {
                 } else {
                     // Check if the Customer is already in an active chat. If yes, redirect to the chat page; else, do nothing.
                     socket.emit('utils:verify-activechat', customerSessionIdentifier, (chatExistanceReq) => {
-                        console.log(chatExistanceReq.exist)
                         if (chatExistanceReq.exist) {
                             navigate(`/chat?caseID=${chatExistanceReq.caseID}`);
                         }
