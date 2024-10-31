@@ -107,13 +107,13 @@ export const startActiveChat = async (db, activeChat) => {
     db.data.activeChats.push(activeChat)
     await db.write()
 }
-export const endActiveChat = async (db, caseID) => {
+export const endActiveChat = async (db, caseId) => {
+    // TODO: Save the Chat to the Chat History DB
+
     db.data.activeChats = db.data.activeChats.filter(
-        (chat) => chat.caseID !== caseID
+        (chat) => chat.caseId !== caseId
     )
     await db.write()
-
-    // TODO: Save the Chat to the Chat History DB
 }
 export const appendCustSIDToActiveChat = async (db, caseID, socketID) => {
     const chat = await searchActiveChat(db, caseID);

@@ -23,38 +23,38 @@ export default function StaffChats() {
     const [sentMessage, setSentMessage] = useState("");
 
     // Setter Functions
-    const joinChat = async (csi) => {
-        console.log(connectedChats)
-        if (connectedChats.length < 7) {
-            // Send a request to the server to start the Live Chat between the Staff and the Customer
-            try {
-                await new Promise((resolve, reject) => {
-                    socket.emit("staff:join", csi, sessionStorage.getItem('staffSessionIdentifier'), (response) => {
-                        console.log(response);
-                        if (response.status === "Success") {
-                            const formattedChat = {
-                                ...response.chat,
-                                "messages": []
-                            }
-                            
-                            setConnectedChats(prev => [...prev, formattedChat]);
-                            saveConnectedChats(connectedChats);
-
-                            if (selectedChatId === null) setSelectedChatId(formattedChat.caseId);
-                            resolve();
-                        }
-                        else reject(new Error("Failed to Join Chat"));
-                    });
-                })
-            } catch (err) {
-                console.error(err);
-                return false;
-            }
-
-            return true;
+    const joinChat = async (csi) => {    
+        if (connectedChats.length >= 7) {
+            return false; // Exit early if max chat limit is reached
         }
-        return false;
-    }
+    
+        try {
+            const response = await new Promise((resolve, reject) => {
+                socket.emit("staff:join", csi, sessionStorage.getItem('staffSessionIdentifier'), (response) => {
+                    response.status === "Success" ? resolve(response) : reject(new Error("Failed to Join Chat"));
+                });
+            });
+    
+            const formattedChat = {
+                ...response.chat,
+                messages: []
+            };
+    
+            setConnectedChats((prev) => [...prev, formattedChat]);
+            saveConnectedChats(connectedChats);
+    
+            if (selectedChatId === null) {
+                setSelectedChatId(formattedChat.caseId);
+            }
+    
+            return true;
+    
+        } catch (err) {
+            console.error(err);
+            return false;
+        }
+    };
+    
 
     const saveConnectedChats = (connectedChats) => {
         sessionStorage.setItem('connectedChats', JSON.stringify(connectedChats));
@@ -74,6 +74,24 @@ export default function StaffChats() {
             sessionIdentifier: sessionStorage.getItem("staffSessionIdentifier"),
         }
         socket.emit("utils:send-msg", formattedMsg);
+        setSentMessage("");
+    }
+
+    const handleEndChat = () => {
+        // TODO: Proper Implementation
+        
+        // Remove from backend
+        socket.emit("staff:end-chat", selectedChatId);
+
+        // If the chat is the selected chat, remove the selected chat
+        setSelectedChatId(null);
+
+        // Remove the chat from session storage / state
+        setConnectedChats((prevChats) => {
+            const updatedChats = prevChats.filter((chat) => chat.caseId !== selectedChatId);
+            saveConnectedChats(updatedChats);
+            return updatedChats;
+        });
     }
 
     useEffect(() => {
@@ -97,17 +115,21 @@ export default function StaffChats() {
             setWaitingCustomers(waitingCustomers);
         })
         socket.on("utils:receive-msg", (msg) => {
-            console.log(connectedChats);
-            const updatedChats = connectedChats.map((chat) => {
-                if (chat.caseId === msg.case) {
-                    chat.messages.push(msg);
-                }
-                return chat;
+            setConnectedChats((prevChats) => {
+                const updatedChats = prevChats.map((chat) => {
+                    if (chat.caseId === msg.case) {
+                        return {
+                            ...chat,
+                            messages: [...chat.messages, msg],
+                        };
+                    }
+                    return chat;
+                });
+                
+                saveConnectedChats(updatedChats);
+                return updatedChats; 
             });
-            console.log(updatedChats);
-            setConnectedChats(updatedChats);
-            saveConnectedChats(updatedChats);
-        });
+        });       
 
         // Check for Past Data, if exists, load
         const pastConnectedChats = JSON.parse(sessionStorage.getItem('connectedChats'));
@@ -138,7 +160,10 @@ export default function StaffChats() {
 
                     <div id="chats" className="">
                         {connectedChats.map((chat) => (
-                            <ChatListItem key={chat.caseId} chat={chat} selectedChatId={selectedChatId} setSelectedChatId={(id) => setSelectedChatId(id)} />
+                            <ChatListItem key={chat.caseId} chat={chat} selectedChatId={selectedChatId} setSelectedChatId={(id) => {
+                                setSentMessage("");
+                                setSelectedChatId(id)
+                            }} />
                         ))}
                     </div>
                 </div>
@@ -153,7 +178,7 @@ export default function StaffChats() {
                                     <p className="text-neutral-500 text-sm">Case ID: { selectedChat.caseId }{ selectedChat.customer?.userId && " | Logged In" }</p>
                                 </div>
 
-                                <button className="ml-auto px-4 py-1 bg-ocbcred hover:bg-ocbcdarkred text-white rounded-lg">
+                                <button className="ml-auto px-4 py-1 bg-ocbcred hover:bg-ocbcdarkred text-white rounded-lg" onClick={handleEndChat}>
                                     End Chat
                                 </button>
                             </>
@@ -200,29 +225,17 @@ export default function StaffChats() {
                 </div>
             </div>
 
-            <div
-                className={`fixed top-0 left-0 h-screen w-screen bg-neutral-900/20 backdrop-blur-sm flex items-center justify-center duration-200 ${
-                    displayAwaitCustomerList ? "opacity-100 pointer-events-auto z-10" : "opacity-0 pointer-events-none"
-                }`}
-            >
-                <AwaitChatContainer
-                    joinChat={joinChat}
-                    hideAwaitCustomerList={() => setDisplayAwaitCustomerList(false)}
-                    waitingCustomers={waitingCustomers}
-                />       
-            </div>
-
-            {/* <div
-                className={`${
-                    displayAwaitCustomerList ? "z-[100] opacity-100 pointer-events-auto" : " z-[-1] opacity-0 pointer-events-none"
-                } duration-200 absolute inset-0 z-10`}
-            >
-                <AwaitChatContainer
-                    joinChat={joinChat}
-                    hideAwaitCustomerList={() => setDisplayAwaitCustomerList(false)}
-                    waitingCustomers={waitingCustomers}
-                />
-            </div> */}
+            {displayAwaitCustomerList && (
+                <div
+                    className="fixed top-0 left-0 h-screen w-screen bg-neutral-900/20 backdrop-blur-sm flex items-center justify-center duration-200 z-10"
+                >
+                    <AwaitChatContainer
+                        joinChat={joinChat}
+                        hideAwaitCustomerList={() => setDisplayAwaitCustomerList(false)}
+                        waitingCustomers={waitingCustomers}
+                    />
+                </div>
+            )}
         </div>
     )
 }

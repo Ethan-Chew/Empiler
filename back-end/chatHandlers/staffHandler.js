@@ -1,4 +1,4 @@
-import { retrieveWaitingCustomers } from "../utils/localDB.js";
+import { endActiveChat, retrieveWaitingCustomers } from "../utils/localDB.js";
 import { addAvailStaff, searchForWaitingCustomer, searchForAvailStaff, removeWaitingCustomer, startActiveChat } from "../utils/localDB.js";
 import crypto from "crypto";
 
@@ -79,5 +79,16 @@ export default function (io, db, socket) {
                 ...newChat,
             }
         });
+    });
+
+    socket.on("staff:end-chat", async (caseId) => {
+        // TODO: Save the Chat into the DB
+
+        // Let the Customer know the Chat has ended
+        socket.to(caseId).emit("utils:chat-ended");
+
+        // Remove the Chat from the list of Active Chats
+        await endActiveChat(db, caseId);
+
     });
 }
