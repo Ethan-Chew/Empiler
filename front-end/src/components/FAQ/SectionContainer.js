@@ -8,7 +8,7 @@ export default function SectionContainer({ icon, title, description, link }) {
 
             <div className="mt-3 flex flex-row gap-2 items-center">
                 <a className="font-semibold text-ocbcred">Explore FAQ</a>
-                <FaArrowRightLong className="fill-ocbcred font-light" />
+                <FaArrowRightLong className="fill-ocbcred font-light transform transition-transform duration-300 group-hover:translate-x-2" />
             </div>
         </div>
     )
