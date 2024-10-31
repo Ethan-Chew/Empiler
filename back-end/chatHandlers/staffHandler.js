@@ -19,6 +19,10 @@ export async function notifyForWaitingCustomers(db, io) {
 }
 
 export default function (io, db, socket) {
+    socket.on("staff:avail-chats", async () => {
+        await notifyForWaitingCustomers(db, io);
+    });
+
     socket.on("staff:avail", async (staffSessionIdentifier) => {
         const staffData = {
             ssi: staffSessionIdentifier,
@@ -32,7 +36,7 @@ export default function (io, db, socket) {
 
     socket.on("staff:join", async (customerSessionIdentifier, staffSessionIdentifier, callback) => {
         const caseId = crypto.randomBytes(16).toString('hex');
-
+        console.log(customerSessionIdentifier, staffSessionIdentifier, caseId);
         // Retrieve all the SocketIDs relating to the csi
         const customer = await searchForWaitingCustomer(db, customerSessionIdentifier);
         if (!customer) {
@@ -54,10 +58,11 @@ export default function (io, db, socket) {
         socket.join(caseId);
 
         // Add the Chat to the list of Active Chats
+        const staff = await searchForAvailStaff(db, staffSessionIdentifier);
         const newChat = {
             caseId: caseId,
             customer: customer,
-            staff: await searchForAvailStaff(db, staffSessionIdentifier),
+            staff: staff,
         }
         await startActiveChat(db, newChat);
 
@@ -70,7 +75,9 @@ export default function (io, db, socket) {
         // Send a Callback to the Staff (notify successfully started Live Chat)
         callback({
             status: "Success",
-            ...newChat
+            chat: {
+                ...newChat,
+            }
         });
     });
 }

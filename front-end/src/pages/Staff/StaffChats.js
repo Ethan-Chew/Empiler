@@ -18,40 +18,48 @@ export default function StaffChats() {
     const [isConnected, setIsConnected] = useState(socket.connected);
     const [waitingCustomers, setWaitingCustomers] = useState([]);
     const [connectedChats, setConnectedChats] = useState([]);
-    const [selectedChat, setSelectedChat] = useState(null);
+    const [selectedChatId, setSelectedChatId] = useState(null);
     const [sentMessage, setSentMessage] = useState("");
 
     // Setter Functions
-    const addConnectedChat = async (chat) => {
+    const joinChat = async (csi) => {
         if (connectedChats.length < 7) {
             // Send a request to the server to start the Live Chat between the Staff and the Customer
-            await new Promise((resolve, reject) => {
-                socket.emit("staff:join", chat.customerSessionIdentifier, sessionStorage.getItem('staffSessionIdentifier'), (response) => {
-                    if (response.status === "Success") resolve();
-                    else reject(new Error("Failed to Join Chat"));
-                });
-            }).catch((err) => {
+            try {
+                await new Promise((resolve, reject) => {
+                    socket.emit("staff:join", csi, sessionStorage.getItem('staffSessionIdentifier'), (response) => {
+                        console.log(response);
+                        if (response.status === "Success") {
+                            const formattedChat = {
+                                ...response.chat,
+                                "messages": []
+                            }
+                
+                            saveConnectedChats(formattedChat);
+                            if (selectedChatId === null) setSelectedChatId(formattedChat.caseId);
+                            resolve();
+                        }
+                        else reject(new Error("Failed to Join Chat"));
+                    });
+                })
+            } catch (err) {
                 console.error(err);
                 return false;
-            });
-            const formattedChat = {
-                ...chat,
-                "messages": []
             }
-
-            setConnectedChats(prev => [...prev, formattedChat]);
 
             return true;
         }
         return false;
     }
 
-    const hideAwaitCustomerList = () => {
-        setDisplayAwaitCustomerList(false);
+    const saveConnectedChats = (newChat) => {
+        setConnectedChats(prev => [...prev, newChat]);
+        sessionStorage.setItem('connectedChats', JSON.stringify(connectedChats));
     }
 
-    const selectChat = (chat) => {
-        setSelectedChat(chat);
+    const showAwaitCustomerList = () => {
+        socket.emit("staff:avail-chats");
+        setDisplayAwaitCustomerList(true);
     }
 
     useEffect(() => {
@@ -61,7 +69,6 @@ export default function StaffChats() {
         
         const handleConnection = () => {
             setIsConnected(true);
-            console.log("connected")
 
             socket.emit('staff:avail', staffSessionIdentifier);            
         }
@@ -73,26 +80,18 @@ export default function StaffChats() {
         socket.on("connect", handleConnection);
         socket.on("disconnect", handleDisconnection);
         socket.on("staff:avail-chats", (waitingCustomers) => {
-            console.log(waitingCustomers)
             setWaitingCustomers(waitingCustomers);
         })
+
+        // Check for Past Data, if exists, load
+        const pastConnectedChats = JSON.parse(sessionStorage.getItem('connectedChats'));
+        if (pastConnectedChats) saveConnectedChats(pastConnectedChats);
 
         return () => {
             socket.off("connect", handleConnection);
             socket.off("disconnect", handleDisconnection);
         }
     }, [])
-
-    const joinChat = (csi) => {
-        socket.emit("staff:join", csi, sessionStorage.getItem('staffSessionIdentifier'), (response) => {
-            if (response.status === "Success") {
-                console.log("Joined Chat Successfully");
-                navigate(`/staff/chats/${response.caseId}`);
-            } else {
-                console.log("Failed to Join Chat");
-            }
-        });
-    }
 
     return (
         <div className="h-screen flex flex-col">
@@ -107,13 +106,13 @@ export default function StaffChats() {
                     <div>
 
                     </div>
-                    <div className="text-center py-4 border-y border-black cursor-pointer" onClick={() => setDisplayAwaitCustomerList(true)}>
+                    <div className="text-center py-4 border-y border-black cursor-pointer" onClick={() => showAwaitCustomerList()}>
                         <p className="font-semibold">Find and Start Live Chat</p>
                     </div>
 
                     <div id="chats" className="">
                         {connectedChats.map((chat) => (
-                            <ChatListItem key={chat.caseId} chat={chat} />
+                            <ChatListItem key={chat.caseId} chat={chat} selectedChatId={selectedChatId} setSelectedChatId={(id) => setSelectedChatId(id)} />
                         ))}
                     </div>
                 </div>
@@ -123,15 +122,18 @@ export default function StaffChats() {
                     {/* Main Chat Container; Hidden when the user has no Live Chats */}
                     <div className={`${connectedChats.length === 0 && "hidden"}`}>
                         <div id="chat-header" className="w-full bg-neutral-100 border-y-2 border-neutral-600 flex flex-row px-4 py-2">
-                            {selectedChat && (
-                                <div>
-                                    <p className="text-lg font-bold mb-0">{ selectedChat.customer?.faqQuestion }</p>
-                                    <p className="text-neutral-500 text-sm">Case ID: { selectedChat.caseId }{ selectedChat.customer?.userId && " | Logged In" }</p>
-                                </div>
-                            )}
-                            <button className="ml-auto px-4 py-1 bg-ocbcred hover:bg-ocbcdarkred text-white rounded-lg">
-                                End Chat
-                            </button>
+                            {selectedChatId && connectedChats.filter((chat) => chat.caseId === selectedChatId).map((selectedChat => (
+                                <>
+                                    <div>
+                                        <p className="text-lg font-bold mb-0">{ selectedChat.customer?.faqQuestion }</p>
+                                        <p className="text-neutral-500 text-sm">Case ID: { selectedChat.caseId }{ selectedChat.customer?.userId && " | Logged In" }</p>
+                                    </div>
+
+                                    <button className="ml-auto px-4 py-1 bg-ocbcred hover:bg-ocbcdarkred text-white rounded-lg">
+                                        End Chat
+                                    </button>
+                                </>
+                            )))}
                         </div>
 
                         <div id="chat" className="w-full flex-grow flex flex-col">
@@ -158,7 +160,7 @@ export default function StaffChats() {
                         <h3 className="text-xl font-semibold mb-3">You have no active Live Chats!</h3>
                         <button
                             className="px-4 py-2 bg-ocbcred hover:bg-ocbcdarkred text-white rounded-xl"
-                            onClick={() => setDisplayAwaitCustomerList(true)}
+                            onClick={() => showAwaitCustomerList()}
                         >
                             Join Live Chat
                         </button>
@@ -168,17 +170,22 @@ export default function StaffChats() {
 
 
             <div className={`${displayAwaitCustomerList ? "block opacity-100" : "hidden opacity-0"} duration-200`}>
-                <AwaitChatContainer addConnectedChat={addConnectedChat} hideAwaitCustomerList={hideAwaitCustomerList} waitingCustomers={waitingCustomers} />
+                <AwaitChatContainer joinChat={joinChat} hideAwaitCustomerList={() => setDisplayAwaitCustomerList(false)} waitingCustomers={waitingCustomers} />
             </div>
         </div>
     )
 }
 
-function ChatListItem({ chat, selectedChat, setSelectedChat }) {
+function ChatListItem({ chat, selectedChatId, setSelectedChatId }) {
     const handleOnClick = () => {
-        setSelectedChat(chat);
+        setSelectedChatId(chat.caseId);
     }
     const getLastSentText = (messages) => {
+        if (messages.length === 0) return {
+            text: "",
+            timestamp: "",
+            isSender: false,
+        }
         return {
             text: messages[messages.length - 1].text,
             timestamp: messages[messages.length - 1].timestamp,
@@ -187,7 +194,7 @@ function ChatListItem({ chat, selectedChat, setSelectedChat }) {
     }
 
     return (
-        <div className={`border-y-2 border-neutral-600 px-5 py-2 flex flex-row gap-5 max-w-full hover:bg-neutral-200 ${(selectedChat === chat && (selectedChat !== undefined && selectedChat !== null)) && "bg-chatred/20"}`} onClick={handleOnClick}>
+        <div className={`border-y-2 border-neutral-600 px-5 py-2 flex flex-row gap-5 max-w-full hover:bg-neutral-200 ${(selectedChatId === chat.caseId && (selectedChatId !== undefined && selectedChatId !== null)) && "bg-chatred/20"}`} onClick={handleOnClick}>
             <div className="min-w-0">
                 <p className="truncate font-semibold">{ chat.customer.faqQuestion }</p>
                 <p className="truncate">{ getLastSentText(chat.messages).text }</p>

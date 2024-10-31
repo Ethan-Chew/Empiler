@@ -53,7 +53,7 @@ export const removeWaitingCustomer = async (db, customerSessionIdentifier) => {
 export const searchForWaitingCustomer = async (db, customerSessionIdentifier) => {
     await db.read()
     return db.data.waitingCustomers.find(
-        (customer) => customer.customerSessionIdentifier === customerSessionIdentifier
+        (customer) => customer.csi === customerSessionIdentifier
     )
 }
 

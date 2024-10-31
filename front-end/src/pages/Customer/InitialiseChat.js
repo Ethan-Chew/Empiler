@@ -32,9 +32,8 @@ export default function InitialiseChat() {
 
             // Check if the Customer already exists on the waiting list.
             socket.emit('utils:verify-waitinglist', customerSessionIdentifier, (result) => {
-                console.log(result);
                 if (!result) { // If the Customer is not on the Waiting List, request for a new connection
-                    socket.emit('customer:join', customerSessionIdentifier, faqSection, faqQuestion);
+                    socket.emit('customer:join', customerSessionIdentifier, sessionStorage.getItem('faqSection'), sessionStorage.getItem('faqQuestion'));
                 } else {
                     // Check if the Customer is already in an active chat. If yes, redirect to the chat page; else, do nothing.
                     socket.emit('utils:verify-activechat', customerSessionIdentifier, (chatExistanceReq) => {

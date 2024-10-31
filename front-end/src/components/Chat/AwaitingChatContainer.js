@@ -4,7 +4,7 @@ import { BsDashSquareFill } from "react-icons/bs";
 import { IoChevronDown, IoChevronUp } from "react-icons/io5";
 
 // Component acts as a popup that displays when a user is waiting for a chat to be accepted by a staff member
-export default function AwaitChatContainer({ addConnectedChat, hideAwaitCustomerList, waitingCustomers }) {
+export default function AwaitChatContainer({ joinChat, hideAwaitCustomerList, waitingCustomers }) {
     const [searchTerm, setSearchTerm] = useState('');
     const [searchCategory, setSearchCategory] = useState('All');
     const [searchCategoryDropdown, setSearchCategoryDropdown] = useState(false);
@@ -95,7 +95,7 @@ export default function AwaitChatContainer({ addConnectedChat, hideAwaitCustomer
 
                 <div id="customer-list" className="mb-3 w-full overflow-y-scroll">
                     {Object.keys(waitingCustomers).length > 0 && Object.keys(waitingCustomers).map((section) => (
-                        <FAQSectionCustomer key={section} section={section} requests={waitingCustomers[section]} addConnectedChat={addConnectedChat} />
+                        <FAQSectionCustomer key={section} section={section} requests={waitingCustomers[section]} joinChat={joinChat} />
                     ))}
                 </div>
             </div>
@@ -103,23 +103,23 @@ export default function AwaitChatContainer({ addConnectedChat, hideAwaitCustomer
     )
 }
 
-function FAQSectionCustomer({ section, requests, addConnectedChat }) {
+function FAQSectionCustomer({ section, requests, joinChat }) {
     return (
         <div className="w-full">
             <h3 className="ml-10 mr-5 py-2 text-lg font-bold text-neutral-600">{ section }</h3>
             {requests.map((request, index) => (
-                <CustomerRequestContainer key={request.customerSessionIdentifier} index={index} request={request} addConnectedChat={addConnectedChat} />
+                <CustomerRequestContainer key={index} index={index} request={request} joinChat={joinChat} />
             ))}
         </div>
     )
 }
 
-function CustomerRequestContainer({ index, request, addConnectedChat }) {
+function CustomerRequestContainer({ index, request, joinChat }) {
     const [buttonText, setButtonText] = useState("Join Chat");
 
     const handleJoin = async () => {
         setButtonText("Joining...");
-        const addRequest = await addConnectedChat(request);
+        const addRequest = await joinChat(request.csi);
         if (addRequest) {
             setButtonText("Joined!");
         } else {
