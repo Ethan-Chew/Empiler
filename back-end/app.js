@@ -7,7 +7,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import supabase from './utils/supabase.js';
 import cors from 'cors';
-import { initialiseDB } from './utils/localDB.js';
+import { initialiseDB } from './utils/sqliteDB.js';
 
 // Routes
 import user from './routes/user.route.js';

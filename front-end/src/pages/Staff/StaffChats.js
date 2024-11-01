@@ -23,13 +23,13 @@ export default function StaffChats() {
     const [sentMessage, setSentMessage] = useState("");
 
     // Setter Functions
-    const joinChat = async (csi) => {
+    const joinChat = async (customerSessionIdentifier) => {
         console.log(connectedChats)
         if (connectedChats.length < 7) {
             // Send a request to the server to start the Live Chat between the Staff and the Customer
             try {
                 await new Promise((resolve, reject) => {
-                    socket.emit("staff:join", csi, sessionStorage.getItem('staffSessionIdentifier'), (response) => {
+                    socket.emit("staff:join", customerSessionIdentifier, sessionStorage.getItem('staffSessionIdentifier'), (response) => {
                         console.log(response);
                         if (response.status === "Success") {
                             const formattedChat = {

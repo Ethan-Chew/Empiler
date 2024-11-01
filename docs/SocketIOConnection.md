@@ -9,7 +9,7 @@ Fired when the customer requests for a live chat.
 ### Parameters
 | Name | Data Type | Description |
 | :-- | :-- | :-- |
-| csi | String | Customer Session Identifier (A Unique Identifier given to every live chat session. Unique to the particular session) |
+| customerSessionIdentifier | String | Customer Session Identifier (A Unique Identifier given to every live chat session. Unique to the particular session) |
 | faqSection | String | The FAQ Section help is requested for |
 | faqQuestion | String | A description / question that the customer is asking |
 </details>

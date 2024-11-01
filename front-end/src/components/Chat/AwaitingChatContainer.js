@@ -116,7 +116,7 @@ function CustomerRequestContainer({ index, request, joinChat }) {
 
     const handleJoin = async () => {
         setButtonText("Joining...");
-        const addRequest = await joinChat(request.csi);
+        const addRequest = await joinChat(request.customerSessionIdentifier);
         if (addRequest) {
             setButtonText("Joined!");
         } else {

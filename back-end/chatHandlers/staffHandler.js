@@ -1,5 +1,5 @@
-import { retrieveWaitingCustomers } from "../utils/localDB.js";
-import { addAvailStaff, searchForWaitingCustomer, searchForAvailStaff, removeWaitingCustomer, startActiveChat } from "../utils/localDB.js";
+import { retrieveWaitingCustomers } from "../utils/sqliteDB.js";
+import { addAvailStaff, searchForWaitingCustomer, searchForAvailStaff, removeWaitingCustomer, startActiveChat } from "../utils/sqliteDB.js";
 import crypto from "crypto";
 
 export async function notifyForWaitingCustomers(db, io) {
@@ -37,7 +37,7 @@ export default function (io, db, socket) {
     socket.on("staff:join", async (customerSessionIdentifier, staffSessionIdentifier, callback) => {
         const caseId = crypto.randomBytes(16).toString('hex');
         console.log(customerSessionIdentifier, staffSessionIdentifier, caseId);
-        // Retrieve all the SocketIDs relating to the csi
+        // Retrieve all the SocketIDs relating to the customerSessionIdentifier
         const customer = await searchForWaitingCustomer(db, customerSessionIdentifier);
         if (!customer) {
             return callback({

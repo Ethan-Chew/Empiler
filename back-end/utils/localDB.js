@@ -28,7 +28,7 @@ export const initialiseDB = async () => {
 }
 */
 export const addWaitingCustomers = async (db, customerData) => {
-    const customerProfile = await searchForWaitingCustomer(db, customerData.csi);
+    const customerProfile = await searchForWaitingCustomer(db, customerData.customerSessionIdentifier);
 
     if (customerProfile) {
         customerProfile.socketIDs.push(customerData.socketId);
@@ -46,14 +46,14 @@ export const retrieveWaitingCustomers = async (db) => {
 }
 export const removeWaitingCustomer = async (db, customerSessionIdentifier) => {
     db.data.waitingCustomers = db.data.waitingCustomers.filter(
-        (customer) => customer.csi !== customerSessionIdentifier
+        (customer) => customer.customerSessionIdentifier !== customerSessionIdentifier
     )
     await db.write()
 }
 export const searchForWaitingCustomer = async (db, customerSessionIdentifier) => {
     await db.read()
     return db.data.waitingCustomers.find(
-        (customer) => customer.csi === customerSessionIdentifier
+        (customer) => customer.customerSessionIdentifier === customerSessionIdentifier
     )
 }
 

@@ -1,4 +1,4 @@
-import { appendCustSIDToActiveChat, appendStaffSIDToActiveChat, searchAdminInActiveChat, searchCustomerInActiveChat, searchForWaitingCustomer } from "../utils/localDB.js";
+import { appendCustSIDToActiveChat, appendStaffSIDToActiveChat, searchAdminInActiveChat, searchCustomerInActiveChat, searchForWaitingCustomer } from "../utils/sqliteDB.js";
 
 export default function (io, db, socket) {
     /*

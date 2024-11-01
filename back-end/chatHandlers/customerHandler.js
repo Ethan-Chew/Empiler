@@ -1,10 +1,10 @@
-import { addWaitingCustomers, removeWaitingCustomer, searchForWaitingCustomer } from "../utils/localDB.js";
+import { addWaitingCustomers, removeWaitingCustomer, searchForWaitingCustomer } from "../utils/sqliteDB.js";
 import { notifyForWaitingCustomers } from "./staffHandler.js";
 
 export default function (io, db, socket) {
     socket.on("customer:join", async (customerSessionIdentifier, section, question) => {
         const customerData = {
-            csi: customerSessionIdentifier,
+            customerSessionIdentifier: customerSessionIdentifier,
             faqSection: section,
             faqQuestion: question,
             socketId: socket.id,
@@ -23,7 +23,7 @@ export default function (io, db, socket) {
 
         await notifyForWaitingCustomers(db, io);
 
-        socket.join(customerSessionIdentifier); // Connect the Customer's Socket to a room with ID of CSI
+        socket.join(customerSessionIdentifier); // Connect the Customer's Socket to a room with ID of customerSessionIdentifier
         console.log(`Customer ${customerSessionIdentifier} has joined the waiting list.`);
         io.to(customerSessionIdentifier).emit("utils:waiting-time", Math.floor(Math.random() * 5) + 1); // TODO: Random Number lolxd
     });
