@@ -12,6 +12,7 @@ export default function CustomerChat() {
     const [searchParams, setSearchParams] = useSearchParams();  
     const [messages, setMessages] = useState([]);
     const [sentMessage, setSentMessage] = useState("");
+    const [chatEnded, setChatEnded] = useState(false);
     const caseID = searchParams.get("caseID");
 
     useEffect(() => {
@@ -37,6 +38,7 @@ export default function CustomerChat() {
                 }
             });
         }
+
         const handleDisconnection = () => {
             setIsConnected(false);
         }
@@ -45,9 +47,14 @@ export default function CustomerChat() {
             setMessages(prev => [...prev, msg]);
         }
 
+        const handleChatClosure = () => {
+            setChatEnded(true);
+        }
+
         socket.on("connect", handleConnection);
         socket.on("disconnect", handleDisconnection);
         socket.on("utils:receive-msg", handleReceiveMessage);
+        socket.on("utils:chat-ended", handleChatClosure);
 
         return () => {
             socket.off("disconnect", handleDisconnection);
@@ -94,17 +101,26 @@ export default function CustomerChat() {
                     </div>
 
                     {/* Message Field */}
-                    <div className="px-10 py-6 md:py-4 w-full rounded-b-xl flex flex-row justify-between">
-                        <input 
-                            className="p-3 border-2 w-full rounded-xl outline-none mr-5"
-                            placeholder="Enter a Message.."
-                            value={sentMessage} // Bind input to `sentMessage`
-                            onChange={(e) => setSentMessage(e.target.value)}
-                        />
-                        <button className="border-2 rounded-xl px-4 hover:border-neutral-500 duration-200" onClick={sendMessage}>
-                            <FaArrowCircleUp className="text-2xl text-neutral-400 hover:text-neutral-500" />
-                        </button>
-                    </div>
+                    {!chatEnded ? (
+                        <div className="px-10 py-6 md:py-4 w-full rounded-b-xl flex flex-row justify-between">
+                            <input 
+                                className="p-3 border-2 w-full rounded-xl outline-none mr-5"
+                                placeholder="Enter a Message.."
+                                value={sentMessage} // Bind input to `sentMessage`
+                                onChange={(e) => setSentMessage(e.target.value)}
+                            />
+                            <button className="border-2 rounded-xl px-4 hover:border-neutral-500 duration-200" onClick={sendMessage}>
+                                <FaArrowCircleUp className="text-2xl text-neutral-400 hover:text-neutral-500" />
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="px-10 py-6 md:py-4 w-full rounded-b-xl flex flex-col items-center border-t-2">
+                            <p className="font-semibold text-lg mb-3">The Customer Support Representative has ended the Live Chat. We hope your problem was resolved!</p>
+                            <button className="px-4 py-2 bg-ocbcred hover:bg-ocbcdarkred rounded-lg text-white" onClick={() => navigate("/")}>
+                                Back to Home
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

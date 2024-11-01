@@ -7,7 +7,6 @@
   },
   "author": "",
   "license": "ISC",
-  "description": "",
   "dependencies": {
     "@supabase/supabase-js": "^2.45.6",
     "bcrypt": "^5.1.1",
@@ -25,5 +24,7 @@
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7"
   },
-  "type": "module"
+  "type": "module",
+  "keywords": [],
+  "description": ""
 }

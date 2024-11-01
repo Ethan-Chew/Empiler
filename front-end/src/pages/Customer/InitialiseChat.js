@@ -15,6 +15,7 @@ export default function InitialiseChat() {
 
     // WIP: Write code to initialise the connection to backend and await a response
     useEffect(() => {
+        console.log(socket.isConnected);
         setFaqSection(sessionStorage.getItem('faqSection'));
         setFaqQuestion(sessionStorage.getItem('faqQuestion'));
 
@@ -22,13 +23,16 @@ export default function InitialiseChat() {
             // TODO: Handle nothing saved
         }
 
-        // Generate a Unique Identifier for this Customer Session
-        const customerSessionIdentifier = CryptoJS.lib.WordArray.random(16).toString(CryptoJS.enc.Hex);
-        sessionStorage.setItem('customerSessionIdentifier', customerSessionIdentifier);
-
         // Handle Connect and Disconnect Events
         const handleConnection = () => {
             setIsConnected(true);
+
+            // Generate a Unique Identifier for this Customer Session
+            if (sessionStorage.getItem('customerSessionIdentifier') !== null) {
+                return;
+            }
+            const customerSessionIdentifier = CryptoJS.lib.WordArray.random(16).toString(CryptoJS.enc.Hex);
+            sessionStorage.setItem('customerSessionIdentifier', customerSessionIdentifier);
 
             // Check if the Customer already exists on the waiting list.
             socket.emit('utils:verify-waitinglist', customerSessionIdentifier, (result) => {

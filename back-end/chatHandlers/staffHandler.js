@@ -1,5 +1,5 @@
-import { retrieveWaitingCustomers } from "../utils/sqliteDB.js";
-import { addAvailStaff, searchForWaitingCustomer, searchForAvailStaff, removeWaitingCustomer, startActiveChat } from "../utils/sqliteDB.js";
+import { endActiveChat, retrieveWaitingCustomers } from "../utils/sqliteDB.js";
+import { addAvailStaff, searchForWaitingCustomer, searchForAvailStaff, removeWaitingCustomer, startActiveChat } from "../utils/xqliteDB.js";
 import crypto from "crypto";
 
 export async function notifyForWaitingCustomers(db, io) {
@@ -79,5 +79,16 @@ export default function (io, db, socket) {
                 ...newChat,
             }
         });
+    });
+
+    socket.on("staff:end-chat", async (caseId) => {
+        // TODO: Save the Chat into the DB
+
+        // Let the Customer know the Chat has ended
+        socket.to(caseId).emit("utils:chat-ended");
+
+        // Remove the Chat from the list of Active Chats
+        await endActiveChat(db, caseId);
+
     });
 }
