@@ -15,7 +15,6 @@ export default function InitialiseChat() {
 
     // WIP: Write code to initialise the connection to backend and await a response
     useEffect(() => {
-        console.log(socket.isConnected);
         setFaqSection(sessionStorage.getItem('faqSection'));
         setFaqQuestion(sessionStorage.getItem('faqQuestion'));
 

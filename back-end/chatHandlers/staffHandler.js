@@ -1,5 +1,4 @@
-import { endActiveChat, retrieveWaitingCustomers } from "../utils/sqliteDB.js";
-import { addAvailStaff, searchForWaitingCustomer, searchForAvailStaff, removeWaitingCustomer, startActiveChat } from "../utils/xqliteDB.js";
+import { endActiveChat, retrieveWaitingCustomers, addAvailStaff, searchForWaitingCustomer, searchForAvailStaff, removeWaitingCustomer, startActiveChat } from "../utils/sqliteDB.js";
 import crypto from "crypto";
 
 export async function notifyForWaitingCustomers(db, io) {
@@ -25,8 +24,9 @@ export default function (io, db, socket) {
 
     socket.on("staff:avail", async (staffSessionIdentifier) => {
         const staffData = {
-            ssi: staffSessionIdentifier,
+            staffSessionIdentifier: staffSessionIdentifier,
             staffId: socket.user?.id || null,
+            socketIDs: [socket.id],
         };
 
         socket.join(staffSessionIdentifier); // Connect the Staff's Socket to a room with ID of SSI
@@ -36,7 +36,7 @@ export default function (io, db, socket) {
 
     socket.on("staff:join", async (customerSessionIdentifier, staffSessionIdentifier, callback) => {
         const caseId = crypto.randomBytes(16).toString('hex');
-        console.log(customerSessionIdentifier, staffSessionIdentifier, caseId);
+
         // Retrieve all the SocketIDs relating to the customerSessionIdentifier
         const customer = await searchForWaitingCustomer(db, customerSessionIdentifier);
         if (!customer) {
@@ -79,16 +79,5 @@ export default function (io, db, socket) {
                 ...newChat,
             }
         });
-    });
-
-    socket.on("staff:end-chat", async (caseId) => {
-        // TODO: Save the Chat into the DB
-
-        // Let the Customer know the Chat has ended
-        socket.to(caseId).emit("utils:chat-ended");
-
-        // Remove the Chat from the list of Active Chats
-        await endActiveChat(db, caseId);
-
     });
 }

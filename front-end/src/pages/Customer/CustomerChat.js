@@ -9,11 +9,63 @@ import { useState, useEffect } from "react";
 export default function CustomerChat() {
     const navigate = useNavigate();
     const [isConnected, setIsConnected] = useState(false);
+    const [isDisconnected, setIsDisconnected] = useState(false);
     const [searchParams, setSearchParams] = useSearchParams();  
     const [messages, setMessages] = useState([]);
     const [sentMessage, setSentMessage] = useState("");
     const [chatEnded, setChatEnded] = useState(false);
     const caseID = searchParams.get("caseID");
+
+    // User Inactivity States
+    const [inactivityTimer, setInactivityTimer] = useState(0);
+    const [userInactive, setUserInactive] = useState(false);
+    const [userDisconnected, setUserDisconnect] = useState(false);
+    const inactivityLimit = 3;
+    const disconnectLimit = 4;
+
+    // Helper Function to handle Window's Visibility Change. When inactive for 3 minutes, show warning. When inactive for 4 minutes, disconnect
+    useEffect(() => {
+        const handleUserActivity = () => {
+            setInactivityTimer(0);
+            setUserInactive(false);
+        };
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === "visible") {
+                setInactivityTimer(0);
+                setUserInactive(false);
+            }
+        }
+
+        // Increment inactivity time every minute
+        const interval = setInterval(() => {
+            setInactivityTimer(prev => prev + 1);
+
+            if (inactivityTimer >= inactivityLimit) {
+                setUserInactive(true);
+            }
+
+            if (inactivityTimer >= disconnectLimit) {
+                setUserDisconnect(true);
+                socket.emit("utils:disconnect", sessionStorage.getItem("customerSessionIdentifier"));
+            }
+        }, 60000);
+
+        // Set up event listeners
+        window.addEventListener('mousemove', handleUserActivity);
+        window.addEventListener('keypress', handleUserActivity);
+        window.addEventListener('click', handleUserActivity);
+        window.addEventListener('touchstart', handleUserActivity);
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+
+        return () => {
+            window.removeEventListener('mousemove', handleUserActivity);
+            window.removeEventListener('keypress', handleUserActivity);
+            window.removeEventListener('click', handleUserActivity);
+            window.removeEventListener('touchstart', handleUserActivity);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            clearInterval(interval);
+        };
+    }, [inactivityTimer]);
 
     useEffect(() => {
         // If there is no Case ID, redirect the Customer back to the Landing Page
@@ -33,6 +85,7 @@ export default function CustomerChat() {
             socket.emit("utils:verify-activechat", customerSessionIdentifier, (chatExistanceReq) => {
                 if (chatExistanceReq.exist && chatExistanceReq.caseID === caseID) {
                     socket.emit("utils:add-socket", customerSessionIdentifier, "customer");
+                    setMessages(chatExistanceReq.chatHistory);
                 } else {
                     navigate("/");
                 }
@@ -49,6 +102,7 @@ export default function CustomerChat() {
 
         const handleChatClosure = () => {
             setChatEnded(true);
+            sessionStorage.removeItem("customerSessionIdentifier");
         }
 
         socket.on("connect", handleConnection);
@@ -72,6 +126,11 @@ export default function CustomerChat() {
         socket.emit("utils:send-msg", formattedMsg);
     }
 
+    function handleEndChat() {
+        socket.emit("utils:end-chat", caseID);
+        setIsDisconnected(true);
+    }
+
     return (
         <div className="flex flex-col min-h-screen max-h-screen">
             <NavigationBar />
@@ -84,7 +143,9 @@ export default function CustomerChat() {
                         <a className="text-sm text-neutral-400">Case ID: {caseID}</a>
                     </div>
 
-                    <button className="ml-auto">End Chat</button>
+                    <button className="ml-auto px-4 py-1 bg-ocbcred hover:bg-ocbcdarkred text-white rounded-lg" onClick={handleEndChat}>
+                        End Chat
+                    </button>
                 </div>
 
                 {/* Live Chat Container */}
@@ -121,6 +182,22 @@ export default function CustomerChat() {
                             </button>
                         </div>
                     )}
+                </div>
+            </div>
+
+            <div id="inactivity-popup" className={`${userInactive ? "" : "hidden"} fixed top-0 left-0 h-screen w-screen bg-neutral-900/20 backdrop-blur-sm flex items-center justify-center duration-200 z-10`}>
+                <div className="p-5 bg-white flex flex-col items-center justify-center">
+                    <h2 className="font-semibold text-2xl mb-2">Looks like you've been inactive for awhile.</h2>
+                    <p className="text-lg">{ userDisconnected ? "You have been disconnected from the Live Chat." : "Please interact with the window to continue." }</p>
+                </div>
+            </div>
+
+            <div id="disconnected-popup" className={`${isDisconnected ? "" : "hidden"} fixed top-0 left-0 h-screen w-screen bg-neutral-900/20 backdrop-blur-sm flex items-center justify-center duration-200 z-10`}>
+                <div className="p-5 bg-white flex flex-col items-center justify-center">
+                    <h2 className="font-semibold text-2xl mb-2">You have disconnected from the chat.</h2>
+                    <button className="px-4 py-2 bg-ocbcred hover:bg-ocbcdarkred rounded-lg text-white" onClick={() => navigate("/")}>
+                        Back to Home
+                    </button>
                 </div>
             </div>
         </div>

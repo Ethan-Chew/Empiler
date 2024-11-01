@@ -1,4 +1,4 @@
-import { appendCustSIDToActiveChat, appendStaffSIDToActiveChat, searchAdminInActiveChat, searchCustomerInActiveChat, searchForWaitingCustomer } from "../utils/sqliteDB.js";
+import { appendCustSIDToActiveChat, searchCustomerInActiveChat, searchForWaitingCustomer, saveMessages, retrieveChatMessages, addSocketIdToAvailStaff, getChatIdsForStaff } from "../utils/sqliteDB.js";
 
 export default function (io, db, socket) {
     /*
@@ -12,6 +12,7 @@ export default function (io, db, socket) {
     }
     */
     socket.on("utils:send-msg", async (msg) => {
+        await saveMessages(db, msg);
         io.to(msg.case).emit("utils:receive-msg", msg);
     });
     
@@ -21,19 +22,17 @@ export default function (io, db, socket) {
             const searchActiveChat = await searchCustomerInActiveChat(db, sessionIdentifier);
 
             if (searchActiveChat) {
-                if (!searchActiveChat.customer.socketIDs.includes(socket.id)) {
+                if (!searchActiveChat.customerSocketIDs.includes(socket.id)) {
                     appendCustSIDToActiveChat(db, searchActiveChat.caseID, socket.id);
                     io.sockets.sockets.get(socket.id).join(searchActiveChat.caseID);
                 }
             }
         } else if (role === "staff") {
-            const searchActiveChat = await searchAdminInActiveChat(db, sessionIdentifier);
-
-            if (searchActiveChat) {
-                if (!searchActiveChat.staff.socketIDs.includes(socket.id)) {
-                    appendStaffSIDToActiveChat(db, searchActiveChat.caseID, socket.id);
-                    io.sockets.sockets.get(socket.id).join(searchActiveChat.caseID);
-                }
+            const staffChatIds = await getChatIdsForStaff(db, sessionIdentifier);
+            addSocketIdToAvailStaff(db, sessionIdentifier, socket.id);
+            for (const chat of staffChatIds) {
+                // Rejoin all chats
+                io.sockets.sockets.get(socket.id).join(chat.caseID);
             }
         }
     })
@@ -52,14 +51,24 @@ export default function (io, db, socket) {
         const searchActiveChat = await searchCustomerInActiveChat(db, customerSessionIdentifier);
 
         if (searchActiveChat) {
+            const chatHistory = await retrieveChatMessages(db, searchActiveChat.caseID);
             callback({
                 exist: true,
-                caseID: searchActiveChat.caseId
+                caseID: searchActiveChat.caseID,
+                chatHistory: chatHistory
             });
         } else {
             callback({
                 exist: false
             })
         }
+    });
+    
+    socket.on("utils:end-chat", async (caseId) => {
+        // Let the Customer know the Chat has ended
+        io.to(caseId).emit("utils:chat-ended", caseId);
+
+        // Remove the Chat from the list of Active Chats
+        await endActiveChat(db, caseId);
     });
 }

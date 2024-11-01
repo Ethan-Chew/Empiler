@@ -16,7 +16,6 @@ export default class User {
             .eq('username', username);
 
         if (queryRequest.status !== 200) {
-            console.log(queryRequest.error);
             return null;
         }
 

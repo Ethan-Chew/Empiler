@@ -1,7 +1,6 @@
 import { socket } from "../../utils/chatSocket"
 import { useState, useEffect } from "react";
 import * as CryptoJS from 'crypto-js';
-import { useNavigate } from "react-router-dom";
 
 // Components
 import { FaArrowCircleUp } from "react-icons/fa";
@@ -10,8 +9,6 @@ import StaffNavigationBar from "../../components/StaffNavbar";
 import MessageContainer from "../../components/Chat/MessageContainer";
 
 export default function StaffChats() {
-    const navigate = useNavigate();
-
     // Page Management
     const [displayAwaitCustomerList, setDisplayAwaitCustomerList] = useState(false);
 
@@ -81,7 +78,7 @@ export default function StaffChats() {
         // TODO: Proper Implementation
         
         // Remove from backend
-        socket.emit("staff:end-chat", selectedChatId);
+        socket.emit("utils:end-chat", selectedChatId);
 
         // If the chat is the selected chat, remove the selected chat
         setSelectedChatId(null);
@@ -96,13 +93,22 @@ export default function StaffChats() {
 
     useEffect(() => {
         // Generate a Unique Identifier for this Staff Session
-        const staffSessionIdentifier = CryptoJS.lib.WordArray.random(16).toString(CryptoJS.enc.Hex);
-        sessionStorage.setItem('staffSessionIdentifier', staffSessionIdentifier);
+        let staffSessionIdentifier = sessionStorage.getItem('staffSessionIdentifier');
+        if (!staffSessionIdentifier) {
+            staffSessionIdentifier = CryptoJS.lib.WordArray.random(16).toString(CryptoJS.enc.Hex);
+            sessionStorage.setItem('staffSessionIdentifier', staffSessionIdentifier);    
+        }
         
         const handleConnection = () => {
             setIsConnected(true);
-
-            socket.emit('staff:avail', staffSessionIdentifier);            
+            socket.emit('staff:avail', staffSessionIdentifier);    
+            
+            // Check for Past Data, if exists, load
+            if (sessionStorage.getItem('connectedChats')) {
+                const pastConnectedChats = JSON.parse(sessionStorage.getItem('connectedChats'));
+                if (pastConnectedChats) setConnectedChats(pastConnectedChats);
+                socket.emit("utils:add-socket", staffSessionIdentifier, "staff");
+            }
         }
         
         const handleDisconnection = () => {
@@ -129,11 +135,18 @@ export default function StaffChats() {
                 saveConnectedChats(updatedChats);
                 return updatedChats; 
             });
-        });       
+        });  
+        socket.on("utils:ended-chat", (caseId) => {
+            setConnectedChats((prevChats) => {
+                const updatedChats = prevChats.filter((chat) => chat.caseId !== caseId);
+                saveConnectedChats(updatedChats);
+                return updatedChats;
+            });
 
-        // Check for Past Data, if exists, load
-        const pastConnectedChats = JSON.parse(sessionStorage.getItem('connectedChats'));
-        if (pastConnectedChats) setConnectedChats(pastConnectedChats);
+            if (selectedChatId === caseId) {
+                setSelectedChatId(null);
+            }
+        });   
         
         return () => {
             socket.off("connect", handleConnection);

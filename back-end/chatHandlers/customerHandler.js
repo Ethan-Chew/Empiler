@@ -1,4 +1,4 @@
-import { addWaitingCustomers, removeWaitingCustomer, searchForWaitingCustomer } from "../utils/sqliteDB.js";
+import { addWaitingCustomers, removeWaitingCustomer, searchForWaitingCustomer, endActiveChat } from "../utils/sqliteDB.js";
 import { notifyForWaitingCustomers } from "./staffHandler.js";
 
 export default function (io, db, socket) {
@@ -11,7 +11,6 @@ export default function (io, db, socket) {
             userId: socket?.user?.id || null,
             timeConnected: Date.now(),
         };
-        console.log(customerData);
 
         // If customer is already in the waiting list, and Socket ID is present, ignore the request
         const requestWaitingCustomer = await searchForWaitingCustomer(db, customerSessionIdentifier);
@@ -32,4 +31,12 @@ export default function (io, db, socket) {
         // Remove customer from Waiting Customer List
         await removeWaitingCustomer(db, socket.id);
     });
+
+    socket.on("customer:end-chat", async (caseId) => {
+        // Let the Customer know the Chat has ended
+        socket.to(caseId).emit("utils:chat-ended");
+
+        // Remove the Chat from the list of Active Chats
+        await endActiveChat(db, caseId);
+    })
 }

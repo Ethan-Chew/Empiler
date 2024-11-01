@@ -1,4 +1,3 @@
-import { socket } from './utils/chatSocket';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
