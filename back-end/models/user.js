@@ -11,14 +11,14 @@ export default class User {
 
     static async getUserWithUsername(username) {
         const queryRequest = await supabase
-            .from('users')
+            .from('user')
             .select('*')
             .eq('username', username);
 
-        if (queryRequest.status !== 200) {
+        if (queryRequest.error || queryRequest.data.length === 0) {
             return null;
         }
-
-        return queryRequest.data;
+    
+        return queryRequest.data[0]; 
     }
 }
