@@ -17,11 +17,11 @@ export default function FAQ() {
 
             {/* Items List */}
             <div className="space-y-4 w-full mx-auto flex flex-col items-center p-10">
-                <FaqCatItem title="Some Title" description="this is a description"/>
-                <FaqCatItem title="Some Title" description="this is a description"/>
+                <FaqCatItem title="Some Title" description="this is a description" href="/faq-article"/>
+                <FaqCatItem title="Some Title" description="this is a description" href="/faq-article"/>
             </div>            
 
-            <Footer />
+            
         </div>
     );
 }

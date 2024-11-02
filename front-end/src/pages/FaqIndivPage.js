@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import Footer from '../components/Footer';
+import NavigationBar from "../components/Navbar";
+
 
 function FaqIndivPage() {
     const [hoveredButton, setHoveredButton] = useState(null);
@@ -126,9 +129,9 @@ function FaqIndivPage() {
     };
 
     return (
-        <div style={styles.container}>
-            <div style={styles.header}></div>
-
+        <><NavigationBar />
+        <div style={styles.container} className='bg-gray-100'>
+            
             <div style={styles.titleContainer}>
                 <h1 style={styles.titleText}>Title Text (of article clicked)</h1>
             </div>
@@ -167,29 +170,8 @@ function FaqIndivPage() {
                 </div>
             </div>
 
-            <p style={styles.contactText}>Still need help? Get in touch.</p>
 
-            <div style={styles.buttonContainer}>
-                <div
-                    style={styles.buttonBox}
-                    onMouseEnter={() => setHoveredButton('button1')}
-                    onMouseLeave={() => setHoveredButton(null)}
-                >
-                    <img src="/startLiveChat.svg" alt="Start a Live Chat" style={styles.svg} /> 
-                    <p style={styles.buttonText}>Start a Live Chat</p>
-                    <p style={styles.subText}>Waiting time:<br />2 minutes or less</p>
-                </div>
-                <div
-                    style={styles.buttonBox2}
-                    onMouseEnter={() => setHoveredButton('button2')}
-                    onMouseLeave={() => setHoveredButton(null)}
-                >
-                    <img src="/scheduleAppointment.svg" alt="Schedule an Appointment" style={styles.svg} /> 
-                    <p style={styles.buttonText}>Schedule an Appointment</p>
-                    <p style={styles.subText}>for any further enquiries</p>
-                </div>
-            </div>
-        </div>
+        </div><Footer /></>
     );
 }
 

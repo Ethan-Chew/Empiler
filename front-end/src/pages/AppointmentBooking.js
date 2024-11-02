@@ -1,3 +1,6 @@
+import NavigationBar from "../components/Navbar";
+
+
 function AppointmentBooking() {
     const styles = {
         container: {
@@ -109,9 +112,9 @@ function AppointmentBooking() {
     };
 
     return (
+        <><NavigationBar />
         <div style={styles.container}>
             {/* Header and Title */}
-            <div style={styles.header}></div>
             <div style={styles.titleContainer}>
                 <h1 style={styles.titleText}>Schedule an Appointment</h1>
                 <p style={styles.subtitleText}>Schedule an appointment at an OCBC Branch near you.</p>
@@ -135,11 +138,11 @@ function AppointmentBooking() {
                                 onMouseEnter={(e) => {
                                     e.currentTarget.style.transform = styles.branchItemHover.transform;
                                     e.currentTarget.style.boxShadow = styles.branchItemHover.boxShadow;
-                                }}
+                                } }
                                 onMouseLeave={(e) => {
                                     e.currentTarget.style.transform = '';
                                     e.currentTarget.style.boxShadow = '';
-                                }}
+                                } }
                             >
                                 <p style={styles.branchName}>OCBC Branch {index + 1}</p>
                                 <p style={styles.branchDetails}>1.1 km | 827 Bukit Timah Road, Singapore 279886</p>
@@ -154,7 +157,7 @@ function AppointmentBooking() {
                     <div style={styles.locationImagePlaceholder}>Location Image</div>
                 </div>
             </div>
-        </div>
+        </div></>
     );
 }
 

@@ -13,7 +13,7 @@ export default function Footer() {
               <p className="text-gray-500 text-sm mt-1">Waiting Time: 2 minutes or less</p>
             </div>
           </a>
-          <a href="">
+          <a href="/appointment-booking">
             <div className="w-80 h-56 flex flex-col items-center p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200">
               <div className="w-24 h-24 mb-4 flex items-center justify-center rounded-full bg-gray-100">
                 <img src="/scheduleAppointment.svg" alt="Appointment" className="w-12 h-12" />
