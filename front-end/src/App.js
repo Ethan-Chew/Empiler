@@ -2,6 +2,7 @@ import SectionContainer from "./components/FAQ/SectionContainer";
 import Searchbar from "./components/FAQ/Searchbar";
 import Footer from "./components/Footer";
 import NavigationBar from "./components/Navbar";
+import FaqIndivPage from "./pages/FaqIndivPage";
 
 export default function App() {
   return (

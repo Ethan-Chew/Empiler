@@ -7,6 +7,9 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import App from './App';
 import Login from './pages/login';
 import FAQ from './pages/faq';
+import FaqIndivPage from './pages/FaqIndivPage';
+import AppointmentBooking from './pages/AppointmentBooking';
+import DetailedAppointmentBooking from './pages/DetailedAppointmentBooking';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -15,6 +18,9 @@ root.render(
       <Route exact path="/" element={<App />} />
       <Route path="/login" element={<Login />} />
       <Route path="/faq" element={<FAQ />} />
+            <Route path="/faq-article" element={<FaqIndivPage />} />
+            <Route path="/appointment-booking" element={<AppointmentBooking />} />
+            <Route path="/detailed-appointment-booking" element={<DetailedAppointmentBooking />} />
     </Routes>
   </BrowserRouter>
 );
