@@ -70,7 +70,7 @@ export default function CustomerChat() {
     useEffect(() => {
         // If there is no Case ID, redirect the Customer back to the Landing Page
         if (!caseID) {
-            navigate("/");
+            navigateHome();
         }
 
         // Socket.IO Event Handlers
@@ -79,7 +79,7 @@ export default function CustomerChat() {
             
             const customerSessionIdentifier = sessionStorage.getItem("customerSessionIdentifier");
             if (!customerSessionIdentifier) {
-                navigate("/");
+                navigateHome();
             }
 
             socket.emit("utils:verify-activechat", customerSessionIdentifier, (chatExistanceReq) => {
@@ -87,7 +87,7 @@ export default function CustomerChat() {
                     socket.emit("utils:add-socket", customerSessionIdentifier, "customer");
                     setMessages(chatExistanceReq.chatHistory);
                 } else {
-                    navigate("/");
+                    navigateHome();
                 }
             });
         }
@@ -129,6 +129,11 @@ export default function CustomerChat() {
     function handleEndChat() {
         socket.emit("utils:end-chat", caseID);
         setIsDisconnected(true);
+    }
+
+    function navigateHome() {
+        navigate("/");
+        sessionStorage.removeItem("customerSessionIdentifier");
     }
 
     return (
@@ -177,7 +182,7 @@ export default function CustomerChat() {
                     ) : (
                         <div className="px-10 py-6 md:py-4 w-full rounded-b-xl flex flex-col items-center border-t-2">
                             <p className="font-semibold text-lg mb-3">The Customer Support Representative has ended the Live Chat. We hope your problem was resolved!</p>
-                            <button className="px-4 py-2 bg-ocbcred hover:bg-ocbcdarkred rounded-lg text-white" onClick={() => navigate("/")}>
+                            <button className="px-4 py-2 bg-ocbcred hover:bg-ocbcdarkred rounded-lg text-white" onClick={navigateHome}>
                                 Back to Home
                             </button>
                         </div>
@@ -195,7 +200,7 @@ export default function CustomerChat() {
             <div id="disconnected-popup" className={`${isDisconnected ? "" : "hidden"} fixed top-0 left-0 h-screen w-screen bg-neutral-900/20 backdrop-blur-sm flex items-center justify-center duration-200 z-10`}>
                 <div className="p-5 bg-white flex flex-col items-center justify-center">
                     <h2 className="font-semibold text-2xl mb-2">You have disconnected from the chat.</h2>
-                    <button className="px-4 py-2 bg-ocbcred hover:bg-ocbcdarkred rounded-lg text-white" onClick={() => navigate("/")}>
+                    <button className="px-4 py-2 bg-ocbcred hover:bg-ocbcdarkred rounded-lg text-white" onClick={navigateHome}>
                         Back to Home
                     </button>
                 </div>

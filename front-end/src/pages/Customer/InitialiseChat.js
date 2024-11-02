@@ -13,7 +13,37 @@ export default function InitialiseChat() {
     const [faqSection, setFaqSection] = useState('');
     const [faqQuestion, setFaqQuestion] = useState('');
 
-    // WIP: Write code to initialise the connection to backend and await a response
+    // Handle Connect and Disconnect Events
+    const handleConnection = () => {
+        setIsConnected(true);
+        console.log('Connected to Socket');
+        // Generate a Unique Identifier for this Customer Session
+        if (sessionStorage.getItem('customerSessionIdentifier') !== null) {
+            return;
+        }
+        const customerSessionIdentifier = CryptoJS.lib.WordArray.random(16).toString(CryptoJS.enc.Hex);
+        sessionStorage.setItem('customerSessionIdentifier', customerSessionIdentifier);
+
+        // Check if the Customer already exists on the waiting list.
+        socket.emit('utils:verify-waitinglist', customerSessionIdentifier, (result) => {
+            if (!result) { // If the Customer is not on the Waiting List, request for a new connection
+                socket.emit('customer:join', customerSessionIdentifier, sessionStorage.getItem('faqSection'), sessionStorage.getItem('faqQuestion'));
+            } else {
+                // Check if the Customer is already in an active chat. If yes, redirect to the chat page; else, do nothing.
+                socket.emit('utils:verify-activechat', customerSessionIdentifier, (chatExistanceReq) => {
+                    if (chatExistanceReq.exist) {
+                        navigate(`/chat?caseID=${chatExistanceReq.caseID}`);
+                    }
+                });
+            }
+        });
+    }
+
+    const handleDisconnection = () => {
+        setIsConnected(false);
+        socket.emit('customer:leave');
+    };
+
     useEffect(() => {
         setFaqSection(sessionStorage.getItem('faqSection'));
         setFaqQuestion(sessionStorage.getItem('faqQuestion'));
@@ -22,35 +52,6 @@ export default function InitialiseChat() {
             // TODO: Handle nothing saved
         }
 
-        // Handle Connect and Disconnect Events
-        const handleConnection = () => {
-            setIsConnected(true);
-
-            // Generate a Unique Identifier for this Customer Session
-            if (sessionStorage.getItem('customerSessionIdentifier') !== null) {
-                return;
-            }
-            const customerSessionIdentifier = CryptoJS.lib.WordArray.random(16).toString(CryptoJS.enc.Hex);
-            sessionStorage.setItem('customerSessionIdentifier', customerSessionIdentifier);
-
-            // Check if the Customer already exists on the waiting list.
-            socket.emit('utils:verify-waitinglist', customerSessionIdentifier, (result) => {
-                if (!result) { // If the Customer is not on the Waiting List, request for a new connection
-                    socket.emit('customer:join', customerSessionIdentifier, sessionStorage.getItem('faqSection'), sessionStorage.getItem('faqQuestion'));
-                } else {
-                    // Check if the Customer is already in an active chat. If yes, redirect to the chat page; else, do nothing.
-                    socket.emit('utils:verify-activechat', customerSessionIdentifier, (chatExistanceReq) => {
-                        if (chatExistanceReq.exist) {
-                            navigate(`/chat?caseID=${chatExistanceReq.caseID}`);
-                        }
-                    });
-                }
-            });
-        }
-        const handleDisconnection = () => {
-            setIsConnected(false);
-            socket.emit('customer:leave');
-        };
         socket.on('connect', handleConnection);
         socket.on('disconnect', handleDisconnection);
 
@@ -67,11 +68,14 @@ export default function InitialiseChat() {
             socket.off('connect', handleConnection);
             socket.off('disconnect', handleDisconnection);
         }
-    }, []);
+    }, [socket]);
 
     useEffect(() => {
-        if (!isConnected) setConnectionErr(true);
-        else setConnectionErr(false);
+        if (isConnected) {
+            setConnectionErr(false)
+        } else {
+            setConnectionErr(true);
+        };
     }, [isConnected]);
 
     return (

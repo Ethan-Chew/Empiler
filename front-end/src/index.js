@@ -26,11 +26,8 @@ root.render(
       <Route path="*" element={<h1>404 Not Found</h1>} />
 
       {/* Protected Routes */}
-      {/* <Route path="/staff/home" element={<StaffHome />} /> */}
-      {/* <Route path="/staff/chats" element={<StaffChats />} /> */}
       <Route path="/staff/home" element={<ProtectedRoute Component={StaffHome} role="staff" />} />
-      {/* <Route path="/staff/chats" element={<ProtectedRoute Component={<StaffChatList />} role="staff" />} />
-      <Route path="/staff/chat" element={<ProtectedRoute Component={<StaffChats />} role="staff" />} /> */}
+      <Route path="/staff/chats" element={<ProtectedRoute Component={StaffChats} role="staff" />} />
     </Routes>
   </BrowserRouter>
 );

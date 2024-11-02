@@ -109,6 +109,7 @@ export const searchForAvailStaff = async (db, staffSessionIdentifier) => {
 };
 
 export const startActiveChat = async (db, activeChat) => {
+    console.log(activeChat)
     activeChat.customer.socketIDs = JSON.stringify(activeChat.customer.socketIDs);
     activeChat.staff.socketIDs = JSON.stringify(activeChat.staff.socketIDs);
     await db.run('INSERT INTO activeChats (caseID, customerSessionIdentifier, customerSocketIDs, faqSection, faqQuestion, userId, timeConnected, staffSessionIdentifier, staffID) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', 

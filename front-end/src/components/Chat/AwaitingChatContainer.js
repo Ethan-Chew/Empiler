@@ -92,6 +92,11 @@ export default function AwaitChatContainer({ joinChat, hideAwaitCustomerList, wa
             </div>
 
             <div id="customer-list" className="mb-3 w-full overflow-y-scroll">
+                {Object.keys(waitingCustomers).length === 0 && (
+                    <div>
+                        <p>There are no waiting customers.</p>
+                    </div>
+                )}
                 {Object.keys(waitingCustomers).length > 0 && Object.keys(waitingCustomers).map((section) => (
                     <FAQSectionCustomer key={section} section={section} requests={waitingCustomers[section]} joinChat={joinChat} />
                 ))}
