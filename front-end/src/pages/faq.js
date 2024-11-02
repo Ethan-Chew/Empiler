@@ -21,7 +21,7 @@ export default function FAQ() {
                 <FaqCatItem title="Some Title" description="this is a description" href="/faq-article"/>
             </div>            
 
-            
+            <Footer />
         </div>
     );
 }
