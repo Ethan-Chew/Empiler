@@ -10,6 +10,7 @@ import FAQ from './pages/faq';
 import FaqIndivPage from './pages/FaqIndivPage';
 import AppointmentBooking from './pages/AppointmentBooking';
 import DetailedAppointmentBooking from './pages/DetailedAppointmentBooking';
+import StaffLandingPage from './pages/StaffLandingPage';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -21,6 +22,7 @@ root.render(
             <Route path="/faq-article" element={<FaqIndivPage />} />
             <Route path="/appointment-booking" element={<AppointmentBooking />} />
             <Route path="/detailed-appointment-booking" element={<DetailedAppointmentBooking />} />
+            <Route path="/staff-landing" element={<StaffLandingPage />} />
     </Routes>
   </BrowserRouter>
 );
