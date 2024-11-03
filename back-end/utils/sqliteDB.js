@@ -19,13 +19,12 @@ export const initialiseDB = async () => {
             socketIDs TEXT,
             faqSection TEXT,
             faqQuestion TEXT,
-            userId TEXT,
+            userID TEXT,
             timeConnected INTEGER
         );
         CREATE TABLE IF NOT EXISTS availStaff (
-            staffSessionIdentifier TEXT PRIMARY KEY,
-            socketIDs TEXT,
-            staffID TEXT
+            staffID TEXT PRIMARY KEY,
+            socketIDs TEXT
         );
         CREATE TABLE IF NOT EXISTS activeChats (
             caseID TEXT PRIMARY KEY,
@@ -33,9 +32,8 @@ export const initialiseDB = async () => {
             customerSocketIDs TEXT,
             faqSection TEXT,
             faqQuestion TEXT,
-            userId TEXT,
+            userID TEXT,
             timeConnected INTEGER,
-            staffSessionIdentifier TEXT,
             staffID TEXT
         );
         CREATE TABLE IF NOT EXISTS chatHistory (
@@ -53,7 +51,6 @@ export const initialiseDB = async () => {
 
 export const addWaitingCustomers = async (db, customerData) => {
     const customerProfile = await searchForWaitingCustomer(db, customerData.customerSessionIdentifier);
-
     if (customerProfile) {
         const socketIDs = JSON.parse(customerProfile.socketIDs);
         socketIDs.push(customerData.socketId);
@@ -61,8 +58,8 @@ export const addWaitingCustomers = async (db, customerData) => {
     } else {
         customerData.socketIDs = JSON.stringify([customerData.socketId]);
         delete customerData.socketId;
-        await db.run('INSERT INTO waitingCustomers (customerSessionIdentifier, socketIDs, faqSection, faqQuestion, userId, timeConnected) VALUES (?, ?, ?, ?, ?, ?)', 
-            customerData.customerSessionIdentifier, customerData.socketIDs, customerData.faqSection, customerData.faqQuestion, customerData.userId, customerData.timeConnected);
+        await db.run('INSERT INTO waitingCustomers (customerSessionIdentifier, socketIDs, faqSection, faqQuestion, userID, timeConnected) VALUES (?, ?, ?, ?, ?, ?)', 
+            customerData.customerSessionIdentifier, customerData.socketIDs, customerData.faqSection, customerData.faqQuestion, customerData.userID, customerData.timeConnected);
     }
 };
 
@@ -82,16 +79,16 @@ export const searchForWaitingCustomer = async (db, customerSessionIdentifier) =>
 };
 
 export const addAvailStaff = async (db, staffData) => {
-    const staffProfile = await searchForAvailStaff(db, staffData.staffSessionIdentifier);
+    const staffProfile = await searchForAvailStaff(db, staffData.staffID);
 
     if (staffProfile) {
         const socketIDs = staffProfile.socketIDs;
         socketIDs.push(staffProfile.socketIDs[0]);
-        await db.run('UPDATE availStaff SET socketIDs = ? WHERE staffSessionIdentifier = ?', JSON.stringify(socketIDs), staffData.staffSessionIdentifier);
+        await db.run('UPDATE availStaff SET socketIDs = ? WHERE staffID = ?', JSON.stringify(socketIDs), staffData.staffID);
     } else {
         staffData.socketIDs = JSON.stringify(staffData.socketIDs);
-        await db.run('INSERT INTO availStaff (staffSessionIdentifier, socketIDs, staffID) VALUES (?, ?, ?)', 
-            staffData.staffSessionIdentifier, staffData.socketIDs, staffData.staffId);
+        await db.run('INSERT INTO availStaff (socketIDs, staffID) VALUES (?, ?)', 
+            staffData.socketIDs, staffData.staffID);
     }
 };
 export const retrieveAvailStaff = async (db) => {
@@ -99,21 +96,20 @@ export const retrieveAvailStaff = async (db) => {
     return rows.map(row => ({ ...row, socketIDs: JSON.parse(row.socketIDs) }));
 };
 
-export const removeAvailStaff = async (db, staffSessionIdentifier) => {
-    await db.run('DELETE FROM availStaff WHERE staffSessionIdentifier = ?', staffSessionIdentifier);
+export const removeAvailStaff = async (db, staffID) => {
+    await db.run('DELETE FROM availStaff WHERE staffID = ?', staffID);
 };
 
-export const searchForAvailStaff = async (db, staffSessionIdentifier) => {
-    const row = await db.get('SELECT * FROM availStaff WHERE staffSessionIdentifier = ?', staffSessionIdentifier);
+export const searchForAvailStaff = async (db, staffID) => {
+    const row = await db.get('SELECT * FROM availStaff WHERE staffID = ?', staffID);
     return row ? { ...row, socketIDs: JSON.parse(row.socketIDs) } : null;
 };
 
 export const startActiveChat = async (db, activeChat) => {
-    console.log(activeChat)
     activeChat.customer.socketIDs = JSON.stringify(activeChat.customer.socketIDs);
     activeChat.staff.socketIDs = JSON.stringify(activeChat.staff.socketIDs);
-    await db.run('INSERT INTO activeChats (caseID, customerSessionIdentifier, customerSocketIDs, faqSection, faqQuestion, userId, timeConnected, staffSessionIdentifier, staffID) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', 
-        activeChat.caseId, activeChat.customer.customerSessionIdentifier, activeChat.customer.socketIDs, activeChat.customer.faqSection, activeChat.customer.faqQuestion, activeChat.customer.userId, activeChat.customer.timeConnected, activeChat.staff.staffSessionIdentifier, activeChat.staff.staffID);
+    await db.run('INSERT INTO activeChats (caseID, customerSessionIdentifier, customerSocketIDs, faqSection, faqQuestion, userID, timeConnected, staffID) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', 
+        activeChat.caseId, activeChat.customer.customerSessionIdentifier, activeChat.customer.socketIDs, activeChat.customer.faqSection, activeChat.customer.faqQuestion, activeChat.customer.userID, activeChat.customer.timeConnected, activeChat.staff.staffID);
 };
 
 export const endActiveChat = async (db, caseID) => {
@@ -125,7 +121,7 @@ export const endActiveChat = async (db, caseID) => {
         message: msg.message,
         sender: msg.sender
     }));
-    await chatHistory.createChatHistory(chat.userId, chat.staffID, formattedChatMessages);
+    await chatHistory.createChatHistory(chat.userID, chat.staffID, formattedChatMessages);
 
     await db.run('DELETE FROM activeChats WHERE caseID = ?', caseID);
     await db.run('DELETE FROM chatHistory WHERE caseID = ?', caseID);
@@ -159,18 +155,18 @@ export const searchCustomerInActiveChat = async (db, customerSessionIdentifier) 
     return row ? { ...row, customerSocketIDs: JSON.parse(row.customerSocketIDs) } : null;
 };
 
-export const getChatIdsForStaff = async (db, staffSessionIdentifier) => {
-    return await db.all('SELECT caseID FROM activeChats WHERE staffSessionIdentifier = ?', staffSessionIdentifier);
+export const getChatIdsForStaff = async (db, staffID) => {
+    return await db.all('SELECT caseID FROM activeChats WHERE staffID = ?', staffID);
 }
 
-export const searchStaffInActiveChat = async (db, staffSessionIdentifier) => {
-    const row = await db.get('SELECT * FROM activeChats WHERE staffSessionIdentifier = ?', staffSessionIdentifier);
+export const searchStaffInActiveChat = async (db, staffID) => {
+    const row = await db.get('SELECT * FROM activeChats WHERE staffID = ?', staffID);
     return row ? { ...row, customerSocketIDs: JSON.parse(row.customerSocketIDs) } : null;
 };
 
-export const addSocketIdToAvailStaff = async (db, staffSessionIdentifier, socketID) => {
-    const staffProfile = await searchForAvailStaff(db, staffSessionIdentifier);
+export const addSocketIdToAvailStaff = async (db, staffID, socketID) => {
+    const staffProfile = await searchForAvailStaff(db, staffID);
     const socketIDs = staffProfile.socketIDs;
     socketIDs.push(socketID);
-    await db.run('UPDATE availStaff SET socketIDs = ? WHERE staffSessionIdentifier = ?', JSON.stringify(socketIDs), staffSessionIdentifier);
+    await db.run('UPDATE availStaff SET socketIDs = ? WHERE staffID = ?', JSON.stringify(socketIDs), staffID);
 }

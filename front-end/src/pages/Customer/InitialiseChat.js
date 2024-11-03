@@ -15,8 +15,9 @@ export default function InitialiseChat() {
 
     // Handle Connect and Disconnect Events
     const handleConnection = () => {
+        if (isConnected) return;
         setIsConnected(true);
-        console.log('Connected to Socket');
+
         // Generate a Unique Identifier for this Customer Session
         if (sessionStorage.getItem('customerSessionIdentifier') !== null) {
             return;
@@ -65,10 +66,11 @@ export default function InitialiseChat() {
         })
 
         return () => {
+            console.log('Cleaning up socket event listeners');
             socket.off('connect', handleConnection);
             socket.off('disconnect', handleDisconnection);
         }
-    }, [socket]);
+    }, []);
 
     useEffect(() => {
         if (isConnected) {

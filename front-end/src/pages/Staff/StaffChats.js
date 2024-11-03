@@ -27,7 +27,7 @@ export default function StaffChats() {
     
         try {
             const response = await new Promise((resolve, reject) => {
-                socket.emit("staff:join", customerSessionIdentifier, sessionStorage.getItem('staffSessionIdentifier'), (response) => {
+                socket.emit("staff:join", customerSessionIdentifier, (response) => {
                     response.status === "Success" ? resolve(response) : reject(new Error("Failed to Join Chat"));
                 });
             });
@@ -68,7 +68,6 @@ export default function StaffChats() {
             message: sentMessage,
             timestamp: Date.now(),
             sender: "staff",
-            sessionIdentifier: sessionStorage.getItem("staffSessionIdentifier"),
         }
         socket.emit("utils:send-msg", formattedMsg);
         setSentMessage("");
@@ -91,23 +90,16 @@ export default function StaffChats() {
         });
     }
 
-    useEffect(() => {
-        // Generate a Unique Identifier for this Staff Session
-        let staffSessionIdentifier = sessionStorage.getItem('staffSessionIdentifier');
-        if (!staffSessionIdentifier) {
-            staffSessionIdentifier = CryptoJS.lib.WordArray.random(16).toString(CryptoJS.enc.Hex);
-            sessionStorage.setItem('staffSessionIdentifier', staffSessionIdentifier);    
-        }
-        
+    useEffect(() => {        
         const handleConnection = () => {
             setIsConnected(true);
-            socket.emit('staff:avail', staffSessionIdentifier);    
+            socket.emit('staff:avail');    
             
             // Check for Past Data, if exists, load
             if (sessionStorage.getItem('connectedChats')) {
                 const pastConnectedChats = JSON.parse(sessionStorage.getItem('connectedChats'));
                 if (pastConnectedChats) setConnectedChats(pastConnectedChats);
-                socket.emit("utils:add-socket", staffSessionIdentifier, "staff");
+                socket.emit("utils:add-socket", "staff");
             }
         }
         
@@ -188,7 +180,7 @@ export default function StaffChats() {
                             <>
                                 <div>
                                     <p className="text-lg font-bold mb-0">{ selectedChat.customer?.faqQuestion }</p>
-                                    <p className="text-neutral-500 text-sm">Case ID: { selectedChat.caseId }{ selectedChat.customer?.userId && " | Logged In" }</p>
+                                    <p className="text-neutral-500 text-sm">Case ID: { selectedChat.caseId }{ selectedChat.customer?.userID && " | Logged In" }</p>
                                 </div>
 
                                 <button className="ml-auto px-4 py-1 bg-ocbcred hover:bg-ocbcdarkred text-white rounded-lg" onClick={handleEndChat}>

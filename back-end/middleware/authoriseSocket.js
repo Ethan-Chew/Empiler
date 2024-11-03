@@ -11,19 +11,20 @@ export default function (io) {
     io.use((socket, next) => {
         const cookiesString = socket.handshake.headers.cookie ?? '';
         const cookies = cookie.parse(cookiesString);
-        const authToken = cookies.authToken ?? null;
+        const authToken = cookies.jwt ?? null;
         
         if (authToken) {
-            jwt.verify(authToken, process.env.JWT_SECRET, (err, decoded) => {
-                if (err) {
-                    console.log("Error: " + err.message);
-                    return next(new Error("Authentication Error"));
-                }
+            try {
+                const decoded = jwt.verify(authToken, process.env.JWT_SECRET); 
+                // stupidity note: i spent 4hrs looking for a bug,
+                // because this (^^^) was marked async for some reason
                 socket.user = decoded;
-                return next();
-            });
+            } catch (err) {
+                console.log("Error: " + err.message);
+                return next(new Error("Authentication Error"));
+            }
         }
 
-        next();
+        return next();
     });
 }

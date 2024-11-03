@@ -124,6 +124,7 @@ export default function CustomerChat() {
             sessionIdentifier: sessionStorage.getItem("customerSessionIdentifier"),
         }
         socket.emit("utils:send-msg", formattedMsg);
+        setSentMessage("");
     }
 
     function handleEndChat() {

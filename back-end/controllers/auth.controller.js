@@ -44,7 +44,7 @@ const authLoginUser = async (req, res) => {
             },
             process.env.JWT_SECRET,
             {
-                expiresIn: process.env.JWT_EXPIRY
+                expiresIn: process.env.JWT_EXPIRY * 1000
             }
         );
         res.cookie("jwt", token, {

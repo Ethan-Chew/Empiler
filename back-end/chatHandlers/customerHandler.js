@@ -8,7 +8,7 @@ export default function (io, db, socket) {
             faqSection: section,
             faqQuestion: question,
             socketId: socket.id,
-            userId: socket?.user?.id || null,
+            userID: socket?.user?.id || null,
             timeConnected: Date.now(),
         };
 
