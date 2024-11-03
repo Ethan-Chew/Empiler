@@ -14,7 +14,7 @@ export default function (io, db, socket) {
 
         // If customer is already in the waiting list, and Socket ID is present, ignore the request
         const requestWaitingCustomer = await searchForWaitingCustomer(db, customerSessionIdentifier);
-        if (requestWaitingCustomer && requestWaitingCustomer.socketIDs.includes(socket.id)) {
+        if (requestWaitingCustomer) {
             return;
         }
 

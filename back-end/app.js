@@ -70,11 +70,10 @@ io.on("connection", (socket) => {
 
     utilsHandler(io, db, socket);
     customerHandler(io, db, socket);
-    staffHandler(io, db, socket);
     // TODO: Commented out for Debug Reason
-    // if (socket.user) {
-    //     if (socket.user.role === "staff") {
-    //         staffHandler(io, db, socket);
-    //     }
-    // }
+    if (socket.user) {
+        if (socket.user.role === "staff") {
+            staffHandler(io, db, socket);
+        }
+    }
 });

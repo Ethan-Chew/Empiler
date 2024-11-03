@@ -11,7 +11,7 @@ export default function (io) {
     io.use((socket, next) => {
         const cookiesString = socket.handshake.headers.cookie ?? '';
         const cookies = cookie.parse(cookiesString);
-        const authToken = cookies.authToken ?? null;
+        const authToken = cookies.jwt ?? null;
         
         if (authToken) {
             jwt.verify(authToken, process.env.JWT_SECRET, (err, decoded) => {

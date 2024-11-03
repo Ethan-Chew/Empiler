@@ -22,19 +22,18 @@ export default function (io, db, socket) {
         await notifyForWaitingCustomers(db, io);
     });
 
-    socket.on("staff:avail", async (staffSessionIdentifier) => {
+    socket.on("staff:avail", async () => {
         const staffData = {
-            staffSessionIdentifier: staffSessionIdentifier,
-            staffId: socket.user?.id || null,
+            staffId: socket.user.id,
             socketIDs: [socket.id],
         };
 
-        socket.join(staffSessionIdentifier); // Connect the Staff's Socket to a room with ID of SSI
+        socket.join(socket.user.id); // Connect the Staff's Socket to a room with ID of SSI
         await addAvailStaff(db, staffData);
         await notifyForWaitingCustomers(db, io);
     })
 
-    socket.on("staff:join", async (customerSessionIdentifier, staffSessionIdentifier, callback) => {
+    socket.on("staff:join", async (customerSessionIdentifier, callback) => {
         const caseId = crypto.randomBytes(16).toString('hex');
 
         // Retrieve all the SocketIDs relating to the customerSessionIdentifier
@@ -58,12 +57,13 @@ export default function (io, db, socket) {
         socket.join(caseId);
 
         // Add the Chat to the list of Active Chats
-        const staff = await searchForAvailStaff(db, staffSessionIdentifier);
+        const staff = await searchForAvailStaff(db, socket.user.id);
         const newChat = {
             caseId: caseId,
             customer: customer,
             staff: staff,
         }
+
         await startActiveChat(db, newChat);
 
         // Remove the Customer from the Waiting List

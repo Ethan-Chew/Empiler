@@ -8,10 +8,13 @@ export default function (io, db, socket) {
         message: "message",
         timestamp: "unix timestamp in miliseconds",
         sender: "sender (customer/staff)",
-        sessionIdentifier: "customerSessionIdentifier / staffSessionIdentifier"
+        sessionIdentifier: "customerSessionIdentifier / staffID"
     }
     */
     socket.on("utils:send-msg", async (msg) => {
+        if (msg.sender === "staff") {
+            msg["sessionIdentifier"] = socket.user.id;
+        }
         await saveMessages(db, msg);
         io.to(msg.case).emit("utils:receive-msg", msg);
     });
@@ -28,8 +31,8 @@ export default function (io, db, socket) {
                 }
             }
         } else if (role === "staff") {
-            const staffChatIds = await getChatIdsForStaff(db, sessionIdentifier);
-            addSocketIdToAvailStaff(db, sessionIdentifier, socket.id);
+            const staffChatIds = await getChatIdsForStaff(db, socket.user.id);
+            addSocketIdToAvailStaff(db, socket.user.id, socket.id);
             for (const chat of staffChatIds) {
                 // Rejoin all chats
                 io.sockets.sockets.get(socket.id).join(chat.caseID);
@@ -39,7 +42,7 @@ export default function (io, db, socket) {
 
     socket.on("utils:verify-waitinglist", async (customerSessionIdentifier, callback) => {
         const searchCustomer = await searchForWaitingCustomer(db, customerSessionIdentifier);
-
+        console.log(customerSessionIdentifier, searchCustomer)
         if (searchCustomer) {
             callback(true);
         } else {
