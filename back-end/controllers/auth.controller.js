@@ -1,16 +1,18 @@
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
-const User = require('../models/user');
-require("dotenv").config();
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+import User from '../models/user.js';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const authLoginUser = async (req, res) => {
     try {
         const { username, password } = req.body;
 
-        if (!email || !password) {
+        if (!username || !password) {
             return res.status(400).json({
                 status: 'Error',
-                message: "Email and Password are required in the request body.",
+                message: "Username and Password are required in the request body.",
             });
         }
 
@@ -20,7 +22,7 @@ const authLoginUser = async (req, res) => {
         if (!user) {
             return res.status(404).json({
                 status: 'Error',
-                message: `User with username ${username} not found.`
+                message: `User with username "${username}" not found.`
             });
         }
 
@@ -42,9 +44,10 @@ const authLoginUser = async (req, res) => {
             },
             process.env.JWT_SECRET,
             {
-                expiresIn: process.env.JWT_EXPIRY
+                expiresIn: process.env.JWT_EXPIRY * 1000
             }
         );
+
         res.cookie("jwt", token, {
             httpOnly: true,
             maxAge: process.env.JWT_EXPIRY * 1000
@@ -66,15 +69,43 @@ const authLoginUser = async (req, res) => {
     }
 }
 
-const authRegisterUser = async (req, res) => {
+const authVerifyToken = async (req, res) => {
     try {
+        const token = req.cookies.jwt;
 
+        if (!token) {
+            return res.status(401).json({
+                status: 'Error',
+                message: "No Token Provided"
+            });
+        }
+
+        jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+            if (err) {
+                return res.status(403).json({
+                    status: 'Error',
+                    message: "Invalid Token"
+                });
+            }
+
+            res.status(200).json({
+                status: 'Success',
+                message: "Token Verified",
+                accountId: decoded.id,
+                role: decoded.role
+            });
+        });
     } catch (err) {
-
+        console.error(err);
+        res.status(500).json({
+            status: "Error",
+            message: "Internal Server Error",
+            error: err
+        });
     }
 }
 
-module.exports = {
+export default {
     authLoginUser,
-    authRegisterUser
+    authVerifyToken
 }

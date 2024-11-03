@@ -1,4 +1,4 @@
-const supabase = require('../db/supabase');
+import supabase from "../utils/supabase.js";
 
 export default class User {
     constructor(id, username, password, email, role) {
@@ -11,15 +11,14 @@ export default class User {
 
     static async getUserWithUsername(username) {
         const queryRequest = await supabase
-            .from('users')
+            .from('user')
             .select('*')
             .eq('username', username);
 
-        if (queryRequest.status !== 200) {
-            console.log(queryRequest.error);
+        if (queryRequest.error || queryRequest.data.length === 0) {
             return null;
         }
-
-        return queryRequest.data;
+    
+        return queryRequest.data[0]; 
     }
 }

@@ -2,94 +2,75 @@ import express from 'express';
 import morgan from 'morgan'
 import bodyParser from "body-parser";
 import dotenv from "dotenv";
-
-import supabase from './supabase.js';
+import cookieParser from 'cookie-parser';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
+import supabase from './utils/supabase.js';
+import cors from 'cors';
+import { initialiseDB } from './utils/sqliteDB.js';
 
 // Routes
 import user from './routes/user.route.js';
 import chatHistory from './routes/chatHistory.route.js';
 import faq from './routes/faq.route.js';
+import auth from './routes/auth.route.js';
+import staffHandler from './chatHandlers/staffHandler.js';
+import customerHandler from './chatHandlers/customerHandler.js';
+import authoriseSocket from './middleware/authoriseSocket.js';
+import utilsHandler from './chatHandlers/utilsHandler.js';
 
 dotenv.config();
 
 const app = express();
 
-// using morgan for logs
 app.use(morgan('combined'));
+app.use(cookieParser());
+app.use(cors({
+    origin: 'http://localhost:3000',
+    credentials: true,
+}));
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 
+// Initialize Local Database
+const db = await initialiseDB();
 
 // API Routes
 app.use("/api/user", user);
 app.use("/api/chatHistory", chatHistory);
 app.use("/api/faq", faq);
+app.use("/api/auth", auth);
 
-//Default routes
-app.get('/', (req, res) => {
-    res.send("Hello I am working my friend Supabase <3");
+// Handle Socket.IO Connection
+const server = createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: 'http://localhost:3000',
+        credentials: true,
+    },
+    debug: true,
+    connectionStateRecovery: {
+        skipMiddlewares: false,
+    }
 });
 
-app.listen(8080, () => {
+//Default routes
+// app.get('/', (req, res) => {
+//     res.send("Hello I am working my friend Supabase <3");
+// });
+
+server.listen(8080, () => {
     console.log(`> Ready on http://localhost:8080`);
 });
 
+authoriseSocket(io);
+io.on("connection", (socket) => {
+    console.log(`Socket ${socket.id} connected from origin: ${socket.handshake.headers.origin}`);
 
-//Chat History Routes (id, customerid, staffid, chatLog)
-app.get('/chatHistory', async (req,res) => {
-    try {
-        // Fetch all chat history entries
-        const { data, error } = await supabase
-            .from('chatHistory')
-            .select('*'); // Select all fields
-
-        if (error) {
-            return res.status(500).json({ message: error.message });
-        }
-
-        res.status(200).json(data);
-    } catch (error) {
-        // Handle any unexpected errors
-        res.status(500).json({ message: "An unexpected error occurred" });
-    }
-});
-
-
-//FAQ Questions Routes (title, description, section)
-app.get('/questions', async (req,res) => {
-    try {
-        // Fetch all FAQ questions
-        const { data, error } = await supabase
-            .from('questions')
-            .select('*'); // Select all fields
-
-        if (error) {
-            return res.status(500).json({ message: error.message });
-        }
-
-        res.status(200).json(data);
-    } catch (error) {
-        // Handle any unexpected errors
-        res.status(500).json({ message: "An unexpected error occurred" });
-    }
-});
-
-//FAQ Section Routes (title, description)
-app.get('/sections', async (req,res) => {
-    try {
-        // Fetch all FAQ sections
-        const { data, error } = await supabase
-            .from('sections')
-            .select('*'); // Select all fields
-
-        if (error) {
-            return res.status(500).json({ message: error.message });
-        }
-
-        res.status(200).json(data);
-    } catch (error) {
-        // Handle any unexpected errors
-        res.status(500).json({ message: "An unexpected error occurred" });
+    utilsHandler(io, db, socket);
+    customerHandler(io, db, socket);
+    if (socket.user && socket.user.role === "staff") {
+        staffHandler(io, db, socket);
     }
 });

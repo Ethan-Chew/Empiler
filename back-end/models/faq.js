@@ -1,4 +1,4 @@
-import supabase from "../supabase.js";
+import supabase from "../utils/supabase.js";
 
 export default class faq {
     constructor(title, description, section) {
