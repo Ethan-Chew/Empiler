@@ -2,176 +2,42 @@ import React, { useState } from 'react';
 import Footer from '../components/Footer';
 import NavigationBar from "../components/Navbar";
 
-
 function FaqIndivPage() {
-    const [hoveredButton, setHoveredButton] = useState(null);
-
-    const styles = {
-        container: {
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            overflowX: 'hidden',
-            fontFamily: 'Inter, sans-serif',
-        },
-        header: {
-            width: '100%', 
-            backgroundColor: '#677A84', 
-            height: '15vh', 
-        },
-        titleContainer: {
-            width: '100%', 
-            backgroundColor: '#d9d9d9', 
-            padding: '40px 20px',
-            textAlign: 'left',
-        },
-        titleText: {
-            fontSize: '4vh', 
-            fontWeight: 600,
-            color: '#000000',
-            marginBottom: '10px',
-        },
-        contentContainer: {
-            width: '100%',
-            maxWidth: '800px',
-            padding: '20px',
-            textAlign: 'left',
-        },
-        roundedBox: {
-            backgroundColor: '#ffffff',
-            borderRadius: '30px',
-            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-            padding: '20px',
-            margin: '20px 0',
-            width: '100%', 
-        },
-        loremText: {
-            color: '#060313',
-            fontSize: '1rem',
-            marginBottom: '10px',
-        },
-        helpfulText: {
-            color: '#060313',
-            fontSize: '1rem',
-            marginTop: '50px',
-            marginBottom: '10px',
-        },
-        button: {
-            backgroundColor: '#ffffff',
-            border: '3px solid #DA291C',
-            color: '#DA291C',
-            borderRadius: '5px',
-            padding: '10px 20px',
-            cursor: 'pointer',
-            margin: '0 5px',
-            textAlign: 'center',
-            fontWeight: 500,
-            transition: 'all 0.3s ease', 
-            transform: hoveredButton === 'action' ? 'scale(1.05)' : 'scale(1)', 
-        },
-        actionContainer: {
-            display: 'flex',
-            justifyContent: 'flex-end',
-        },
-        contactText: {
-            fontSize: '1.25rem',
-            fontWeight: 500,
-            color: '#677A84',
-            marginTop: '20px',
-            textAlign: 'center',
-        },
-        buttonContainer: {
-            display: 'flex',
-            justifyContent: 'space-between',
-            width: '100%',
-            marginTop: '20px',
-        },
-        buttonBox: {
-            backgroundColor: '#ffffff',
-            borderRadius: '20px',
-            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-            padding: '20px',
-            width: '48%', 
-            textAlign: 'center',
-            transition: 'all 0.3s ease', 
-            transform: hoveredButton === 'button1' ? 'scale(1.05)' : 'scale(1)', 
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center', 
-            marginBottom: '50px',
-        },
-        buttonBox2: {
-            backgroundColor: '#ffffff',
-            borderRadius: '20px',
-            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-            padding: '20px',
-            width: '48%', 
-            textAlign: 'center',
-            transition: 'all 0.3s ease', 
-            transform: hoveredButton === 'button2' ? 'scale(1.05)' : 'scale(1)',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center', 
-            marginBottom: '50px',
-        },
-        svg: {
-            width: '10%', 
-            height: 'auto',
-            marginBottom: '10px',
-        },
-        buttonText: {
-            fontWeight: 500,
-        },
-        subText: {
-            fontSize: '0.9rem',
-            color: '#666666',
-        },
-    };
-
     return (
-        <><NavigationBar />
-        <div style={styles.container} className='bg-gray-100'>
-            
-            <div style={styles.titleContainer}>
-                <h1 style={styles.titleText}>Title Text (of article clicked)</h1>
-            </div>
+        <>
+            <NavigationBar />
+            <div className='bg-gray-100'>
 
-            <div style={styles.roundedBox}>
-                <p style={styles.loremText}>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus lacinia odio vitae vestibulum.
-                    Nullam congue, nunc et cursus lacinia, justo arcu cursus nisl, et fringilla nisl erat sed ante.
-                    Sed tempor, dolor et suscipit sagittis, magna arcu ultricies lacus, ut consectetur magna ante sit amet arcu.
-                    Suspendisse potenti. Sed sit amet ex non nisi consequat varius. Curabitur imperdiet libero at aliquet aliquam.
-                    Vestibulum viverra urna ac facilisis condimentum.
-                </p>
-                <p style={styles.loremText}>
-                    Phasellus vehicula leo quis felis fermentum, ac venenatis ex pharetra.
-                    Praesent et nisi a orci blandit ullamcorper et nec odio.
-                    Nunc euismod libero vitae quam egestas, vel vulputate elit ultricies.
-                    Aenean luctus dolor ut velit consectetur, et dictum felis fermentum.
-                    Nulla facilisi. Sed euismod ac erat vel interdum.
-                </p>
-                <p style={styles.helpfulText}>Was this information helpful?</p>
-                <div style={styles.actionContainer}>
-                    <button
-                        style={styles.button}
-                        onMouseEnter={() => setHoveredButton('action')}
-                        onMouseLeave={() => setHoveredButton(null)}
-                    >
-                        No
-                    </button>
-                    <button
-                        style={styles.button}
-                        onMouseEnter={() => setHoveredButton('action')}
-                        onMouseLeave={() => setHoveredButton(null)}
-                    >
-                        Yes
-                    </button>
+                <div className="bg-red-100 p-8">
+                    <div className="mb-8">
+                        <h1 className="text-4xl font-bold">Title Text (of article clicked)</h1>
+                        <p className="text-gray-500">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                    </div>
                 </div>
+
+                <div className="bg-white w-11/12 mx-auto m-10 p-6 rounded-lg shadow-lg">
+                    <div className="text-gray-700 mb-4">
+                        <p>
+                            Lorem ipsum dolor sit amet consectetur adipisicing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                            Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                            Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+                        </p>
+                    </div>
+
+                    <div className="border-gray-300 border-t-3 pt-4 flex text-left space-x-4 ">
+                        <p className="text-gray-700 pt-3">Was this information useful?</p>
+                        <button className="bg-white text-red-500 border border-red-500 px-4 py-2 rounded-lg hover:bg-red-500 hover:text-white w-20">
+                            Yes
+                        </button>
+                        <button className="bg-white text-red-500 border border-red-500 px-4 py-2 rounded-lg hover:bg-red-500 hover:text-white w-20">
+                            No
+                        </button>
+                    </div>
+                </div>
+
+                <Footer />
             </div>
-
-
-        </div><Footer /></>
+        </>
     );
 }
 
