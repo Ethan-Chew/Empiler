@@ -5,10 +5,14 @@ import NavigationBar from "../components/Navbar";
 export default function Login() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const [errorMessage, setErrorMessage] = useState("");
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {
         e.preventDefault();
+
+        // Reset error message on each login attempt
+        setErrorMessage("");
 
         try {
             const response = await fetch('http://localhost:8080/api/auth/login', {
@@ -40,10 +44,12 @@ export default function Login() {
                     navigate("/login");
                 }
             } else {
-                console.error("Login failed:", data.message);
+                // Display error message if login fails
+                setErrorMessage(data.message || "Login failed. Please try again.");
             }
         } catch (error) {
             console.error("Error logging in:", error);
+            setErrorMessage("An unexpected error occurred. Please try again.");
         }
     };
 
@@ -77,7 +83,15 @@ export default function Login() {
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
                             />
+                            <div className="relative h-4">
+                                {errorMessage && (
+                                    <span className="absolute text-red-500 text-sm">
+                                        {errorMessage}
+                                    </span>
+                                )}
+                            </div>
                         </div>
+
 
                         <div className="py-7 flex flex-col items-center">
                             <button type="submit" className="bg-ocbcred hover:bg-ocbcdarkred py-2 w-full text-white text-lg font-semibold rounded-xl">
