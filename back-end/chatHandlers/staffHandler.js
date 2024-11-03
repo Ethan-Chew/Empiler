@@ -63,6 +63,7 @@ export default function (io, db, socket) {
             customer: customer,
             staff: staff,
         }
+
         await startActiveChat(db, newChat);
 
         // Remove the Customer from the Waiting List

@@ -42,7 +42,7 @@ export default function (io, db, socket) {
 
     socket.on("utils:verify-waitinglist", async (customerSessionIdentifier, callback) => {
         const searchCustomer = await searchForWaitingCustomer(db, customerSessionIdentifier);
-
+        console.log(customerSessionIdentifier, searchCustomer)
         if (searchCustomer) {
             callback(true);
         } else {

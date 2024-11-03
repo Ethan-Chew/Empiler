@@ -73,9 +73,7 @@ export default function StaffChats() {
         setSentMessage("");
     }
 
-    const handleEndChat = () => {
-        // TODO: Proper Implementation
-        
+    const handleEndChat = () => {        
         // Remove from backend
         socket.emit("utils:end-chat", selectedChatId);
 

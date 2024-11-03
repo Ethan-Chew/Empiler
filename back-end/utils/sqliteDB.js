@@ -43,7 +43,7 @@ export const initialiseDB = async () => {
             message TEXT,
             sender TEXT,
             PRIMARY KEY (caseID, timestamp, sender)
-        )
+        );
     `);
 
     return db;
@@ -80,7 +80,6 @@ export const searchForWaitingCustomer = async (db, customerSessionIdentifier) =>
 
 export const addAvailStaff = async (db, staffData) => {
     const staffProfile = await searchForAvailStaff(db, staffData.staffID);
-
     if (staffProfile) {
         const socketIDs = staffProfile.socketIDs;
         socketIDs.push(staffProfile.socketIDs[0]);

@@ -47,6 +47,7 @@ const authLoginUser = async (req, res) => {
                 expiresIn: process.env.JWT_EXPIRY * 1000
             }
         );
+
         res.cookie("jwt", token, {
             httpOnly: true,
             maxAge: process.env.JWT_EXPIRY * 1000
