@@ -4,7 +4,22 @@ import Footer from "./components/Footer";
 import NavigationBar from "./components/Navbar";
 import FaqIndivPage from "./pages/FaqIndivPage";
 
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+// ALL CODE IN THIS FILE IS OVERWRITABLE, FOR DEBUG USE ONLY. TO BE REPLACED.
 export default function App() {
+  const navigate = useNavigate();
+  const [faqSection, setFaqSection] = useState('');
+  const [faqQuestion, setFaqQuestion] = useState('');
+
+  const initChat = () => {
+    sessionStorage.setItem('faqSection', faqSection);
+    sessionStorage.setItem('faqQuestion', faqQuestion);
+
+    navigate('/awaitchat');
+  }
+
   return (
     <main className="bg-gray-100">
       <NavigationBar />
@@ -24,7 +39,6 @@ export default function App() {
       </section>
 
       <Footer />
-      
     </main>
   );
 }

@@ -6,7 +6,8 @@ module.exports = {
       colors: {
         "ocbcred": "#da291c",
         "ocbcdarkred": "#b31f14",
-        "custom-blue-gray": '#677A84'
+        "custom-blue-gray": '#677A84',
+        "chatred": "#FB606A"
       }
     },
     borderWidth: {
