@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 // ALL CODE IN THIS FILE IS OVERWRITABLE, FOR DEBUG USE ONLY. TO BE REPLACED.
 export default function App() {
   const navigate = useNavigate();
+  const [faqs, setFaqs] = useState([]);
   const [faqSection, setFaqSection] = useState('');
   const [faqQuestion, setFaqQuestion] = useState('');
 
@@ -19,6 +20,21 @@ export default function App() {
 
     navigate('/awaitchat');
   }
+
+  useEffect(() => {
+    const fetchFaqs = async () => {
+      try {
+        const response = await fetch('/api/section/');
+        const data = await response.json();
+        console.log(data);
+        setFaqs(data.sections);
+      } catch (error) {
+        console.error('Error fetching FAQs:', error);
+      }
+    };
+
+    fetchFaqs();
+  }, []);
 
   return (
     <main className="bg-gray-100">
@@ -31,11 +47,13 @@ export default function App() {
 
       {/* Main Content */}
       <section className="p-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10">
-        <a href="/faq">
-          <div className="group rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200">
-            <SectionContainer title="Some Title" description="this is a description" />
-          </div>
-        </a>
+        {faqs.map(faq => (
+          <a key={faq.id} href={`/faq/${faq.id}`}>
+            <div className="group rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200">
+              <SectionContainer title={faq.title} description={faq.description} />
+            </div>
+          </a>
+        ))}
       </section>
 
       <Footer />
