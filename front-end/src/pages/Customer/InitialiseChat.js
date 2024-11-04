@@ -29,7 +29,6 @@ export default function InitialiseChat() {
         // Check if the Customer already exists on the waiting list.
         socket.emit('utils:verify-waitinglist', customerSessionIdentifier, (result) => {
             if (!result) { // If the Customer is not on the Waiting List, request for a new connection
-                console.log(result)
                 socket.emit('customer:join', customerSessionIdentifier, sessionStorage.getItem('faqSection'), sessionStorage.getItem('faqQuestion'));
             } else {
                 // Check if the Customer is already in an active chat. If yes, redirect to the chat page; else, do nothing.
@@ -56,7 +55,6 @@ export default function InitialiseChat() {
             // TODO: Handle nothing saved
         }
 
-        console.log(socket)
         socket.on('connect', handleConnection);
         socket.on('disconnect', handleDisconnection);
 
@@ -66,7 +64,7 @@ export default function InitialiseChat() {
         })
 
         socket.on('utils:joined-chat', (caseId) => {
-            navigate(`/chat?caseID=${caseId}`);
+             navigate(`/chat?caseID=${caseId}`);
         })
 
         return () => {

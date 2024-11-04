@@ -93,7 +93,7 @@ export default function AwaitChatContainer({ joinChat, hideAwaitCustomerList, wa
 
             <div id="customer-list" className="mb-3 w-full overflow-y-scroll">
                 {Object.keys(waitingCustomers).length === 0 && (
-                    <div>
+                    <div className="p-4 text-xl font-semibold">
                         <p>There are no waiting customers.</p>
                     </div>
                 )}

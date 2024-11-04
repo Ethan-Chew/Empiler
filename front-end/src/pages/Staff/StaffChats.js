@@ -1,6 +1,6 @@
 import { socket } from "../../utils/chatSocket"
 import { useState, useEffect } from "react";
-import * as CryptoJS from 'crypto-js';
+import { formatTimestamp } from "../../utils/formatTimestamp";
 
 // Components
 import { FaArrowCircleUp } from "react-icons/fa";
@@ -18,6 +18,7 @@ export default function StaffChats() {
     const [connectedChats, setConnectedChats] = useState([]);
     const [selectedChatId, setSelectedChatId] = useState(null);
     const [sentMessage, setSentMessage] = useState("");
+    // const [disconnectedChats, setDisconnectedChats] = useState([]);
 
     // Setter Functions
     const joinChat = async (customerSessionIdentifier) => {    
@@ -38,8 +39,7 @@ export default function StaffChats() {
             };
     
             setConnectedChats((prev) => [...prev, formattedChat]);
-            saveConnectedChats(connectedChats);
-    
+
             if (selectedChatId === null) {
                 setSelectedChatId(formattedChat.caseId);
             }
@@ -51,11 +51,6 @@ export default function StaffChats() {
             return false;
         }
     };
-    
-
-    const saveConnectedChats = (connectedChats) => {
-        sessionStorage.setItem('connectedChats', JSON.stringify(connectedChats));
-    }
 
     const showAwaitCustomerList = () => {
         socket.emit("staff:avail-chats");
@@ -83,34 +78,21 @@ export default function StaffChats() {
         // Remove the chat from session storage / state
         setConnectedChats((prevChats) => {
             const updatedChats = prevChats.filter((chat) => chat.caseId !== selectedChatId);
-            saveConnectedChats(updatedChats);
             return updatedChats;
         });
     }
 
-    useEffect(() => {        
+    useEffect(() => {  
         const handleConnection = () => {
             setIsConnected(true);
-            socket.emit('staff:avail');    
-            
-            // Check for Past Data, if exists, load
-            if (sessionStorage.getItem('connectedChats')) {
-                const pastConnectedChats = JSON.parse(sessionStorage.getItem('connectedChats'));
-                if (pastConnectedChats) setConnectedChats(pastConnectedChats);
-                socket.emit("utils:add-socket", "staff");
-            }
+            socket.emit('staff:avail'); 
         }
         
         const handleDisconnection = () => {
             setIsConnected(false);
         }
 
-        socket.on("connect", handleConnection);
-        socket.on("disconnect", handleDisconnection);
-        socket.on("staff:avail-chats", (waitingCustomers) => {
-            setWaitingCustomers(waitingCustomers);
-        })
-        socket.on("utils:receive-msg", (msg) => {
+        const handleReceiveMessage = (msg) => {
             setConnectedChats((prevChats) => {
                 const updatedChats = prevChats.map((chat) => {
                     if (chat.caseId === msg.case) {
@@ -122,27 +104,50 @@ export default function StaffChats() {
                     return chat;
                 });
                 
-                saveConnectedChats(updatedChats);
                 return updatedChats; 
             });
-        });  
-        socket.on("utils:ended-chat", (caseId) => {
-            setConnectedChats((prevChats) => {
-                const updatedChats = prevChats.filter((chat) => chat.caseId !== caseId);
-                saveConnectedChats(updatedChats);
-                return updatedChats;
-            });
+        }
 
+        const handleSetWaitingCustomers = (waitingCustomers) => {
+            setWaitingCustomers(waitingCustomers);
+        }
+
+        const handleChatEnded = (caseId) => {
             if (selectedChatId === caseId) {
                 setSelectedChatId(null);
             }
-        });   
+
+            setConnectedChats((prevChats) => prevChats.filter((chat) => chat.caseId !== caseId));
+        }
+
+        const handleReconnectAddChats = (chats) => {
+            setConnectedChats(chats);
+            console.log(chats)
+            socket.emit("utils:add-socket", "staff");
+        }
+
+        // Handle Event Listeners
+        socket.on("connect", handleConnection);
+        socket.on("disconnect", handleDisconnection);
+        socket.on("staff:avail-chats", handleSetWaitingCustomers)
+        socket.on("utils:receive-msg", handleReceiveMessage);
+        socket.on("utils:chat-ended", handleChatEnded);
+        socket.on("staff:active-chats", handleReconnectAddChats);
         
         return () => {
+            // Clear Event Listeners on Deconstructor
             socket.off("connect", handleConnection);
             socket.off("disconnect", handleDisconnection);
+            socket.off("utils:receive-msg", handleReceiveMessage);
+            socket.off("utils:chat-ended", handleChatEnded);
+            socket.off("staff:active-chats", handleReconnectAddChats);
         }
-    }, [])
+    }, []);
+
+    useEffect(() => {
+        // Retrieve Active Chats, if exists, load it
+        socket.emit("staff:active-chats");
+    }, [isConnected])
 
     return (
         <div className="h-screen flex flex-col">
@@ -188,7 +193,7 @@ export default function StaffChats() {
                         )))}
                     </div>
 
-                    <div id="chat" className={`w-full flex-grow flex flex-col ${selectedChatId == null ? "hidden" : ""}`}>
+                    <div id="chat" className={`w-full flex-grow flex flex-col ${selectedChatId === null ? "hidden" : ""}`}>
                         <div id="chat-container" className="flex-grow p-10">
                             {selectedChatId && 
                             connectedChats
@@ -228,6 +233,10 @@ export default function StaffChats() {
                 </div>
             </div>
 
+            {/* <div className="fixed bottom-10 left-10 px-3 py-2 bg-ocbcred text-white">
+                <a>HELLO</a>
+            </div> */}
+
             {displayAwaitCustomerList && (
                 <div
                     className="fixed top-0 left-0 h-screen w-screen bg-neutral-900/20 backdrop-blur-sm flex items-center justify-center duration-200 z-10"
@@ -253,8 +262,9 @@ function ChatListItem({ chat, selectedChatId, setSelectedChatId }) {
             timestamp: "",
             isSender: false,
         }
+
         return {
-            text: messages[messages.length - 1].text,
+            message: messages[messages.length - 1].message,
             timestamp: messages[messages.length - 1].timestamp,
             isSender: messages[messages.length - 1].sender === "staff",
         }
@@ -266,9 +276,9 @@ function ChatListItem({ chat, selectedChatId, setSelectedChatId }) {
         <div className={`border-y-2 border-neutral-600 px-5 py-2 flex flex-row gap-5 max-w-full hover:bg-neutral-200 ${(selectedChatId === chat.caseId && (selectedChatId !== undefined && selectedChatId !== null)) && "bg-chatred/20"}`} onClick={handleOnClick}>
             <div className="min-w-0">
                 <p className="truncate font-semibold">{ chat.customer.faqQuestion }</p>
-                <p className="truncate">{ getLastSentText(chat.messages).text }</p>
+                <p className="truncate">{ getLastSentText(chat.messages).message }</p>
             </div>
-            <a className="flex-shrink-0">{ getLastSentText(chat.messages).timestamp }</a>
+            <a className="flex-shrink-0">{ formatTimestamp(getLastSentText(chat.messages).timestamp) }</a>
         </div>
     )
 }

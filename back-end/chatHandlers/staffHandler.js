@@ -1,4 +1,4 @@
-import { endActiveChat, retrieveWaitingCustomers, addAvailStaff, searchForWaitingCustomer, searchForAvailStaff, removeWaitingCustomer, startActiveChat } from "../utils/sqliteDB.js";
+import { endActiveChat, retrieveWaitingCustomers, addAvailStaff, searchForWaitingCustomer, searchForAvailStaff, removeWaitingCustomer, startActiveChat, getActiveChatsForStaff } from "../utils/sqliteDB.js";
 import crypto from "crypto";
 
 export async function notifyForWaitingCustomers(db, io) {
@@ -27,7 +27,6 @@ export default function (io, db, socket) {
             staffID: socket.user.id,
             socketIDs: [socket.id],
         };
-
         socket.join(staffData.staffID);
         await addAvailStaff(db, staffData);
         await notifyForWaitingCustomers(db, io);
@@ -63,7 +62,6 @@ export default function (io, db, socket) {
             customer: customer,
             staff: staff,
         }
-
         await startActiveChat(db, newChat);
 
         // Remove the Customer from the Waiting List
@@ -80,4 +78,11 @@ export default function (io, db, socket) {
             }
         });
     });
+
+    socket.on("staff:active-chats", async () => {
+        const activeChats = await getActiveChatsForStaff(db, socket.user.id);
+        if (activeChats && activeChats.length !== 0) {
+            io.to(socket.id).emit(activeChats);
+        }
+    })
 }

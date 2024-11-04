@@ -11,7 +11,7 @@ export default function App() {
     sessionStorage.setItem('faqSection', faqSection);
     sessionStorage.setItem('faqQuestion', faqQuestion);
 
-    navigate('/awaitchat');
+    window.open('/awaitchat', "_self");
   }
 
   return (

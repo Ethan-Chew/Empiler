@@ -81,7 +81,7 @@ export const searchForWaitingCustomer = async (db, customerSessionIdentifier) =>
 export const addAvailStaff = async (db, staffData) => {
     const staffProfile = await searchForAvailStaff(db, staffData.staffID);
     if (staffProfile) {
-        const socketIDs = staffProfile.socketIDs;
+        const socketIDs = staffData.socketIDs;
         socketIDs.push(staffProfile.socketIDs[0]);
         await db.run('UPDATE availStaff SET socketIDs = ? WHERE staffID = ?', JSON.stringify(socketIDs), staffData.staffID);
     } else {
@@ -113,17 +113,38 @@ export const startActiveChat = async (db, activeChat) => {
 
 export const endActiveChat = async (db, caseID) => {
     // Save the Chat to the Chat History DB (Supabase)
-    const chat = await db.run('SELECT * FROM activeChats WHERE caseID = ?', caseID);
+    const chat = await db.get('SELECT * FROM activeChats WHERE caseID = ?', caseID);
     const chatMessages = await retrieveChatMessages(db, caseID);
     const formattedChatMessages = chatMessages.map(msg => ({
         timestamp: msg.timestamp,
         message: msg.message,
         sender: msg.sender
     }));
-    await chatHistory.createChatHistory(chat.userID, chat.staffID, formattedChatMessages);
+
+    // DEV: Commented to prevent spam to Databse when testing.
+    // try {
+    //     await chatHistory.createChatHistory(chat.userID, chat.staffID, formattedChatMessages);
+    // } catch (err) {
+    //     console.error(err);
+    // }
 
     await db.run('DELETE FROM activeChats WHERE caseID = ?', caseID);
     await db.run('DELETE FROM chatHistory WHERE caseID = ?', caseID);
+};
+
+export const getActiveChatsForStaff = async (db, staffID) => {
+    const chats = await db.all('SELECT * FROM activeChats WHERE staffID = ?', staffID);
+    
+    const formattedChats = await Promise.all(chats.map(async (chat) => {
+        const chatMessages = await retrieveChatMessages(db, chat.caseID);
+
+        return {
+            ...chat,
+            messages: chatMessages
+        };
+    }));
+
+    return formattedChats;
 };
 
 export const appendCustSIDToActiveChat = async (db, caseID, socketID) => {

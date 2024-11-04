@@ -46,7 +46,7 @@ export default function CustomerChat() {
 
             if (inactivityTimer >= disconnectLimit) {
                 setUserDisconnect(true);
-                socket.emit("utils:disconnect", sessionStorage.getItem("customerSessionIdentifier"));
+                socket.emit("utils:end-chat", caseID);
             }
         }, 60000);
 
@@ -111,7 +111,10 @@ export default function CustomerChat() {
         socket.on("utils:chat-ended", handleChatClosure);
 
         return () => {
+            socket.off("connect", handleConnection);
             socket.off("disconnect", handleDisconnection);
+            socket.off("utils:receive-msg", handleReceiveMessage);
+            socket.off("utils:chat-ended", handleChatClosure);
         }
     }, []);
 

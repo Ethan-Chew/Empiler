@@ -4,6 +4,8 @@
     timestamp: string - timestamp of the message
 */
 
+import { formatTimestamp } from "../../utils/formatTimestamp";
+
 export default function MessageContainer({ isSender, messages, timestamp }) {
     return (
         <div className={`${isSender && "ml-auto"} flex flex-col max-w-sm md:max-w-xl`}>
@@ -14,7 +16,7 @@ export default function MessageContainer({ isSender, messages, timestamp }) {
                     </div>
                 ))}
             </div>
-            <p className={`${isSender ? "ml-auto text-chatred" : "text-gray-500"}`}>{ timestamp }</p>
+            <p className={`${isSender ? "ml-auto text-chatred" : "text-gray-500"}`}>{ formatTimestamp(timestamp) }</p>
         </div>
     );
 }
