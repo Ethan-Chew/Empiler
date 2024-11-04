@@ -14,6 +14,10 @@ import FaqIndivPage from './pages/FaqIndivPage';
 import AppointmentBooking from './pages/AppointmentBooking';
 import DetailedAppointmentBooking from './pages/DetailedAppointmentBooking';
 import StaffLandingPage from './pages/StaffLandingPage';
+import ViewBranchAppointments from './pages/ViewBranchAppointments';
+import ViewDetailedAppointments from './pages/ViewDetailedAppointments';
+import ViewOutstandingChatCustomers from './pages/ViewOutstandingChatCustomers';
+import AdminSupportLog from './pages/AdminSupportLog';
 
 // Staff Routes
 import StaffHome from './pages/Staff/StaffHome';
@@ -33,6 +37,11 @@ root.render(
       <Route path="/login" element={<Login />} />
       <Route path="/awaitchat" element={<InitisaliseChat />} />
       <Route path="/chat" element={<CustomerChat />} />
+      <Route path="/view-branch-appointments" element={<ViewBranchAppointments />} />
+      <Route path="/view-detailed-appointments" element={<ViewDetailedAppointments />} />
+      <Route path="/view-outstanding-chat-customers" element={<ViewOutstandingChatCustomers />} />
+      <Route path="/admin-support-log" element={<AdminSupportLog />} />
+
 
       <Route path="*" element={<h1>404 Not Found</h1>} />
 
