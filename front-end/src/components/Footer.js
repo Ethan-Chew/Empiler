@@ -1,3 +1,6 @@
+import { PiChats } from "react-icons/pi";
+import { BsCalendarCheck } from "react-icons/bs";
+
 export default function Footer() {
     return (
       <><hr className="border-gray-300 border-t-3 w-11/12 mx-auto" />
@@ -7,7 +10,7 @@ export default function Footer() {
             <a href="">
               <div className="w-64 h-48 flex flex-col items-center p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200">
                   <div className="w-20 h-20 mb-3 flex items-center justify-center rounded-full bg-gray-100">
-                      <img src="/startLiveChat.svg" alt="Appointment" className="w-10 h-10" />
+                      <PiChats className="text-4xl" />
                   </div>
                   <h3 className="text-md font-semibold">Start a Live Chat</h3>
                   <p className="text-gray-500 text-xs mt-1">Waiting Time: 2 minutes or less</p>
@@ -16,7 +19,7 @@ export default function Footer() {
           <a href="/appointment-booking">
               <div className="w-64 h-48 flex flex-col items-center p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200">
                   <div className="w-20 h-20 mb-3 flex items-center justify-center rounded-full bg-gray-100">
-                      <img src="/scheduleAppointment.svg" alt="Appointment" className="w-10 h-10" />
+                    <BsCalendarCheck className="text-4xl" />
                   </div>
                   <h3 className="text-md font-semibold">Schedule an Appointment</h3>
                   <p className="text-gray-500 text-xs mt-1">for any further enquiries</p>
