@@ -1,7 +1,20 @@
 import NavigationBar from "../components/Navbar";
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
+import { useEffect, useState } from "react";
 
+// Required for Leaflet Map to work as intended
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
 
+const markerIcon = L.icon({ iconUrl: "/marker-icon.png" });
 function AppointmentBooking() {
+    const [branches, setBranches] = useState([]);
+    const [index, setIndex] = useState(0);
+
+    // User Location
+    const [userLatitude, setUserLatitude] = useState(null);
+    const [userLongitude, setUserLongitude] = useState(null);
+
     const styles = {
         container: {
             display: 'flex',
@@ -111,6 +124,49 @@ function AppointmentBooking() {
         },
     };
 
+    useEffect(() => {
+        const fetchBranches = async (lat, lon) => {
+            try {
+                const response = await fetch(`http://localhost:8080/api/branches?page=${index}`, {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        "lat": lat,
+                        "lon": lon,
+                    })
+                });
+                const data = await response.json();
+                setBranches(data.branches);
+            } catch (error) {
+                console.error(error);
+            }
+        }
+        
+        const locationSuccess = async (position) => {
+            const { latitude, longitude } = position.coords;
+            fetchBranches(latitude, longitude);
+
+            setUserLatitude(latitude);
+            setUserLongitude(longitude);
+        }
+        
+        const locationError = () => {
+            console.log("Unable to retrieve location");
+        }
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(locationSuccess, locationError);
+        } else {
+            console.log("Geolocation not supported");
+        }
+    }, []);
+    
+    useEffect(() => {
+        console.log(userLatitude, userLongitude)
+    }, [])
+
     return (
         <><NavigationBar />
         <div style={styles.container}>
@@ -130,35 +186,47 @@ function AppointmentBooking() {
                     </p>
 
                     {/* Scrollable Branch List */}
-                    <div style={styles.branchListContainer}>
-                        {[...Array(7)].map((_, index) => (
-                            <div
-                                key={index}
-                                style={styles.branchItem}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.transform = styles.branchItemHover.transform;
-                                    e.currentTarget.style.boxShadow = styles.branchItemHover.boxShadow;
-                                } }
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.transform = '';
-                                    e.currentTarget.style.boxShadow = '';
-                                } }
-                            >
-                                <p style={styles.branchName}>OCBC Branch {index + 1}</p>
-                                <p style={styles.branchDetails}>1.1 km | 827 Bukit Timah Road, Singapore 279886</p>
-                                <p style={styles.branchAvailability}>Available today, 3:00 PM</p>
-                            </div>
+                    <div className="overflow-y-scroll max-h-[50vh] flex flex-col gap-3">
+                        {branches.map((branch, index) => (
+                            <BranchItem branch={branch} key={index} />
                         ))}
                     </div>
                 </div>
 
-                {/* Right Column: Placeholder for Location Image */}
+                {/* Right Column: Placeholder for Map */}
                 <div style={styles.rightColumn}>
-                    <div style={styles.locationImagePlaceholder}>Location Image</div>
+                    {userLatitude && userLongitude ? (
+                        <MapContainer center={[userLatitude, userLongitude]} zoom={13} scrollWheelZoom={false} className="w-full h-full">
+                            <TileLayer
+                                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                            />
+                            {branches.map((branch, index) => (
+                                <Marker key={index} position={[branch.latitude, branch.longitude]} icon={markerIcon}>
+                                    <Popup>
+                                        <p>{branch.landmark}</p>
+                                        <p>{branch.address}</p>
+                                    </Popup>
+                                </Marker>
+                            ))}
+                        </MapContainer>
+                    ) : <p>Loading Map...</p>}
                 </div>
             </div>
         </div></>
     );
+}
+
+function BranchItem({ branch }) {
+    return (
+        <div className="px-3 py-2 border-2 border-neutral-500 rounded-xl">
+            <div className="mb-2">
+                <p className="text-lg font-semibold">{ branch.landmark }</p>
+                <p className="text-neutral-500 text-sm">{ branch.address }</p>
+            </div>
+            <p></p>
+        </div>
+    )
 }
 
 export default AppointmentBooking;

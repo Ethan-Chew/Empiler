@@ -42,7 +42,7 @@ app.use("/api/user", user);
 app.use("/api/chatHistory", chatHistory);
 app.use("/api/faq", faq);
 app.use("/api/auth", auth);
-app.get("/api/branches", getOCBCBranches);
+app.post("/api/branches", getOCBCBranches);
 
 // Handle Socket.IO Connection
 const server = createServer(app);
