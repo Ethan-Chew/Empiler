@@ -18,6 +18,7 @@ import staffHandler from './chatHandlers/staffHandler.js';
 import customerHandler from './chatHandlers/customerHandler.js';
 import authoriseSocket from './middleware/authoriseSocket.js';
 import utilsHandler from './chatHandlers/utilsHandler.js';
+import getOCBCBranches from './utils/getOCBCBranches.js';
 
 dotenv.config();
 
@@ -41,6 +42,7 @@ app.use("/api/user", user);
 app.use("/api/chatHistory", chatHistory);
 app.use("/api/faq", faq);
 app.use("/api/auth", auth);
+app.post("/api/branches", getOCBCBranches);
 
 // Handle Socket.IO Connection
 const server = createServer(app);
