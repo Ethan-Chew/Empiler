@@ -29,7 +29,7 @@ export default function App() {
         console.log(data);
         setFaqs(data.sections);
       } catch (error) {
-        console.error('Error fetching FAQs:', error);
+        console.error('Error fetching faq sections:', error);
       }
     };
 
@@ -48,7 +48,7 @@ export default function App() {
       {/* Main Content */}
       <section className="p-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10">
         {faqs.map(faq => (
-          <a key={faq.id} href={`/faq/${faq.id}`}>
+          <a key={faq.id} href={`/faq-article?title=${faq.title}`}>
             <div className="group rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200">
               <SectionContainer title={faq.title} description={faq.description} />
             </div>
