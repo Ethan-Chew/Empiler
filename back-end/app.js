@@ -14,11 +14,15 @@ import user from './routes/user.route.js';
 import chatHistory from './routes/chatHistory.route.js';
 import faq from './routes/faq.route.js';
 import auth from './routes/auth.route.js';
+
+import branches from './controllers/branches.controller.js';
+
+// Socket.IO Event Handlers
 import staffHandler from './chatHandlers/staffHandler.js';
 import customerHandler from './chatHandlers/customerHandler.js';
-import authoriseSocket from './middleware/authoriseSocket.js';
 import utilsHandler from './chatHandlers/utilsHandler.js';
-import getOCBCBranches from './utils/getOCBCBranches.js';
+import authoriseSocket from './middleware/authoriseSocket.js';
+
 
 dotenv.config();
 
@@ -42,7 +46,8 @@ app.use("/api/user", user);
 app.use("/api/chatHistory", chatHistory);
 app.use("/api/faq", faq);
 app.use("/api/auth", auth);
-app.post("/api/branches", getOCBCBranches);
+app.post("/api/branches", branches.getOCBCBranches);
+app.get("/api/branch", branches.getSpecificOCBCBranch);
 
 // Handle Socket.IO Connection
 const server = createServer(app);

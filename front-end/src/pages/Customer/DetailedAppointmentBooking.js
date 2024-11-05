@@ -1,8 +1,21 @@
-import React, { useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
-function DetailedAppointmentBooking() {
+export default function DetailedAppointmentBooking() {
+    const navigate = useNavigate();
+    const location = useLocation();
+
     const [selectedDate, setSelectedDate] = useState(null);
     const [selectedAppointment, setSelectedAppointment] = useState(null);
+    const [branchDetails, setBranchDetails] = useState(null);
+
+    useEffect(() => {
+        if (!location.state.branch) {
+            navigate("/")
+        }
+
+        // TODO: Retrieve branch details from backend
+    }, [])
 
     const handleDateSelect = (date) => {
         setSelectedDate(date);
@@ -90,5 +103,3 @@ function DetailedAppointmentBooking() {
         </div>
     );
 }
-
-export default DetailedAppointmentBooking;

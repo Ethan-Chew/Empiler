@@ -1,6 +1,7 @@
 import NavigationBar from "../../components/Navbar";
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 // Required for Leaflet Map to work as intended
 import "leaflet/dist/leaflet.css";
@@ -105,8 +106,14 @@ export default function AppointmentBooking() {
 }
 
 function BranchItem({ branch }) {
+    const navigate = useNavigate();
+
     return (
-        <div className="px-3 py-2 border-2 border-neutral-500 rounded-xl">
+        <div className="px-3 py-2 border-2 border-neutral-500 rounded-xl" onClick={() => navigate("/appointments/timeslots", {
+            state: {
+                branch: branch.landmark,
+            }
+        })}>
             <div className="mb-2">
                 <p className="text-lg font-semibold">{ branch.landmark }</p>
                 <p className="text-neutral-500 text-sm">{ branch.address }</p>
