@@ -13,7 +13,7 @@ const uploadAttachment = async (req, res) => {
         if (!caseId) {
             return res.status(400).json({
                 status: "Error",
-                message: "customerSessionIdentifier and caseId are required in the request body."
+                message: "caseId is required in the request body."
             });
         }
 
