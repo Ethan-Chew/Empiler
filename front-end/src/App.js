@@ -2,24 +2,13 @@ import SectionContainer from "./components/FAQ/SectionContainer";
 import Searchbar from "./components/FAQ/Searchbar";
 import Footer from "./components/Footer";
 import NavigationBar from "./components/Navbar";
-import FaqIndivPage from "./pages/FaqIndivPage";
 
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-// ALL CODE IN THIS FILE IS OVERWRITABLE, FOR DEBUG USE ONLY. TO BE REPLACED.
 export default function App() {
   const navigate = useNavigate();
   const [faqs, setFaqs] = useState([]);
-  const [faqSection, setFaqSection] = useState('');
-  const [faqQuestion, setFaqQuestion] = useState('');
-
-  const initChat = () => {
-    sessionStorage.setItem('faqSection', faqSection);
-    sessionStorage.setItem('faqQuestion', faqQuestion);
-
-    navigate('/awaitchat');
-  }
 
   useEffect(() => {
     const fetchFaqs = async () => {

@@ -1,4 +1,4 @@
-import NavigationBar from "../components/Navbar";
+import NavigationBar from "../../components/Navbar";
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import { useEffect, useState } from "react";
 

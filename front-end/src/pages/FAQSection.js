@@ -2,7 +2,7 @@ import NavigationBar from "../components/Navbar";
 import Footer from "../components/Footer";
 import FaqCatItem from "../components/FAQ/FaqCatItem";
 
-export default function FAQ() {
+export default function FAQSection() {
     return (
         <div className="bg-gray-100">
             <NavigationBar />
