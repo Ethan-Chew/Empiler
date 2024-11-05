@@ -24,7 +24,7 @@ export default function App() {
   useEffect(() => {
     const fetchFaqs = async () => {
       try {
-        const response = await fetch('/api/section/');
+        const response = await fetch('http://localhost:8080/api/faq/section');
         const data = await response.json();
         console.log(data);
         setFaqs(data.sections);
