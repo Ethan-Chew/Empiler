@@ -13,7 +13,6 @@ function FaqIndivPage() {
             try {
                 const response = await fetch(`http://localhost:8080/api/faq/detail/${title}`);
                 const data = await response.json();
-                console.log(data.detail);
                 setFaqDetail(data.detail[0]);
             } catch (error) {
                 console.error('Error fetching faq detail:', error);
