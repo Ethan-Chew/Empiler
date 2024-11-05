@@ -1,4 +1,4 @@
-export default function AdminSupportLog() {
+export default function StaffDetailChatLog() {
     return (
         <div className="font-sans h-screen overflow-hidden">
             <div className="bg-[#677A84] w-full h-24"></div> 

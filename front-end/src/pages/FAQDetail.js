@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Footer from '../components/Footer';
 import NavigationBar from "../components/Navbar";
 
-function FaqIndivPage() {
+export default function FAQDetail() {
     return (
         <>
             <NavigationBar />
@@ -40,5 +40,3 @@ function FaqIndivPage() {
         </>
     );
 }
-
-export default FaqIndivPage;
