@@ -14,6 +14,8 @@ import user from './routes/user.route.js';
 import chatHistory from './routes/chatHistory.route.js';
 import faq from './routes/faq.route.js';
 import auth from './routes/auth.route.js';
+import chatAttachments from './routes/chatAttachments.route.js';
+
 import staffHandler from './chatHandlers/staffHandler.js';
 import customerHandler from './chatHandlers/customerHandler.js';
 import authoriseSocket from './middleware/authoriseSocket.js';
@@ -43,6 +45,7 @@ app.use("/api/chatHistory", chatHistory);
 app.use("/api/faq", faq);
 app.use("/api/auth", auth);
 app.post("/api/branches", getOCBCBranches);
+app.use("/api/chat/upload", chatAttachments);
 
 // Handle Socket.IO Connection
 const server = createServer(app);

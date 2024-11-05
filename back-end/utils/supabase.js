@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const supabaseApiKey = process.env.SUPABASE_ANON_KEY;
+const supabaseApiKey = process.env.SUPABASE_API_KEY;
 const supabaseUrl = process.env.SUPABASE_URL;
 
 // Initialize the Supabase client
