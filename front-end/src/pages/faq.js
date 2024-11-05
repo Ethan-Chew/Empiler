@@ -44,7 +44,7 @@ export default function FAQ() {
             <div className="space-y-4 w-full mx-auto flex flex-col items-center p-10">
                 {faqItems && faqItems.length > 0 ? (
                     faqItems.map(item => (
-                        <FaqCatItem key={item.id} title={item.title} description={item.description} href={`/faq-article/${item.id}`} />
+                        <FaqCatItem key={item.id} title={item.title} description={item.description} href={`/faq-article?title=${item.title}`} />
                     ))
                 ) : (
                     <p>No FAQ items found.</p>

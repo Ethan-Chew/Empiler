@@ -46,4 +46,7 @@ router.route("/routes")
 
 router.route("/questions")
 
+router.route("/detail/:title")
+    .get(FreqAskedQnsController.getDetailByTitle);
+
 export default router

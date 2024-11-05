@@ -26,7 +26,6 @@ export default function App() {
       try {
         const response = await fetch('http://localhost:8080/api/faq/section');
         const data = await response.json();
-        console.log(data);
         setFaqs(data.sections);
       } catch (error) {
         console.error('Error fetching faq sections:', error);

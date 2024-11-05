@@ -1,8 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Footer from '../components/Footer';
 import NavigationBar from "../components/Navbar";
+import { useSearchParams } from 'react-router-dom';
 
 function FaqIndivPage() {
+    const [faqDetail, setFaqDetail] = useState();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const title = searchParams.get('title');
+
+    useEffect(() => {
+        const fetchDetail = async () => {
+            try {
+                const response = await fetch(`http://localhost:8080/api/faq/detail/${title}`);
+                const data = await response.json();
+                console.log(data.detail);
+                setFaqDetail(data.detail[0]);
+            } catch (error) {
+                console.error('Error fetching faq detail:', error);
+            }
+        };
+
+        if (title) {
+            fetchDetail();
+        }
+    }, [title]);
+
     return (
         <>
             <NavigationBar />
@@ -10,7 +32,7 @@ function FaqIndivPage() {
 
                 <div className="bg-red-100 p-8">
                     <div className="mb-8">
-                        <h1 className="text-4xl font-bold">Title Text (of article clicked)</h1>
+                        <h1 className="text-4xl font-bold">{title}</h1>
                         <p className="text-gray-500">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
                     </div>
                 </div>
@@ -18,9 +40,7 @@ function FaqIndivPage() {
                 <div className="bg-white w-11/12 mx-auto m-10 p-6 rounded-lg shadow-lg">
                     <div className="text-gray-700 mb-4">
                         <p>
-                            Lorem ipsum dolor sit amet consectetur adipisicing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                            Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                            Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+                           {faqDetail ? (faqDetail.description) : ('Error fetching data.')}
                         </p>
                     </div>
 

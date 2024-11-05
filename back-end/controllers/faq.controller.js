@@ -250,7 +250,6 @@ const deleteFaqSection = async (req, res) => {
 const getAllSections = async (req, res) => {
     try {
         const sections = await FreqAskedQns.getAllSections();
-        console.log(sections);
 
         if (!sections) {
             return res.status(404).json({
@@ -273,6 +272,30 @@ const getAllSections = async (req, res) => {
     }
 }
 
+const getDetailByTitle = async (req, res) => {
+    try {
+        const detail = await FreqAskedQns.getDetailByTitle(req.params.title);
+
+        if (!detail) {
+            return res.status(404).json({
+                status: 'Error',
+                message: 'FAQ not found.'
+            });
+        }
+
+        res.status(200).json({
+            status: 'Success',
+            detail: detail
+        });
+    } catch {
+        res.status(500).json({
+            status: 'Error',
+            message: 'Internal Server Error',
+            error: error
+        });
+    }
+}
+
 export default {
     createFaq,
     getAllFaqs,
@@ -283,5 +306,6 @@ export default {
     createFaqSection,
     updateFaqSection,
     deleteFaqSection,
-    getAllSections
+    getAllSections,
+    getDetailByTitle
 }
