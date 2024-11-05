@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Footer from '../components/Footer';
 import NavigationBar from "../components/Navbar";
 import { useSearchParams } from 'react-router-dom';
+import Markdown from 'react-markdown'
 
 function FaqIndivPage() {
     const [faqDetail, setFaqDetail] = useState();
@@ -37,10 +38,12 @@ function FaqIndivPage() {
                 </div>
 
                 <div className="bg-white w-11/12 mx-auto m-10 p-6 rounded-lg shadow-lg">
-                    <div className="text-gray-700 mb-4">
-                        <p>
-                           {faqDetail ? (faqDetail.description) : ('Error fetching data.')}
-                        </p>
+                    <div className="text-gray-700 mb-4 markdown">
+                    {faqDetail ? (
+                            <Markdown>{faqDetail.description}</Markdown>
+                        ) : (
+                            <p>{'Loading...'}</p>
+                        )}
                     </div>
 
                     <div className="border-gray-300 border-t-3 pt-4 flex text-left space-x-4 ">
