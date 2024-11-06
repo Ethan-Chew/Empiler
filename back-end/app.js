@@ -36,17 +36,6 @@ app.use(cors({
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 
-
-// Initialize Algolia
-
-const processRecords = async () => {
-    const datasetRequest = await fetch('http://localhost:8080/api/faq/details');
-    const details = await datasetRequest.json();
-    return await client.replaceAllObjects({ indexName: 'title', objects: details.details });
-};
-
-processRecords();
-
 // Initialize Local Database
 const db = await initialiseDB();
 
