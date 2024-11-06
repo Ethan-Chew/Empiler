@@ -18,6 +18,8 @@ import ViewBranchAppointments from './pages/ViewBranchAppointments';
 import ViewDetailedAppointments from './pages/ViewDetailedAppointments';
 import ViewOutstandingChatCustomers from './pages/ViewOutstandingChatCustomers';
 import AdminSupportLog from './pages/AdminSupportLog';
+import CustomerMenuPage from './pages/CustomerMenuPage';
+import ViewUpcomingAppointments from './pages/ViewUpcomingAppointments';
 
 // Staff Routes
 import StaffHome from './pages/Staff/StaffHome';
@@ -41,6 +43,8 @@ root.render(
       <Route path="/view-detailed-appointments" element={<ViewDetailedAppointments />} />
       <Route path="/view-outstanding-chat-customers" element={<ViewOutstandingChatCustomers />} />
       <Route path="/admin-support-log" element={<AdminSupportLog />} />
+      <Route path="/customer-menu" element={<CustomerMenuPage />} />
+      <Route path="/view-upcoming-appointments" element={<ViewUpcomingAppointments />} />
 
 
       <Route path="*" element={<h1>404 Not Found</h1>} />
