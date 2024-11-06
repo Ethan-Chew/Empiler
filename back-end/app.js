@@ -9,6 +9,8 @@ import supabase from './utils/supabase.js';
 import cors from 'cors';
 import { initialiseDB } from './utils/sqliteDB.js';
 
+
+
 // Routes
 import user from './routes/user.route.js';
 import chatHistory from './routes/chatHistory.route.js';
@@ -33,6 +35,17 @@ app.use(cors({
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
+
+
+// Initialize Algolia
+
+const processRecords = async () => {
+    const datasetRequest = await fetch('http://localhost:8080/api/faq/details');
+    const details = await datasetRequest.json();
+    return await client.replaceAllObjects({ indexName: 'title', objects: details.details });
+};
+
+processRecords();
 
 // Initialize Local Database
 const db = await initialiseDB();
