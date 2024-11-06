@@ -63,12 +63,11 @@ export default function InitialiseChat() {
             setWaitingTime(time);
         })
 
-        socket.on('utils:joined-chat', (caseId) => {
-             navigate(`/chat?caseID=${caseId}`);
+        socket.on('utils:joined-chat', (caseID) => {
+             navigate(`/chat?caseID=${caseID}`);
         })
 
         return () => {
-            console.log('Cleaning up socket event listeners');
             socket.off('connect', handleConnection);
             socket.off('disconnect', handleDisconnection);
         }

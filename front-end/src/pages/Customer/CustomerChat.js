@@ -30,48 +30,48 @@ export default function CustomerChat() {
     const disconnectLimit = 4;
 
     // Helper Function to handle Window's Visibility Change. When inactive for 3 minutes, show warning. When inactive for 4 minutes, disconnect
-    useEffect(() => {
-        const handleUserActivity = () => {
-            setInactivityTimer(0);
-            setUserInactive(false);
-        };
-        const handleVisibilityChange = () => {
-            if (document.visibilityState === "visible") {
-                setInactivityTimer(0);
-                setUserInactive(false);
-            }
-        }
+    // useEffect(() => {
+    //     const handleUserActivity = () => {
+    //         setInactivityTimer(0);
+    //         setUserInactive(false);
+    //     };
+    //     const handleVisibilityChange = () => {
+    //         if (document.visibilityState === "visible") {
+    //             setInactivityTimer(0);
+    //             setUserInactive(false);
+    //         }
+    //     }
 
-        // Increment inactivity time every minute
-        const interval = setInterval(() => {
-            setInactivityTimer(prev => prev + 1);
+    //     // Increment inactivity time every minute
+    //     const interval = setInterval(() => {
+    //         setInactivityTimer(prev => prev + 1);
 
-            if (inactivityTimer >= inactivityLimit) {
-                setUserInactive(true);
-            }
+    //         if (inactivityTimer >= inactivityLimit) {
+    //             setUserInactive(true);
+    //         }
 
-            if (inactivityTimer >= disconnectLimit) {
-                setUserDisconnect(true);
-                socket.emit("utils:end-chat", caseID);
-            }
-        }, 60000);
+    //         if (inactivityTimer >= disconnectLimit) {
+    //             setUserDisconnect(true);
+    //             socket.emit("utils:end-chat", caseID);
+    //         }
+    //     }, 60000);
 
-        // Set up event listeners
-        window.addEventListener('mousemove', handleUserActivity);
-        window.addEventListener('keypress', handleUserActivity);
-        window.addEventListener('click', handleUserActivity);
-        window.addEventListener('touchstart', handleUserActivity);
-        document.addEventListener("visibilitychange", handleVisibilityChange);
+    //     // Set up event listeners
+    //     window.addEventListener('mousemove', handleUserActivity);
+    //     window.addEventListener('keypress', handleUserActivity);
+    //     window.addEventListener('click', handleUserActivity);
+    //     window.addEventListener('touchstart', handleUserActivity);
+    //     document.addEventListener("visibilitychange", handleVisibilityChange);
 
-        return () => {
-            window.removeEventListener('mousemove', handleUserActivity);
-            window.removeEventListener('keypress', handleUserActivity);
-            window.removeEventListener('click', handleUserActivity);
-            window.removeEventListener('touchstart', handleUserActivity);
-            document.removeEventListener('visibilitychange', handleVisibilityChange);
-            clearInterval(interval);
-        };
-    }, [inactivityTimer]);
+    //     return () => {
+    //         window.removeEventListener('mousemove', handleUserActivity);
+    //         window.removeEventListener('keypress', handleUserActivity);
+    //         window.removeEventListener('click', handleUserActivity);
+    //         window.removeEventListener('touchstart', handleUserActivity);
+    //         document.removeEventListener('visibilitychange', handleVisibilityChange);
+    //         clearInterval(interval);
+    //     };
+    // }, [inactivityTimer]);
 
     useEffect(() => {
         // If there is no Case ID, redirect the Customer back to the Landing Page
@@ -125,6 +125,7 @@ export default function CustomerChat() {
     }, []);
 
     function sendMessage(fileUrl) {
+        if (sentMessage === "" && fileUrl === null) return;
         const formattedMsg = {
             case: caseID,
             message: fileUrl ? "" : sentMessage,
@@ -142,7 +143,6 @@ export default function CustomerChat() {
         try {
             const fileUrl = await handleFileUpload(caseID);
 
-            console.log('File uploaded successfully:', fileUrl);
             sendMessage(fileUrl);
         } catch (err) {
             console.error('Error during file upload:', err);

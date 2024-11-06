@@ -18,7 +18,7 @@ export default async function handleFileUpload(caseID) {
                     // Prepare FormData for the API request
                     const formData = new FormData();
                     formData.append('file', file);
-                    formData.append('caseId', caseID); // Ensure `caseID` is defined in the scope
+                    formData.append('caseID', caseID); // Ensure `caseID` is defined in the scope
 
                     // Make an API Call to upload the file
                     const response = await fetch("http://localhost:8080/api/chat/upload", {

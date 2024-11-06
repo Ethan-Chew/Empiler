@@ -33,7 +33,7 @@ export default function (io, db, socket) {
     })
 
     socket.on("staff:join", async (customerSessionIdentifier, callback) => {
-        const caseId = crypto.randomBytes(16).toString('hex');
+        const caseID = crypto.randomBytes(16).toString('hex');
 
         // Retrieve all the SocketIDs relating to the customerSessionIdentifier
         const customer = await searchForWaitingCustomer(db, customerSessionIdentifier);
@@ -48,17 +48,17 @@ export default function (io, db, socket) {
         for (const socketId of customer.socketIDs) {
             const customerSocket = io.sockets.sockets.get(socketId);
             if (customerSocket) {
-                customerSocket.join(caseId);
+                customerSocket.join(caseID);
             }
         }
 
         // Allow the Staff to join the Live Chat (Room)
-        socket.join(caseId);
+        socket.join(caseID);
 
         // Add the Chat to the list of Active Chats
         const staff = await searchForAvailStaff(db, socket.user.id);
         const newChat = {
-            caseId: caseId,
+            caseID: caseID,
             customer: customer,
             staff: staff,
         }
@@ -67,8 +67,8 @@ export default function (io, db, socket) {
         // Remove the Customer from the Waiting List
         await removeWaitingCustomer(db, customerSessionIdentifier);
 
-        // Broadcast CaseID to Customer (notify that connection has been made successfully)
-        io.to(customerSessionIdentifier).emit('utils:joined-chat', caseId);
+        // Broadcast caseID to Customer (notify that connection has been made successfully)
+        io.to(customerSessionIdentifier).emit('utils:joined-chat', caseID);
 
         // Send a Callback to the Staff (notify successfully started Live Chat)
         callback({
@@ -82,7 +82,7 @@ export default function (io, db, socket) {
     socket.on("staff:active-chats", async () => {
         const activeChats = await getActiveChatsForStaff(db, socket.user.id);
         if (activeChats && activeChats.length !== 0) {
-            io.to(socket.id).emit(activeChats);
+            io.to(socket.id).emit('staff:active-chats', activeChats);
         }
     })
 }

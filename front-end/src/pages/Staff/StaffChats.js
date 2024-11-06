@@ -34,7 +34,7 @@ export default function StaffChats() {
                     response.status === "Success" ? resolve(response) : reject(new Error("Failed to Join Chat"));
                 });
             });
-    
+
             const formattedChat = {
                 ...response.chat,
                 messages: []
@@ -43,7 +43,7 @@ export default function StaffChats() {
             setConnectedChats((prev) => [...prev, formattedChat]);
 
             if (selectedChatId === null) {
-                setSelectedChatId(formattedChat.caseId);
+                setSelectedChatId(formattedChat.caseID);
             }
     
             return true;
@@ -60,8 +60,9 @@ export default function StaffChats() {
     }
 
     const sendMessage = (fileUrl) => {
+        if (sentMessage === "" && fileUrl === null) return;
         const formattedMsg = {
-            case: connectedChats.filter((chat) => chat.caseId === selectedChatId)[0].caseId,
+            case: connectedChats.filter((chat) => chat.caseID === selectedChatId)[0].caseID,
             message: fileUrl ? "" : sentMessage,
             fileUrl: fileUrl ? fileUrl : null,
             timestamp: Date.now(),
@@ -80,7 +81,7 @@ export default function StaffChats() {
 
         // Remove the chat from session storage / state
         setConnectedChats((prevChats) => {
-            const updatedChats = prevChats.filter((chat) => chat.caseId !== selectedChatId);
+            const updatedChats = prevChats.filter((chat) => chat.caseID !== selectedChatId);
             return updatedChats;
         });
     }
@@ -98,7 +99,7 @@ export default function StaffChats() {
         const handleReceiveMessage = (msg) => {
             setConnectedChats((prevChats) => {
                 const updatedChats = prevChats.map((chat) => {
-                    if (chat.caseId === msg.case) {
+                    if (chat.caseID === msg.case) {
                         return {
                             ...chat,
                             messages: [...chat.messages, msg],
@@ -115,18 +116,17 @@ export default function StaffChats() {
             setWaitingCustomers(waitingCustomers);
         }
 
-        const handleChatEnded = (caseId) => {
-            if (selectedChatId === caseId) {
+        const handleChatEnded = (caseID) => {
+            if (selectedChatId === caseID) {
                 setSelectedChatId(null);
             }
 
-            setConnectedChats((prevChats) => prevChats.filter((chat) => chat.caseId !== caseId));
+            setConnectedChats((prevChats) => prevChats.filter((chat) => chat.caseID !== caseID));
         }
 
         const handleReconnectAddChats = (chats) => {
             setConnectedChats(chats);
-            console.log(chats)
-            socket.emit("utils:add-socket", "staff");
+            socket.emit("utils:add-socket", null, "staff");
         }
 
         // Handle Event Listeners
@@ -141,6 +141,7 @@ export default function StaffChats() {
             // Clear Event Listeners on Deconstructor
             socket.off("connect", handleConnection);
             socket.off("disconnect", handleDisconnection);
+            socket.off("staff:avail-chats", handleSetWaitingCustomers)
             socket.off("utils:receive-msg", handleReceiveMessage);
             socket.off("utils:chat-ended", handleChatEnded);
             socket.off("staff:active-chats", handleReconnectAddChats);
@@ -156,7 +157,6 @@ export default function StaffChats() {
         try {
             const fileUrl = await handleFileUpload(selectedChatId);
             
-            console.log('File uploaded successfully:', fileUrl);
             sendMessage(fileUrl);
         } catch (err) {
             console.error('Error during file upload:', err);
@@ -164,15 +164,15 @@ export default function StaffChats() {
     }
 
     return (
-        <div className="h-screen flex flex-col">
+        <div className="max-h-screen h-screen flex flex-col">
             <StaffNavigationBar />
             <div className="w-full bg-ocbcred text-white py-3 px-5">
                 <h1 className="text-2xl font-semibold">OCBC Support  |  Live Chats</h1>
             </div>
 
-            <div className="flex flex-row flex-grow">
+            <div className="flex flex-row flex-1">
                 {/* Active Chat List */}
-                <div id="chat-list" className="w-1/3 md:w-1/4 bg-neutral-100 border-r-2 border-neutral-600">
+                <div id="chat-list" className="w-1/3 md:w-1/4 bg-neutral-100 border-r-2 border-neutral-600 overflow-y-auto">
                     <div>
 
                     </div>
@@ -182,22 +182,24 @@ export default function StaffChats() {
 
                     <div id="chats" className="">
                         {connectedChats.map((chat) => (
-                            <ChatListItem key={chat.caseId} chat={chat} selectedChatId={selectedChatId} setSelectedChatId={(id) => {
-                                setSentMessage("");
-                                setSelectedChatId(id)
-                            }} />
+                            <>
+                                <ChatListItem key={chat.caseID} chat={chat} selectedChatId={selectedChatId} setSelectedChatId={(id) => {
+                                    setSentMessage("");
+                                    setSelectedChatId(id)
+                                }} />
+                            </>
                         ))}
                     </div>
                 </div>
 
                 {/* Chat Window */}
-                <div id="chat-window" className={`flex flex-col flex-grow ${connectedChats.length === 0 && "items-center justify-center"}`}>
+                <div id="chat-window" className={`flex flex-col flex-grow ${connectedChats.length === 0 && "items-center justify-center"} overflow-y-auto`}>
                     <div id="chat-header" className={`w-full bg-neutral-100 border-y-2 border-neutral-600 flex flex-row px-4 py-2 ${selectedChatId == null ? "hidden" : ""}`}>
-                        {selectedChatId && connectedChats.filter((chat) => chat.caseId === selectedChatId).map((selectedChat => (
+                        {selectedChatId && connectedChats.filter((chat) => chat.caseID === selectedChatId).map((selectedChat => (
                             <>
                                 <div>
                                     <p className="text-lg font-bold mb-0">{ selectedChat.customer?.faqQuestion }</p>
-                                    <p className="text-neutral-500 text-sm">Case ID: { selectedChat.caseId }{ selectedChat.customer?.userID && " | Logged In" }</p>
+                                    <p className="text-neutral-500 text-sm">Case ID: { selectedChat.caseID }{ selectedChat.customer?.userID && " | Logged In" }</p>
                                 </div>
 
                                 <button className="ml-auto px-4 py-1 bg-ocbcred hover:bg-ocbcdarkred text-white rounded-lg" onClick={handleEndChat}>
@@ -211,7 +213,7 @@ export default function StaffChats() {
                         <div id="chat-container" className="flex-grow p-10">
                             {selectedChatId && 
                             connectedChats
-                                .filter((chat) => chat.caseId === selectedChatId)
+                                .filter((chat) => chat.caseID === selectedChatId)
                                 .map((selectedChat) => (
                                     selectedChat.messages.map((msg) => (
                                         <MessageContainer key={msg.timestamp} isSender={msg.sender === "staff"} message={msg.message || null} fileUrl={msg.fileUrl || null} timestamp={msg.timestamp} />
@@ -271,7 +273,7 @@ export default function StaffChats() {
 
 function ChatListItem({ chat, selectedChatId, setSelectedChatId }) {
     const handleOnClick = () => {
-        setSelectedChatId(chat.caseId);
+        setSelectedChatId(chat.caseID);
     }
     const getLastSentText = (messages) => {
         if (messages.length === 0) return {
@@ -290,10 +292,9 @@ function ChatListItem({ chat, selectedChatId, setSelectedChatId }) {
     if (!chat.customer) return <></>
 
     return (
-        <div className={`border-y-2 border-neutral-600 px-5 py-2 flex flex-row gap-5 max-w-full hover:bg-neutral-200 ${(selectedChatId === chat.caseId && (selectedChatId !== undefined && selectedChatId !== null)) && "bg-chatred/20"}`} onClick={handleOnClick}>
-            <div className="min-w-0">
+        <div className={`border-y-2 border-neutral-600 px-5 py-2 flex flex-row gap-5 max-w-full hover:bg-neutral-200 ${(selectedChatId === chat.caseID && (selectedChatId !== undefined && selectedChatId !== null)) && "bg-chatred/20"}`} onClick={handleOnClick}>
+            <div className="min-w-0 flex-grow">
                 <p className="truncate font-semibold">{ chat.customer.faqQuestion }</p>
-                <p className="truncate">{ getLastSentText(chat.messages).message }</p>
                 <p className="truncate">{ getLastSentText(chat.messages).message }</p>
             </div>
             <a className="flex-shrink-0">{ formatTimestamp(getLastSentText(chat.messages).timestamp) }</a>

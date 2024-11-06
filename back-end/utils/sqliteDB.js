@@ -108,7 +108,7 @@ export const startActiveChat = async (db, activeChat) => {
     activeChat.customer.socketIDs = JSON.stringify(activeChat.customer.socketIDs);
     activeChat.staff.socketIDs = JSON.stringify(activeChat.staff.socketIDs);
     await db.run('INSERT INTO activeChats (caseID, customerSessionIdentifier, customerSocketIDs, faqSection, faqQuestion, userID, timeConnected, staffID) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', 
-        activeChat.caseId, activeChat.customer.customerSessionIdentifier, activeChat.customer.socketIDs, activeChat.customer.faqSection, activeChat.customer.faqQuestion, activeChat.customer.userID, activeChat.customer.timeConnected, activeChat.staff.staffID);
+        activeChat.caseID, activeChat.customer.customerSessionIdentifier, activeChat.customer.socketIDs, activeChat.customer.faqSection, activeChat.customer.faqQuestion, activeChat.customer.userID, activeChat.customer.timeConnected, activeChat.staff.staffID);
 };
 
 export const endActiveChat = async (db, caseID) => {
@@ -139,7 +139,18 @@ export const getActiveChatsForStaff = async (db, staffID) => {
         const chatMessages = await retrieveChatMessages(db, chat.caseID);
 
         return {
-            ...chat,
+            caseID: chat.caseID,
+            customer: {
+                customerSessionIdentifier: chat.customerSessionIdentifier,
+                socketIDs: chat.customerSocketIDs,
+                faqSection: chat.faqSection,
+                faqQuestion: chat.faqQuestion,
+                userID: chat.userID,
+                timeConnected: chat.timeConnected
+            },
+            staff: {
+                staffID: chat.staffID,
+            },
             messages: chatMessages
         };
     }));

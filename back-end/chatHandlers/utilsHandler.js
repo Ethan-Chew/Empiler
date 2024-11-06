@@ -42,7 +42,6 @@ export default function (io, db, socket) {
 
     socket.on("utils:verify-waitinglist", async (customerSessionIdentifier, callback) => {
         const searchCustomer = await searchForWaitingCustomer(db, customerSessionIdentifier);
-        console.log(customerSessionIdentifier, searchCustomer)
         if (searchCustomer) {
             callback(true);
         } else {
@@ -67,11 +66,11 @@ export default function (io, db, socket) {
         }
     });
     
-    socket.on("utils:end-chat", async (caseId) => {
+    socket.on("utils:end-chat", async (caseID) => {
         // Let the Customer know the Chat has ended
-        io.to(caseId).emit("utils:chat-ended", caseId);
+        io.to(caseID).emit("utils:chat-ended", caseID);
 
         // Remove the Chat from the list of Active Chats
-        await endActiveChat(db, caseId);
+        await endActiveChat(db, caseID);
     });
 }

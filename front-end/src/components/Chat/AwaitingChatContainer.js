@@ -133,7 +133,7 @@ function CustomerRequestContainer({ index, request, joinChat }) {
     return (
         <div className={`${index === 0 && "border-t-2"} border-b-2 px-5 py-2 border-neutral-400 flex flex-row items-center justify-between`}>
             <p className="font-semibold">{ request.faqQuestion }</p>
-            <button class="px-4 py-1 bg-chatred text-white rounded-md hover:bg-red-500" onClick={handleJoin}>
+            <button className="px-4 py-1 bg-chatred text-white rounded-md hover:bg-red-500" onClick={handleJoin}>
                 { buttonText }
             </button>
         </div>

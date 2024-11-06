@@ -10,15 +10,15 @@ const uploadAttachment = async (req, res) => {
             });
         }
 
-        const { caseId } = req.body;
-        if (!caseId) {
+        const { caseID } = req.body;
+        if (!caseID) {
             return res.status(400).json({
                 status: "Error",
-                message: "caseId is required in the request body."
+                message: "caseID is required in the request body."
             });
         }
 
-        const { data, error } = await supabase.storage.from("chat-images").upload(`${caseId}/${req.file.originalname}`, req.file.buffer, {
+        const { data, error } = await supabase.storage.from("chat-images").upload(`${caseID}/${req.file.originalname}`, req.file.buffer, {
             contentType: req.file.mimetype,
         });
         if (error) {
