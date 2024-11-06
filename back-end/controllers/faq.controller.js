@@ -296,6 +296,30 @@ const getDetailByTitle = async (req, res) => {
     }
 }
 
+const getAllFaqDetails = async (req, res) => {
+    try {
+        const details = await FreqAskedQns.getAllFaqDetails();
+
+        if (!details) {
+            return res.status(404).json({
+                status: 'Error',
+                message: 'FAQs not found.'
+            });
+        }
+
+        res.status(200).json({
+            status: 'Success',
+            details: details
+        });
+    } catch {
+        res.status(500).json({
+            status: 'Error',
+            message: 'Internal Server Error',
+            error: error
+        });
+    }
+}
+
 export default {
     createFaq,
     getAllFaqs,
@@ -307,5 +331,6 @@ export default {
     updateFaqSection,
     deleteFaqSection,
     getAllSections,
-    getDetailByTitle
+    getDetailByTitle,
+    getAllFaqDetails
 }

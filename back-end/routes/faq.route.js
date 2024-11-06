@@ -31,7 +31,7 @@ router.route("/faq")
     .get(FreqAskedQnsController.getAllFaqs);
 
 // Route to get FAQ by title
-router.route("/:title")
+router.route("/title/:title")
     .get(FreqAskedQnsController.getFaqByTitle);
 
 // Route to update an FAQ 
@@ -48,5 +48,8 @@ router.route("/questions")
 
 router.route("/detail/:title")
     .get(FreqAskedQnsController.getDetailByTitle);
+
+router.route("/details")
+    .get(FreqAskedQnsController.getAllFaqDetails);
 
 export default router

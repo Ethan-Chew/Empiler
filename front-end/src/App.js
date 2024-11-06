@@ -3,6 +3,8 @@ import Searchbar from "./components/FAQ/Searchbar";
 import Footer from "./components/Footer";
 import NavigationBar from "./components/Navbar";
 import FaqIndivPage from "./pages/FaqIndivPage";
+import { searchClient } from '@algolia/client-search';
+
 
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -13,6 +15,8 @@ export default function App() {
   const [faqs, setFaqs] = useState([]);
   const [faqSection, setFaqSection] = useState('');
   const [faqQuestion, setFaqQuestion] = useState('');
+  const client = searchClient('AFO67MRW1I', 'd74656144d229ea1117e07860e8e4951');
+
 
   const initChat = () => {
     sessionStorage.setItem('faqSection', faqSection);
@@ -34,6 +38,18 @@ export default function App() {
 
     fetchFaqs();
   }, []);
+
+  const processRecords = async () => {
+    const datasetRequest = await fetch('http://localhost:8080/api/faq/details');
+    const details = await datasetRequest.json();
+    return await client.replaceAllObjects({ indexName: 'title', objects: details.details });
+  };
+  
+  useEffect(() => {
+    processRecords()
+    .then(() => console.log('Successfully indexed objects!'))
+    .catch((err) => console.error(err));
+  }, );
 
   return (
     <main className="bg-gray-100">
