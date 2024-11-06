@@ -1,9 +1,11 @@
 import { socket } from "../../utils/chatSocket"
 import { useState, useEffect } from "react";
+import handleFileUpload from "../../utils/handleFileUpload";
 import { formatTimestamp } from "../../utils/formatTimestamp";
 
 // Components
 import { FaArrowCircleUp } from "react-icons/fa";
+import { AiFillPlusCircle } from "react-icons/ai";
 import AwaitChatContainer from "../../components/Chat/AwaitingChatContainer";
 import StaffNavigationBar from "../../components/StaffNavbar";
 import MessageContainer from "../../components/Chat/MessageContainer";
@@ -57,10 +59,11 @@ export default function StaffChats() {
         setDisplayAwaitCustomerList(true);
     }
 
-    const sendMessage = () => {
+    const sendMessage = (fileUrl) => {
         const formattedMsg = {
             case: connectedChats.filter((chat) => chat.caseId === selectedChatId)[0].caseId,
-            message: sentMessage,
+            message: fileUrl ? "" : sentMessage,
+            fileUrl: fileUrl ? fileUrl : null,
             timestamp: Date.now(),
             sender: "staff",
         }
@@ -149,6 +152,17 @@ export default function StaffChats() {
         socket.emit("staff:active-chats");
     }, [isConnected])
 
+    async function onUploadClick() {
+        try {
+            const fileUrl = await handleFileUpload(selectedChatId);
+            
+            console.log('File uploaded successfully:', fileUrl);
+            sendMessage(fileUrl);
+        } catch (err) {
+            console.error('Error during file upload:', err);
+        }
+    }
+
     return (
         <div className="h-screen flex flex-col">
             <StaffNavigationBar />
@@ -200,7 +214,7 @@ export default function StaffChats() {
                                 .filter((chat) => chat.caseId === selectedChatId)
                                 .map((selectedChat) => (
                                     selectedChat.messages.map((msg) => (
-                                        <MessageContainer key={msg.timestamp} isSender={msg.sender === "staff"} messages={[msg.message]} timestamp={msg.timestamp} />
+                                        <MessageContainer key={msg.timestamp} isSender={msg.sender === "staff"} message={msg.message || null} fileUrl={msg.fileUrl || null} timestamp={msg.timestamp} />
                                     ))
                                 ))
                             }
@@ -208,13 +222,16 @@ export default function StaffChats() {
 
                         {/* Message Field */}
                         <div className="p-10 px-10 py-6 md:py-4 w-full rounded-b-xl flex flex-row justify-between">
+                            <button className="border-2 rounded-xl px-4 hover:border-neutral-500 duration-200" onClick={onUploadClick}>
+                                <AiFillPlusCircle className="text-3xl text-neutral-400 hover:text-neutral-500" />
+                            </button>
                             <input 
-                                className="p-3 border-2 w-full rounded-xl outline-none mr-5"
+                                className="p-3 border-2 w-full rounded-xl outline-none mx-5"
                                 placeholder="Enter a Message.."
                                 value={sentMessage}
                                 onChange={(e) => setSentMessage(e.target.value) }
                             />
-                            <button className="border-2 rounded-xl px-4 hover:border-neutral-500 duration-200" onClick={sendMessage}>
+                            <button className="border-2 rounded-xl px-4 hover:border-neutral-500 duration-200" onClick={() => sendMessage(null)}>
                                 <FaArrowCircleUp className="text-2xl text-neutral-400 hover:text-neutral-500" />
                             </button>
                         </div>
@@ -258,13 +275,13 @@ function ChatListItem({ chat, selectedChatId, setSelectedChatId }) {
     }
     const getLastSentText = (messages) => {
         if (messages.length === 0) return {
-            text: "",
+            message: "",
             timestamp: "",
             isSender: false,
         }
 
         return {
-            message: messages[messages.length - 1].message,
+            message: messages[messages.length - 1].message || "Sent an Image",
             timestamp: messages[messages.length - 1].timestamp,
             isSender: messages[messages.length - 1].sender === "staff",
         }
@@ -276,6 +293,7 @@ function ChatListItem({ chat, selectedChatId, setSelectedChatId }) {
         <div className={`border-y-2 border-neutral-600 px-5 py-2 flex flex-row gap-5 max-w-full hover:bg-neutral-200 ${(selectedChatId === chat.caseId && (selectedChatId !== undefined && selectedChatId !== null)) && "bg-chatred/20"}`} onClick={handleOnClick}>
             <div className="min-w-0">
                 <p className="truncate font-semibold">{ chat.customer.faqQuestion }</p>
+                <p className="truncate">{ getLastSentText(chat.messages).message }</p>
                 <p className="truncate">{ getLastSentText(chat.messages).message }</p>
             </div>
             <a className="flex-shrink-0">{ formatTimestamp(getLastSentText(chat.messages).timestamp) }</a>

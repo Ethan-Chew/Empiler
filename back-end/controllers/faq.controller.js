@@ -250,6 +250,7 @@ const deleteFaqSection = async (req, res) => {
 const getAllSections = async (req, res) => {
     try {
         const sections = await FreqAskedQns.getAllSections();
+        console.log(sections);
 
         if (!sections) {
             return res.status(404).json({
