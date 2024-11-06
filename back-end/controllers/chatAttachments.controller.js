@@ -1,4 +1,5 @@
 import supabase from "../utils/supabase.js";
+import dotenv from "dotenv";
 
 const uploadAttachment = async (req, res) => {
     try {
@@ -26,7 +27,7 @@ const uploadAttachment = async (req, res) => {
             return res.status(201).json({
                 status: "Success",
                 message: "File uploaded successfully",
-                filePath: data.fullPath,
+                filePath: process.env.STORAGE_BUCKET_URL + data.fullPath,
             });
         }
     } catch (err) {

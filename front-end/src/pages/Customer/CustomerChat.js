@@ -11,11 +11,11 @@ import { useState, useEffect } from "react";
 
 export default function CustomerChat() {
     const navigate = useNavigate();
-    const caseID = searchParams.get("caseID");
-
+    
     const [isConnected, setIsConnected] = useState(false);
     const [isDisconnected, setIsDisconnected] = useState(false);
     const [searchParams, setSearchParams] = useSearchParams();
+    const caseID = searchParams.get("caseID");
 
     const [messages, setMessages] = useState([]);
     const [chatEnded, setChatEnded] = useState(false);
@@ -117,22 +117,21 @@ export default function CustomerChat() {
         socket.on("utils:chat-ended", handleChatClosure);
 
         return () => {
+            socket.off("connect", handleConnection);
             socket.off("disconnect", handleDisconnection);
+            socket.off("utils:receive-msg", handleReceiveMessage);
+            socket.off("utils:chat-ended", handleChatClosure);
         }
     }, []);
 
     function sendMessage(fileUrl) {
         const formattedMsg = {
             case: caseID,
-            message: sentMessage,
+            message: fileUrl ? "" : sentMessage,
+            fileUrl: fileUrl ? fileUrl : null,
             timestamp: Date.now(),
             sender: "customer",
             sessionIdentifier: sessionStorage.getItem("customerSessionIdentifier"),
-        }
-
-        if (fileUrl) {
-            formattedMsg.fileUrl = fileUrl;
-            delete formattedMsg.message;
         }
 
         socket.emit("utils:send-msg", formattedMsg);
@@ -142,7 +141,9 @@ export default function CustomerChat() {
     async function onUploadClick() {
         try {
             const fileUrl = await handleFileUpload(caseID);
+
             console.log('File uploaded successfully:', fileUrl);
+            sendMessage(fileUrl);
         } catch (err) {
             console.error('Error during file upload:', err);
         }
@@ -200,7 +201,7 @@ export default function CustomerChat() {
                                 value={sentMessage} // Bind input to `sentMessage`
                                 onChange={(e) => setSentMessage(e.target.value)}
                             />
-                            <button className="border-2 rounded-xl px-4 hover:border-neutral-500 duration-200" onClick={sendMessage}>
+                            <button className="border-2 rounded-xl px-4 hover:border-neutral-500 duration-200" onClick={() => sendMessage(null)}>
                                 <FaArrowCircleUp className="text-2xl text-neutral-400 hover:text-neutral-500" />
                             </button>
                         </div>

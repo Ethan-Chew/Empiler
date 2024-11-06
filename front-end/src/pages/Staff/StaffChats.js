@@ -63,10 +63,11 @@ export default function StaffChats() {
         setDisplayAwaitCustomerList(true);
     }
 
-    const sendMessage = () => {
+    const sendMessage = (fileUrl) => {
         const formattedMsg = {
             case: connectedChats.filter((chat) => chat.caseId === selectedChatId)[0].caseId,
-            message: sentMessage,
+            message: fileUrl ? "" : sentMessage,
+            fileUrl: fileUrl ? fileUrl : null,
             timestamp: Date.now(),
             sender: "staff",
         }
@@ -148,7 +149,9 @@ export default function StaffChats() {
     async function onUploadClick() {
         try {
             const fileUrl = await handleFileUpload(selectedChatId);
+            
             console.log('File uploaded successfully:', fileUrl);
+            sendMessage(fileUrl);
         } catch (err) {
             console.error('Error during file upload:', err);
         }
@@ -205,7 +208,7 @@ export default function StaffChats() {
                                 .filter((chat) => chat.caseId === selectedChatId)
                                 .map((selectedChat) => (
                                     selectedChat.messages.map((msg) => (
-                                        <MessageContainer key={msg.timestamp} isSender={msg.sender === "customer"} message={msg.message || null} fileUrl={msg.fileUrl || null} timestamp={msg.timestamp} />
+                                        <MessageContainer key={msg.timestamp} isSender={msg.sender === "staff"} message={msg.message || null} fileUrl={msg.fileUrl || null} timestamp={msg.timestamp} />
                                     ))
                                 ))
                             }
@@ -222,7 +225,7 @@ export default function StaffChats() {
                                 value={sentMessage}
                                 onChange={(e) => setSentMessage(e.target.value) }
                             />
-                            <button className="border-2 rounded-xl px-4 hover:border-neutral-500 duration-200" onClick={sendMessage}>
+                            <button className="border-2 rounded-xl px-4 hover:border-neutral-500 duration-200" onClick={() => sendMessage(null)}>
                                 <FaArrowCircleUp className="text-2xl text-neutral-400 hover:text-neutral-500" />
                             </button>
                         </div>
