@@ -14,6 +14,7 @@ import user from './routes/user.route.js';
 import chatHistory from './routes/chatHistory.route.js';
 import faq from './routes/faq.route.js';
 import auth from './routes/auth.route.js';
+import appointment from './routes/appointment.route.js';
 
 import branches from './controllers/branches.controller.js';
 
@@ -48,6 +49,7 @@ app.use("/api/faq", faq);
 app.use("/api/auth", auth);
 app.post("/api/branches", branches.getOCBCBranches);
 app.get("/api/branch", branches.getSpecificOCBCBranch);
+app.use("/api/appointments", appointment);
 
 // Handle Socket.IO Connection
 const server = createServer(app);

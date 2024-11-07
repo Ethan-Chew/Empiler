@@ -111,7 +111,7 @@ function BranchItem({ branch }) {
     return (
         <div className="px-3 py-2 border-2 border-neutral-500 rounded-xl" onClick={() => navigate("/appointments/timeslots", {
             state: {
-                branch: branch.landmark,
+                branch: branch
             }
         })}>
             <div className="mb-2">

@@ -8,6 +8,7 @@ export default function DetailedAppointmentBooking() {
     const [selectedDate, setSelectedDate] = useState(null);
     const [selectedAppointment, setSelectedAppointment] = useState(null);
     const [branchDetails, setBranchDetails] = useState(null);
+    const [availableDates, setAvailableDates] = useState([]);
 
     useEffect(() => {
         if (!location.state.branch) {
@@ -15,7 +16,33 @@ export default function DetailedAppointmentBooking() {
         }
 
         // TODO: Retrieve branch details from backend
-    }, [])
+        const branch = location.state.branch; // Retrieve the branch data
+        setBranchDetails(branch); // Set the branch data
+
+        generateAvailableDates();
+    }, [location.state, navigate]);
+
+    const generateAvailableDates = () => {
+        const today = new Date();
+        const currentDay = today.getDay(); // Get the current day (0 - Sunday, 6 - Saturday)
+        const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const availableDates = [];
+
+        // Loop through the next 5 weekdays (Mon to Fri)
+        for (let i = 1; i <= 5; i++) {
+            const dayIndex = (currentDay + i) % 7; // Get the index of the next weekday (Mon to Fri)
+            const day = daysOfWeek[dayIndex];
+            const dayOfMonth = new Date(today);
+            dayOfMonth.setDate(today.getDate() + i); // Set the date to the correct weekday
+
+            // Only add dates from the current date forward
+            if (dayOfMonth >= today) {
+                availableDates.push({ day, dayOfMonth });
+            }
+        }
+
+        setAvailableDates(availableDates);
+    };
 
     const handleDateSelect = (date) => {
         setSelectedDate(date);
@@ -29,8 +56,14 @@ export default function DetailedAppointmentBooking() {
         <div className="font-inter overflow-hidden h-screen">
             <div className="bg-[#677A84] h-[15vh] w-full"></div>
             <div className="bg-[#D9D9D9] w-full p-5 text-left mb-3">
-                <h1 className="text-2xl font-semibold mb-1">OCBC Sixth Avenue Branch</h1>
-                <p className="text-lg text-[#060313]">Schedule an Appointment</p>
+                {branchDetails ? (
+                    <>
+                        <h1 className="text-2xl font-semibold mb-1">{branchDetails.landmark}</h1>
+                        <p className="text-lg text-[#060313]">Schedule an Appointment</p>
+                    </>
+                ) : (
+                    <p>Loading branch details...</p>
+                )}
             </div>
 
             <div className="flex h-[calc(85vh-20px)] p-5">
@@ -44,13 +77,14 @@ export default function DetailedAppointmentBooking() {
                             <button className="text-lg">&#9660;</button> 
                         </div>
                         <div className="flex justify-evenly mb-3">
-                            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, idx) => (
+                            {availableDates.map((date, idx) => (
                                 <button
                                     key={idx}
-                                    className={`w-9 h-9 rounded-full flex items-center justify-center cursor-pointer ${selectedDate === day ? 'bg-[#DA291C]' : 'bg-[#F5F5F5]'}`}
-                                    onClick={() => handleDateSelect(day)}
+                                    className={`w-12 h-16 rounded-lg flex flex-col items-center justify-center cursor-pointer ${selectedDate === date.dayOfMonth.toLocaleDateString() ? 'bg-[#DA291C]' : 'bg-[#F5F5F5]'}`}
+                                    onClick={() => handleDateSelect(date.dayOfMonth.toLocaleDateString())}
                                 >
-                                    {day}
+                                    <p className="text-sm font-semibold">{date.dayOfMonth.getDate()}</p> {/* Date on top */}
+                                    <p className="text-xs">{date.day}</p> {/* Day below */}
                                 </button>
                             ))}
                         </div>
@@ -80,8 +114,8 @@ export default function DetailedAppointmentBooking() {
                 <div className="flex-1 flex flex-col gap-2">
                     <div className="bg-white rounded-lg shadow-md p-3">
                         <h2 className="text-xl font-semibold">Location</h2>
-                        <p className="text-base font-medium">OCBC Sixth Avenue Branch</p>
-                        <p className="text-sm text-gray-500">827 Bukit Timah Road | 279886</p>
+                        <p className="text-base font-medium">{branchDetails ? branchDetails.landmark : 'Loading...'}</p>
+                        <p className="text-sm text-gray-500">{branchDetails ? branchDetails.address : 'Loading address...'}</p>
                         <div className="mt-2 p-2 bg-[#DFB0EF] text-[#803A97] font-semibold rounded-md text-center">Premier Centre</div>
                     </div>
 
