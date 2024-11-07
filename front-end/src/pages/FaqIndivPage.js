@@ -30,11 +30,8 @@ function FaqIndivPage() {
             <NavigationBar />
             <div className='bg-gray-100'>
 
-                <div className="bg-red-100 p-8">
-                    <div className="mb-8">
-                        <h1 className="text-4xl font-bold">{title}</h1>
-                        <p className="text-gray-500">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-                    </div>
+                <div className="bg-red-100 px-8 py-12">
+                    <h1 className="text-4xl font-bold">{title}</h1>
                 </div>
 
                 <div className="bg-white w-11/12 mx-auto m-10 p-6 rounded-lg shadow-lg">

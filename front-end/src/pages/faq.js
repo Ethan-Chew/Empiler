@@ -3,6 +3,7 @@ import Footer from "../components/Footer";
 import FaqCatItem from "../components/FAQ/FaqCatItem";
 import { useSearchParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import Searchbar from "../components/FAQ/Searchbar";
 
 
 export default function FAQ() {
@@ -31,11 +32,12 @@ export default function FAQ() {
             <NavigationBar />
 
             {/* Header Section */}
-            <div className="bg-red-100 p-8">
+            <div className="bg-red-100 px-8 py-12">
                 <div className="mb-8">
-                    <h1 className="text-4xl font-bold">{title}</h1>
+                    <h1 className="text-4xl font-bold mb-1">{title}</h1>
                     <p className="text-gray-500">Last Updated: 24th October 2024</p>
                 </div>
+                <Searchbar showTitle={false} />
             </div>
 
             

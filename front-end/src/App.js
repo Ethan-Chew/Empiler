@@ -7,8 +7,6 @@ import { searchClient } from '@algolia/client-search';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-
-// ALL CODE IN THIS FILE IS OVERWRITABLE, FOR DEBUG USE ONLY. TO BE REPLACED.
 export default function App() {
   const navigate = useNavigate();
   const [faqs, setFaqs] = useState([]);
@@ -54,19 +52,25 @@ export default function App() {
   return (
     <main className="bg-gray-100">
       <NavigationBar />
-      <header className="min-w-full px-10 py-16 bg-red-100">
-        <img src="/FAQHeader.png" alt="Hero Image" className="w-full h-24 sm:h-32 md:h-40 lg:h-48 object-cover object-center rounded-lg mb-10" />
-        <h1 className="text-3xl md:text-4xl font-semibold mb-5 md:mb-6">How can we help you today?</h1>
-        <Searchbar showTitle={false} />
+      <header className="relative w-full">
+        <img 
+          src="https://www.ocbc.com/iwov-resources/sg/ocbc/personal/img/live/help-and-support/featured_bg-contactus.png" 
+          alt="Hero Image" 
+          className="w-full h-[300px] md:h-72 object-cover object-center rounded-lg mb-10" 
+        />
+        <div className="absolute top-0 left-0 w-full h-full flex justify-start items-center text-left text-white px-4 md:px-8">
+          <div className="flex-grow max-w-[50vw]">
+            <h1 className="text-3xl md:text-4xl font-semibold mb-5 md:mb-6 text-black">How can we help you today?</h1>
+            <Searchbar showTitle={false} />
+          </div>
+        </div>
       </header>
 
       {/* Main Content */}
       <section className="p-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10">
         {faqs.map(faq => (
           <a key={faq.id} href={`/faq?title=${faq.title}`}>
-            <div className="group rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200">
-              <SectionContainer title={faq.title} description={faq.description} />
-            </div>
+            <SectionContainer title={faq.title} description={faq.description} />
           </a>
         ))}
       </section>
