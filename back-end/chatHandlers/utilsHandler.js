@@ -1,4 +1,4 @@
-import { appendCustSIDToActiveChat, searchCustomerInActiveChat, searchForWaitingCustomer, saveMessages, retrieveChatMessages, addSocketIdToAvailStaff, getChatIdsForStaff, endActiveChat } from "../utils/sqliteDB.js";
+import { appendCustSIDToActiveChat, searchCustomerInActiveChat, searchForWaitingCustomer, saveMessages, retrieveChatMessages, addSocketIdToAvailStaff, getChatIdsForStaff, endActiveChat, searchForAvailStaff } from "../utils/sqliteDB.js";
 
 export default function (io, db, socket) {
     /*
@@ -54,10 +54,12 @@ export default function (io, db, socket) {
 
         if (searchActiveChat) {
             const chatHistory = await retrieveChatMessages(db, searchActiveChat.caseID);
+            const staffInformation = await searchForAvailStaff(db, searchActiveChat.staffID);
             callback({
                 exist: true,
                 caseID: searchActiveChat.caseID,
-                chatHistory: chatHistory
+                chatHistory: chatHistory,
+                staffName: staffInformation.name
             });
         } else {
             callback({

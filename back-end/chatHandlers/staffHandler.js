@@ -26,6 +26,7 @@ export default function (io, db, socket) {
         const staffData = {
             staffID: socket.user.id,
             socketIDs: [socket.id],
+            name: socket.user.name,
         };
         socket.join(staffData.staffID);
         await addAvailStaff(db, staffData);

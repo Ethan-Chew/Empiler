@@ -20,6 +20,7 @@ export default function CustomerChat() {
     const [messages, setMessages] = useState([]);
     const [chatEnded, setChatEnded] = useState(false);
     const [sentMessage, setSentMessage] = useState("");
+    const [staffName, setStaffName] = useState("[insert name]");
     const [error, setError] = useState('');
 
     // User Inactivity States
@@ -30,53 +31,53 @@ export default function CustomerChat() {
     const disconnectLimit = 4;
 
     // Helper Function to handle Window's Visibility Change. When inactive for 3 minutes, show warning. When inactive for 4 minutes, disconnect
-    // useEffect(() => {
-    //     const handleUserActivity = () => {
-    //         setInactivityTimer(0);
-    //         setUserInactive(false);
-    //     };
-    //     const handleVisibilityChange = () => {
-    //         if (document.visibilityState === "visible") {
-    //             setInactivityTimer(0);
-    //             setUserInactive(false);
-    //         }
-    //     }
+    useEffect(() => {
+        const handleUserActivity = () => {
+            setInactivityTimer(0);
+            setUserInactive(false);
+        };
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === "visible") {
+                setInactivityTimer(0);
+                setUserInactive(false);
+            }
+        }
 
-    //     // Increment inactivity time every minute
-    //     const interval = setInterval(() => {
-    //         setInactivityTimer(prev => prev + 1);
+        // Increment inactivity time every minute
+        const interval = setInterval(() => {
+            setInactivityTimer(prev => prev + 1);
 
-    //         if (inactivityTimer >= inactivityLimit) {
-    //             setUserInactive(true);
-    //         }
+            if (inactivityTimer >= inactivityLimit) {
+                setUserInactive(true);
+            }
 
-    //         if (inactivityTimer >= disconnectLimit) {
-    //             setUserDisconnect(true);
-    //             socket.emit("utils:end-chat", caseID);
-    //         }
-    //     }, 60000);
+            if (inactivityTimer >= disconnectLimit) {
+                setUserDisconnect(true);
+                socket.emit("utils:end-chat", caseID);
+            }
+        }, 60000);
 
-    //     // Set up event listeners
-    //     window.addEventListener('mousemove', handleUserActivity);
-    //     window.addEventListener('keypress', handleUserActivity);
-    //     window.addEventListener('click', handleUserActivity);
-    //     window.addEventListener('touchstart', handleUserActivity);
-    //     document.addEventListener("visibilitychange", handleVisibilityChange);
+        // Set up event listeners
+        window.addEventListener('mousemove', handleUserActivity);
+        window.addEventListener('keypress', handleUserActivity);
+        window.addEventListener('click', handleUserActivity);
+        window.addEventListener('touchstart', handleUserActivity);
+        document.addEventListener("visibilitychange", handleVisibilityChange);
 
-    //     return () => {
-    //         window.removeEventListener('mousemove', handleUserActivity);
-    //         window.removeEventListener('keypress', handleUserActivity);
-    //         window.removeEventListener('click', handleUserActivity);
-    //         window.removeEventListener('touchstart', handleUserActivity);
-    //         document.removeEventListener('visibilitychange', handleVisibilityChange);
-    //         clearInterval(interval);
-    //     };
-    // }, [inactivityTimer]);
+        return () => {
+            window.removeEventListener('mousemove', handleUserActivity);
+            window.removeEventListener('keypress', handleUserActivity);
+            window.removeEventListener('click', handleUserActivity);
+            window.removeEventListener('touchstart', handleUserActivity);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            clearInterval(interval);
+        };
+    }, [inactivityTimer]);
 
     useEffect(() => {
         // If there is no Case ID, redirect the Customer back to the Landing Page
         if (!caseID) {
-            // navigateHome();
+            navigateHome();
         }
 
         // Socket.IO Event Handlers
@@ -85,15 +86,17 @@ export default function CustomerChat() {
             
             const customerSessionIdentifier = sessionStorage.getItem("customerSessionIdentifier");
             if (!customerSessionIdentifier) {
-                // navigateHome();
+                navigateHome();
             }
 
             socket.emit("utils:verify-activechat", customerSessionIdentifier, (chatExistanceReq) => {
+                console.log(chatExistanceReq)
+                setStaffName(chatExistanceReq.staffName);
                 if (chatExistanceReq.exist && chatExistanceReq.caseID === caseID) {
                     socket.emit("utils:add-socket", customerSessionIdentifier, "customer");
                     setMessages(chatExistanceReq.chatHistory);
                 } else {
-                    // navigateHome();
+                    navigateHome();
                 }
             });
         }
@@ -179,7 +182,7 @@ export default function CustomerChat() {
                 {/* Live Chat Container */}
                 <div id="live-chat" className="flex-grow h-full md:mt-10 w-full rounded-xl flex flex-col bg-white md:drop-shadow-[0_0px_4px_rgba(0,0,0,.3)]">
                     <div className="flex-grow overflow-y-scroll p-6 md:p-4 min-h-0">
-                        <a>You are now chatting with [insert name].</a>
+                        { staffName !== "[insert name]" ? <a>You are now chatting with {staffName}.</a> : <></>}
                         
                         {/* Messages Area */}
                         <div id="chat-messages" className="overflow-y-scroll my-4 min-h-0">

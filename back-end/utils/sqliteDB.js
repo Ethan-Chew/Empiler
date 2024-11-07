@@ -2,7 +2,6 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
-import chatHistory from '../models/chatHistory.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const dbFile = join(__dirname, 'db.sqlite');
@@ -24,7 +23,8 @@ export const initialiseDB = async () => {
         );
         CREATE TABLE IF NOT EXISTS availStaff (
             staffID TEXT PRIMARY KEY,
-            socketIDs TEXT
+            socketIDs TEXT,
+            name TEXT
         );
         CREATE TABLE IF NOT EXISTS activeChats (
             caseID TEXT PRIMARY KEY,
@@ -41,6 +41,7 @@ export const initialiseDB = async () => {
             sessionIdentifier TEXT,
             timestamp INTEGER,
             message TEXT,
+            fileUrl TEXT,
             sender TEXT,
             PRIMARY KEY (caseID, timestamp, sender)
         );
@@ -86,8 +87,8 @@ export const addAvailStaff = async (db, staffData) => {
         await db.run('UPDATE availStaff SET socketIDs = ? WHERE staffID = ?', JSON.stringify(socketIDs), staffData.staffID);
     } else {
         staffData.socketIDs = JSON.stringify(staffData.socketIDs);
-        await db.run('INSERT INTO availStaff (socketIDs, staffID) VALUES (?, ?)', 
-            staffData.socketIDs, staffData.staffID);
+        await db.run('INSERT INTO availStaff (socketIDs, staffID, name) VALUES (?, ?, ?)', 
+            staffData.socketIDs, staffData.staffID, staffData.name);
     }
 };
 export const retrieveAvailStaff = async (db) => {
@@ -167,8 +168,8 @@ export const appendCustSIDToActiveChat = async (db, caseID, socketID) => {
 
 // Save Chat Messages
 export const saveMessages = async (db, msg) => {
-    await db.run('INSERT INTO chatHistory (caseID, sessionIdentifier, timestamp, message, sender) VALUES (?, ?, ?, ?, ?)', 
-        msg.case, msg.sessionIdentifier, msg.timestamp, msg.message, msg.sender);
+    await db.run('INSERT INTO chatHistory (caseID, sessionIdentifier, timestamp, message, fileUrl, sender) VALUES (?, ?, ?, ?, ?, ?)', 
+        msg.case, msg.sessionIdentifier, msg.timestamp, msg.message, msg.fileUrl, msg.sender);
 }
 export const retrieveChatMessages = async (db, caseID) => {
     const rows = await db.all('SELECT * FROM chatHistory WHERE caseID = ?', caseID);
