@@ -4,18 +4,24 @@ import Footer from "./components/Footer";
 import NavigationBar from "./components/Navbar";
 
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 export default function App() {
-  const navigate = useNavigate();
   const [faqs, setFaqs] = useState([]);
+  const [faqSection, setFaqSection] = useState('');
+  const [faqQuestion, setFaqQuestion] = useState('');
+  
+  const initChat = () => {
+    sessionStorage.setItem('faqSection', faqSection);
+    sessionStorage.setItem('faqQuestion', faqQuestion);
+
+    window.open('/awaitchat', "_self");
+  }
 
   useEffect(() => {
     const fetchFaqs = async () => {
       try {
         const response = await fetch('/api/section/');
         const data = await response.json();
-        console.log(data);
         setFaqs(data.sections);
       } catch (error) {
         console.error('Error fetching FAQs:', error);
@@ -27,6 +33,13 @@ export default function App() {
 
   return (
     <main className="bg-gray-100">
+      <div>
+        <input placeholder='Section' onChange={(e) => setFaqQuestion(e.target.value)} />
+        <input placeholder='QUestion' onChange={(e) => setFaqSection(e.target.value)} />
+        <button onClick={initChat}>
+          Fire Request go WEEEEEEEEEEEEEEEE
+        </button>
+      </div>
       <NavigationBar />
       <header className="min-w-full px-10 py-16 bg-red-100">
         <img src="/FAQHeader.png" alt="Hero Image" className="w-full h-24 sm:h-32 md:h-40 lg:h-48 object-cover object-center rounded-lg mb-10" />

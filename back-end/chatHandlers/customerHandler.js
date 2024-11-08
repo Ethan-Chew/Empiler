@@ -32,11 +32,11 @@ export default function (io, db, socket) {
         await removeWaitingCustomer(db, socket.id);
     });
 
-    socket.on("customer:end-chat", async (caseId) => {
+    socket.on("customer:end-chat", async (caseID) => {
         // Let the Customer know the Chat has ended
-        socket.to(caseId).emit("utils:chat-ended");
+        socket.to(caseID).emit("utils:chat-ended");
 
         // Remove the Chat from the list of Active Chats
-        await endActiveChat(db, caseId);
+        await endActiveChat(db, caseID);
     })
 }
