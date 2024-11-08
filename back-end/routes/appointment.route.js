@@ -1,12 +1,14 @@
 import express from 'express';
-import * as AppointmentController from '../controllers/appointment.controller.js';
+import AppointmentController from '../controllers/appointment.controller.js';
 
 const router = express.Router();
 
-// Get all available timeslots
-router.get('/timeslots', AppointmentController.getAvailableTimeSlots);
+router.route('/filter/:date/:branchName')
+    .get(AppointmentController.filterAppointments);
 
-// Book an appointment
-router.post('/book', AppointmentController.bookAppointment);
+router.route('/book')
+    .post(AppointmentController.bookAppointment);
+
+router.route("/")
 
 export default router;

@@ -1,29 +1,80 @@
-import supabase from '../utils/supabase.js';
+import supabase from "../utils/supabase.js";
 
-// Fetch all timeslots
-export const getAllTimeSlots = async () => {
-    const { data, error } = await supabase.from('appointment_timeslots').select('*');
-    console.log(data);
-    if (error) throw error;
-    return data;
-};
+export default class Appointment {
+    constructor(name, date, timeslotId, branchName) {
+        this.name = name;
+        this.date = date;
+        this.timeslotId = timeslotId;
+        this.branchName = branchName;
+    }
 
-// Check if a timeslot is available
-export const isTimeSlotAvailable = async (date, timeslotId) => {
-    const { data, error } = await supabase
-        .from('branch_appointments')
-        .select('timeslotId')
-        .eq('date', date)
-        .eq('timeslotId', timeslotId);
-    console.log("Filtered data:", data);
-    console.log("Error (if any):", error);
-    if (error) throw error;
-    return data.length === 0;
-};
+    static async getTimeslots() {
+        const { data, error } = await supabase
+            .from("appointment_timeslots")
+            .select("*")
 
+        if (error) {
+            console.error(error);
+            return null;
+        }
 
-// Book an appointment
-export const bookAppointment = async (name, date, timeslotId) => {
-    const { error } = await supabase.from('branch_appointments').insert([{ name, date, timeslotId }]);
-    if (error) throw error;
-};
+        return data;
+    }
+
+    static async getExistingAppointments(date, branchName) {
+        const { data, error } = await supabase
+            .from("branch_appointments")
+            .select("*")
+            .eq("date", date)
+            .eq("branchName", branchName);
+
+        if (error) {
+            console.error(error);
+            return null;
+        }
+
+        return data;
+    }
+
+    static async getAvailableTimeslots(date, branchName) {
+        try {
+            const timeslots = await Appointment.getTimeslots();
+            const appointments = await Appointment.getExistingAppointments(date, branchName);
+
+            if (!timeslots || !appointments) {
+                return { error: "No data found for the provided date or branch" };
+            }
+
+            // Filter out timeslots that are already booked
+            const availableTimeslots = timeslots.filter((timeslot) => {
+                const isBooked = appointments.some((appointment) => appointment.timeslotId === timeslot.id);
+                return !isBooked;
+            });
+
+            return availableTimeslots;
+        } catch (error) {
+            console.error(error);
+            return { error: "Error retrieving available timeslots" };
+        }
+    }
+
+    static async createAppointment(name, date, timeslotId, branchName) {
+        try {
+            const { data, error } = await supabase
+                .from("branch_appointments")
+                .insert([{ name, date, timeslotId, branchName }])
+                .single();
+                
+            if (error) {
+                console.error(error);
+                return { error: "Error creating appointment" };
+            }
+
+            return {data};
+            
+        } catch (error) {
+            console.error(error);
+            return { error: "Error creating appointment" };
+        }
+    }
+}
