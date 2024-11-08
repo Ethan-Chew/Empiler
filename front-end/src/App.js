@@ -39,20 +39,8 @@ export default function App() {
     .catch((err) => console.error(err));
   }, );
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log(`Category: ${faqSection}, Question: ${faqQuestion}`);
-  };
-
   return (
     <main className="bg-gray-100">
-      <div>
-        <input placeholder='Section' onChange={(e) => setFaqQuestion(e.target.value)} />
-        <input placeholder='QUestion' onChange={(e) => setFaqSection(e.target.value)} />
-        <button onClick={initChat}>
-          Fire Request go WEEEEEEEEEEEEEEEE
-        </button>
-      </div>
       <NavigationBar />
       <header className="relative w-full">
         <img 
