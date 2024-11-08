@@ -63,7 +63,7 @@ export default function Searchbar({ showTitle }) {
               <div className="flex flex-col gap-3">
                 <Hits
                   hitComponent={(props) => (
-                    <div onMouseDown={handleMouseDown} onMouseUp={handleMouseUp}>
+                    <div onMouseDown={handleMouseDown} onMouseUp={handleMouseUp} >
                       <Hit {...props} />
                     </div>
                   )}
