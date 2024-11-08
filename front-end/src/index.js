@@ -46,7 +46,8 @@ root.render(
       <Route path="/admin-support-log" element={<AdminSupportLog />} /> */}
       <Route path="/customer-menu" element={<CustomerMenuPage />} />
       <Route path="/view-upcoming-appointments" element={<ViewUpcomingAppointments />} />
-      <Route path="/FaqDetail" element={<FAQDetail />} />
+      <Route path="/faq-article" element={<FAQDetail />} />
+      <Route path="/faq" element={<FAQSection />} />
 
 
       <Route path="*" element={<h1>404 Not Found</h1>} />
