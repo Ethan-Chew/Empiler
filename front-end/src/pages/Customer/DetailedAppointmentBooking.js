@@ -74,7 +74,7 @@ export default function DetailedAppointmentBooking() {
     
 
     // Confirm booking function
-    const handleConfirmBooking = () => {
+    const handleConfirmBooking = async () => {
         if (!selectedAppointment || !selectedDate || !branchDetails) {
             alert('Please select a date and time slot before confirming.');
             return;
@@ -84,13 +84,36 @@ export default function DetailedAppointmentBooking() {
         selectedDateObj.setDate(selectedDateObj.getDate() + 1);  // Add one day
 
         const formattedDate = selectedDateObj.toISOString().split('T')[0];
-        
-        setBookingDetails({
-            name: "John Doe", // Replace with actual user name
-            date: formattedDate,
-            timeSlot: selectedAppointment.timeslot,
-            branch: branchDetails.landmark,
+
+        const token = sessionStorage.getItem('jwt');
+    
+        if (!token) {
+            alert('Please log in to confirm the booking.');
+            navigate('/login');
+            return;
+        }
+
+        const verifyResponse = await fetch('http://localhost:8080/api/auth/verify', {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${token}` // Send the JWT token for verification
+            },
+            credentials: "include", // Send cookies if required
         });
+
+        const verifyData = await verifyResponse.json();
+
+        if (verifyResponse.ok) {
+            setBookingDetails({
+                name: verifyData.accountId,
+                date: formattedDate,
+                timeSlot: selectedAppointment.timeslot,
+                branch: branchDetails.landmark,
+            });
+        } else {
+            alert('Failed to verify user. Please log in again.');
+            navigate('/login');
+        }
         
         setShowModal(true); // Show the modal to confirm details
     };
