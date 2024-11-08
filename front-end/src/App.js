@@ -2,24 +2,16 @@ import SectionContainer from "./components/FAQ/SectionContainer";
 import Searchbar from "./components/FAQ/Searchbar";
 import Footer from "./components/Footer";
 import NavigationBar from "./components/Navbar";
-import FaqIndivPage from "./pages/FaqIndivPage";
+import LiveChatPopup from './components/Chat/LiveChatPopup';
 import { searchClient } from '@algolia/client-search';
 import { useState, useEffect } from 'react';
 
 export default function App() {
   const [faqs, setFaqs] = useState([]);
+  const [isOpen, setIsOpen] = useState(false);
   const [faqSection, setFaqSection] = useState('');
   const [faqQuestion, setFaqQuestion] = useState('');
   const algoilaAdminKey = process.env.REACT_APP_ALGOILA_ADMIN_KEY;
-
-
-
-  const initChat = () => {
-    sessionStorage.setItem('faqSection', faqSection);
-    sessionStorage.setItem('faqQuestion', faqQuestion);
-
-    window.open('/awaitchat', "_self");
-  }
 
   useEffect(() => {
     const fetchFaqs = async () => {
@@ -49,13 +41,6 @@ export default function App() {
 
   return (
     <main className="bg-gray-100">
-      <div>
-        <input placeholder='Section' onChange={(e) => setFaqQuestion(e.target.value)} />
-        <input placeholder='QUestion' onChange={(e) => setFaqSection(e.target.value)} />
-        <button onClick={initChat}>
-          Fire Request go WEEEEEEEEEEEEEEEE
-        </button>
-      </div>
       <NavigationBar />
       <header className="relative w-full">
         <img 
@@ -80,7 +65,9 @@ export default function App() {
         ))}
       </section>
 
-      <Footer />
+      {isOpen && <LiveChatPopup isOpen={isOpen} setIsOpen={setIsOpen} />}
+
+      <Footer setIsOpen={setIsOpen}/>
     </main>
   );
 }

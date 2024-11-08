@@ -58,4 +58,5 @@ function FaqIndivPage() {
             </div>
         </>
     );
-}
+};
+export default FaqIndivPage;
