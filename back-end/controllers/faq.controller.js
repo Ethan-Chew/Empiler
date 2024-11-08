@@ -2,7 +2,7 @@ import FreqAskedQns from "../models/faq.js";
 
 const createFaq = async (req, res) => {
     const { title, description, section } = req.body;
-
+    console.log("createFaq");
     try {
         const faq = await FreqAskedQns.createFaq(title, description, section);
 
@@ -55,7 +55,7 @@ const getAllFaqs = async (req, res) => {
 
 const getFaqByTitle = async (req, res) => {
     const { title } = req.params;
-
+    console.log("getFaqByTitle");
     try {
         const faq = await FreqAskedQns.getFaqByTitle(title);
 
@@ -110,7 +110,7 @@ const getFaqBySection = async (req, res) => {
 const updateFaq = async (req, res) => {
     const { title } = req.params;
     const { description, section } = req.body;
-
+    console.log("updateFaq");
     try {
         const faq = await FreqAskedQns.updateFaq(title, description, section);
 
@@ -141,7 +141,7 @@ const deleteFaq = async (req, res) => {
 
     try {
         const faq = await FreqAskedQns.deleteFaq(title);
-
+        console.log("deleteFaq");
         if (!faq) {
             return res.status(404).json({
                 status: 'Error',
@@ -272,6 +272,54 @@ const getAllSections = async (req, res) => {
     }
 }
 
+const getDetailByTitle = async (req, res) => {
+    try {
+        const detail = await FreqAskedQns.getDetailByTitle(req.params.title);
+
+        if (!detail) {
+            return res.status(404).json({
+                status: 'Error',
+                message: 'FAQ not found.'
+            });
+        }
+
+        res.status(200).json({
+            status: 'Success',
+            detail: detail
+        });
+    } catch {
+        res.status(500).json({
+            status: 'Error',
+            message: 'Internal Server Error',
+            error: error
+        });
+    }
+}
+
+const getAllFaqDetails = async (req, res) => {
+    try {
+        const details = await FreqAskedQns.getAllFaqDetails();
+
+        if (!details) {
+            return res.status(404).json({
+                status: 'Error',
+                message: 'FAQs not found.'
+            });
+        }
+
+        res.status(200).json({
+            status: 'Success',
+            details: details
+        });
+    } catch {
+        res.status(500).json({
+            status: 'Error',
+            message: 'Internal Server Error',
+            error: error
+        });
+    }
+}
+
 export default {
     createFaq,
     getAllFaqs,
@@ -282,5 +330,7 @@ export default {
     createFaqSection,
     updateFaqSection,
     deleteFaqSection,
-    getAllSections
+    getAllSections,
+    getDetailByTitle,
+    getAllFaqDetails
 }

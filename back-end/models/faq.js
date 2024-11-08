@@ -151,4 +151,31 @@ export default class faq {
 
         return data;
     }
+
+    static async getDetailByTitle(title) {
+        const { data, error } = await supabase
+            .from('freq_asked_detail')
+            .select('title, description')
+            .eq('title', title);
+
+        if (error) {
+            console.log(error);
+            return null;
+        }
+
+        return data;
+    }
+
+    static async getAllFaqDetails() {
+        const { data, error } = await supabase
+            .from('freq_asked_detail')
+            .select('title, description');
+
+        if (error) {
+            console.log(error);
+            return null;
+        }
+
+        return data;
+    }
 }

@@ -2,14 +2,18 @@ import SectionContainer from "./components/FAQ/SectionContainer";
 import Searchbar from "./components/FAQ/Searchbar";
 import Footer from "./components/Footer";
 import NavigationBar from "./components/Navbar";
-
+import FaqIndivPage from "./pages/FaqIndivPage";
+import { searchClient } from '@algolia/client-search';
 import { useState, useEffect } from 'react';
 
 export default function App() {
   const [faqs, setFaqs] = useState([]);
   const [faqSection, setFaqSection] = useState('');
   const [faqQuestion, setFaqQuestion] = useState('');
-  
+  const algoilaAdminKey = process.env.REACT_APP_ALGOILA_ADMIN_KEY;
+
+
+
   const initChat = () => {
     sessionStorage.setItem('faqSection', faqSection);
     sessionStorage.setItem('faqQuestion', faqQuestion);
@@ -20,16 +24,28 @@ export default function App() {
   useEffect(() => {
     const fetchFaqs = async () => {
       try {
-        const response = await fetch('/api/section/');
+        const response = await fetch('http://localhost:8080/api/faq/section');
         const data = await response.json();
         setFaqs(data.sections);
       } catch (error) {
-        console.error('Error fetching FAQs:', error);
+        console.error('Error fetching faq sections:', error);
       }
     };
 
     fetchFaqs();
   }, []);
+
+  const processRecords = async () => {
+    const client = searchClient('AFO67MRW1I', algoilaAdminKey);
+    const datasetRequest = await fetch('http://localhost:8080/api/faq/details');
+    const details = await datasetRequest.json();
+    return await client.replaceAllObjects({ indexName: 'title', objects: details.details });
+  };
+  
+  useEffect(() => {
+    processRecords()
+    .catch((err) => console.error(err));
+  }, );
 
   return (
     <main className="bg-gray-100">
@@ -41,19 +57,25 @@ export default function App() {
         </button>
       </div>
       <NavigationBar />
-      <header className="min-w-full px-10 py-16 bg-red-100">
-        <img src="/FAQHeader.png" alt="Hero Image" className="w-full h-24 sm:h-32 md:h-40 lg:h-48 object-cover object-center rounded-lg mb-10" />
-        <h1 className="text-3xl md:text-4xl font-semibold mb-5 md:mb-6">How can we help you today?</h1>
-        <Searchbar showTitle={false} />
+      <header className="relative w-full">
+        <img 
+          src="https://www.ocbc.com/iwov-resources/sg/ocbc/personal/img/live/help-and-support/featured_bg-contactus.png" 
+          alt="Hero Image" 
+          className="w-full h-[300px] md:h-72 object-cover object-center rounded-lg mb-10" 
+        />
+        <div className="absolute top-0 left-0 w-full h-full flex justify-start items-center text-left text-white px-4 md:px-8">
+          <div className="flex-grow max-w-[50vw]">
+            <h1 className="text-3xl md:text-4xl font-semibold mb-5 md:mb-6 text-black">How can we help you today?</h1>
+            <Searchbar showTitle={false} />
+          </div>
+        </div>
       </header>
 
       {/* Main Content */}
       <section className="p-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10">
         {faqs.map(faq => (
-          <a key={faq.id} href={`/faq/${faq.id}`}>
-            <div className="group rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200">
-              <SectionContainer title={faq.title} description={faq.description} />
-            </div>
+          <a key={faq.id} href={`/faq?title=${faq.title}`}>
+            <SectionContainer title={faq.title} description={faq.description} />
           </a>
         ))}
       </section>
