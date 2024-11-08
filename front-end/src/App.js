@@ -2,7 +2,6 @@ import SectionContainer from "./components/FAQ/SectionContainer";
 import Searchbar from "./components/FAQ/Searchbar";
 import Footer from "./components/Footer";
 import NavigationBar from "./components/Navbar";
-import FaqIndivPage from "./pages/FaqIndivPage";
 import { searchClient } from '@algolia/client-search';
 import { useState, useEffect } from 'react';
 
