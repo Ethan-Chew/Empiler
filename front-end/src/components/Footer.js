@@ -17,7 +17,7 @@ export default function Footer({ setIsOpen }) {
               <p className="text-gray-500 text-xs mt-1">Waiting Time: 2 minutes or less</p>
             </div>
           </button>
-          <a href="/appointment-booking">
+          <a href="/appointments/branches">
             <div className="w-64 h-48 flex flex-col items-center p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200">
               <div className="w-20 h-20 mb-3 flex items-center justify-center rounded-full bg-gray-100">
                 <BsCalendarCheck className="text-4xl" />

@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { FaCalendarAlt, FaLocationArrow } from "react-icons/fa";
 
+
+// TODO: Migrate to use <Suspense />
 export default function DetailedAppointmentBooking() {
     const navigate = useNavigate();
     const location = useLocation();
@@ -29,11 +32,11 @@ export default function DetailedAppointmentBooking() {
     const generateAvailableDates = () => {
         const today = new Date();
         const currentDay = today.getDay(); // Get the current day (0 - Sunday, 6 - Saturday)
-        const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         const availableDates = [];
 
         // Loop through the next 5 weekdays (Mon to Fri)
-        for (let i = 1; i <= 5; i++) {
+        for (let i = 0; i < 5; i++) {
             const dayIndex = (currentDay + i) % 7; // Get the index of the next weekday (Mon to Fri)
             const day = daysOfWeek[dayIndex];
             const dayOfMonth = new Date(today);
@@ -70,8 +73,6 @@ export default function DetailedAppointmentBooking() {
             setLoadingTimeslots(false);
         }
     };
-
-    
 
     // Confirm booking function
     const handleConfirmBooking = async () => {
@@ -161,7 +162,7 @@ export default function DetailedAppointmentBooking() {
     };
 
     return (
-        <div className="font-inter overflow-hidden h-screen">
+        <div className="font-inter h-screen flex flex-col">
             <div className="bg-[#677A84] h-[15vh] w-full"></div>
             <div className="bg-[#D9D9D9] w-full p-5 text-left mb-3">
                 {branchDetails ? (
@@ -201,61 +202,73 @@ export default function DetailedAppointmentBooking() {
                 </div>
             )}
 
-            <div className="flex h-[calc(85vh-20px)] p-5">
-                <div className="flex-2 flex flex-col gap-2 overflow-hidden mr-3">
-                    {/* Date Selection */}
-                    <div className="bg-white rounded-lg shadow-md p-3">
-                        <div className="flex justify-between items-center mb-3">
-                            <p className="text-lg font-medium">
-                                {selectedDate ? selectedDate : 'Select a Date'}
-                            </p>
-                            <button className="text-lg">&#9660;</button> 
+            <div className="flex-grow flex p-5 h-full">
+                <div className="flex-grow basis-3/4 flex flex-col gap-2 overflow-hidden mr-3">
+                    <div className='w-full flex flex-col border-3 border-neutral-200 rounded-xl p-3 gap-4'>
+                        <div className='pb-2 border-b-2 border-neutral-200 text-center'>
+                            <a className='text-lg font-semibold'>November 2024</a>
                         </div>
-                        <div className="flex justify-evenly mb-3">
-                            {availableDates.map((date, idx) => (
-                                <button
-                                    key={idx}
-                                    className={`w-12 h-16 rounded-lg flex flex-col items-center justify-center cursor-pointer ${selectedDate === date.dayOfMonth.toLocaleDateString() ? 'bg-[#DA291C]' : 'bg-[#F5F5F5]'}`}
+
+                        {/* Date Selector */}
+                        <div className='flex flex-row items-center justify-center gap-10'>
+                            {availableDates.map((date, index) => (
+                                <button 
+                                    key={index}
                                     onClick={() => handleDateSelect(date.dayOfMonth.toLocaleDateString())}
                                 >
-                                    <p className="text-sm font-semibold">{date.dayOfMonth.getDate()}</p> {/* Date on top */}
-                                    <p className="text-xs">{date.day}</p> {/* Day below */}
+                                    <div className='flex flex-col justify-center items-center gap-1'>
+                                        <p className={`p-2 border-3 ${selectedDate === date.dayOfMonth.toLocaleDateString() ? 'border-ocbcred text-ocbcred' : 'border-neutral-300 text-neutral-500'} rounded-full text-xl font-semibold w-12 h-12 flex items-center justify-center`}>
+                                            {date.dayOfMonth.getDate()}
+                                        </p>
+                                        <p className={`text-sm ${selectedDate === date.dayOfMonth.toLocaleDateString() ? 'text-ocbcred' : 'text-neutral-500'}`}>
+                                            {date.day}
+                                        </p>
+                                    </div>
                                 </button>
                             ))}
                         </div>
+
                     </div>
 
-                    {/* Appointment Time Selection */}
-                    <div className="bg-white rounded-lg shadow-md p-3 overflow-y-scroll max-h-[355px]">
+                    {/* Slot Selector */}
+                    <div className='w-full border-3 border-neutral-200 rounded-xl p-3 flex flex-col gap-2'>
+                        {/* <div className='flex flex-row py-2 px-4 border-2 rounded-xl items-center'>
+                            <div>
+                                <p className="text-lg font-semibold">Some Branch Name</p>
+                                <p className="text-green-700">5:00pm - 5:30pm</p>
+                            </div>
+
+                            <button class="ml-auto w-10 h-10 flex items-center justify-center rounded-full border-2 border-ocbcred">
+                                <div class="w-4 h-4 bg-ocbcred rounded-full"></div>
+                            </button>
+                        </div> */}
                         {loadingTimeslots ? (
                             <p>Loading timeslots...</p>
                         ) : (
                             <>
                                 {timeslots.length > 0 ? (
                                     timeslots.map((timeslot, idx) => (
+                                        
                                         <div
                                             key={timeslot.id}
-                                            className={`flex justify-between items-center p-2 mb-2 rounded-lg cursor-pointer border-2 ${
-                                                selectedAppointment?.id === timeslot.id ? 'border-[#DA291C]' : 'border-[#C7C7C7]'
-                                            }`}
+                                            className="flex flex-row py-2 px-4 border-2 rounded-xl items-center"
                                             onClick={() => handleAppointmentSelect(timeslot)}
                                             role="button"
                                             tabIndex={0}
-                                            onKeyPress={(e) => {
+                                            onKeyUp={(e) => {
                                                 if (e.key === 'Enter' || e.key === ' ') {
                                                     handleAppointmentSelect(timeslot);
                                                 }
                                             }}
                                         >
                                             <div>
-                                                <p className="text-sm font-semibold">{branchDetails?.landmark || 'Branch'}</p>
-                                                <p className="text-sm text-green-700">{timeslot.timeslot}</p>
+                                                <p className="text-lg font-semibold">Some Branch Name</p>
+                                                <p className="text-green-700">5:00pm - 5:30pm</p>
                                             </div>
-                                            <div
-                                                className={`w-5 h-5 rounded-full border-2 ${
-                                                    selectedAppointment?.id === timeslot.id ? 'bg-[#DA291C]' : 'bg-transparent'
-                                                }`}
-                                            ></div>
+
+                                            <button className={`ml-auto w-10 h-10 flex items-center justify-center rounded-full border-2 ${selectedAppointment?.id === timeslot.id ? "border-ocbcred" : "border-neutral-300"}`}>
+                                                <div className={`w-4 h-4 bg-ocbcred rounded-full ${selectedAppointment?.id === timeslot.id ? "block" : "hidden"}`}></div>
+                                            </button>
                                         </div>
                                     ))
                                 ) : (
@@ -267,36 +280,43 @@ export default function DetailedAppointmentBooking() {
                 </div>
 
                 {/* Location Info and Actions */}
-                <div className="flex-1 flex flex-col gap-2">
-                    <div className="bg-white rounded-lg shadow-md p-3">
-                        <h2 className="text-xl font-semibold">Location</h2>
-                        <p className="text-base font-medium">{branchDetails ? branchDetails.landmark : 'Loading...'}</p>
+                <div className='flex-grow basis-1/3 md:basis-1/4 flex flex-col gap-3 border-3 border-neutral-200 rounded-xl px-4 py-2'>
+                    <div>
+                        <h2 className="text-2xl font-bold">Location</h2>
+                        <p className="text-lg font-medium">{branchDetails ? branchDetails.landmark : 'Loading...'}</p>
                         <p className="text-sm text-gray-500">{branchDetails ? branchDetails.address : 'Loading address...'}</p>
-                        <div className="mt-2 p-2 bg-[#DFB0EF] text-[#803A97] font-semibold rounded-md text-center">Premier Centre</div>
+                        <div className="mt-2 w-fit px-5 py-1 bg-[#DFB0EF] text-[#803A97] font-semibold rounded-full text-center text-sm">
+                            { branchDetails ? branchDetails.category : "Loading..." }
+                        </div>
                     </div>
 
-                    <div className="bg-white rounded-lg shadow-md p-3">
-                        <h2 className="text-xl font-semibold">Opening Hours</h2>
-                        <p className="text-sm text-[#060313]">
-                            Mon-Fri: 9:00 AM to 4:30 PM<br />
-                            Sat: 9:00 AM to 11:30 AM<br />
-                            Sun: Closed
-                        </p>
+                    <div>
+                        <h2 className="text-2xl font-bold">Opening Hours</h2>
+                        { branchDetails.openingHours.split(", ").map((text, index) => (
+                            <p key={index}>{ text }</p>
+                        ))}
                     </div>
 
-                    <div className="flex flex-col gap-2">
+                    <div className='mt-auto w-full space-y-3'>
                         <button
                             onClick={handleConfirmBooking}
-                            className="bg-[#DA291C] text-white text-sm py-2 rounded-lg"
+                            className="bg-[#DA291C] text-white font-semibold text-lg py-2 px-5 rounded-lg w-full"
                         >
-                            Confirm Appointment
+                            <div className='flex gap-3 items-center'>
+                                <FaCalendarAlt />
+                                Book Appointment
+                            </div>
                         </button>
                         <button
-                            onClick={handleCancel} // Trigger handleCancel when the button is clicked
-                            className="bg-[#DA291C] text-white text-sm py-2 rounded-lg transition-colors duration-300 hover:bg-red-600"
+                            onClick={handleConfirmBooking}
+                            className="bg-[#DA291C] text-white font-semibold text-lg py-2 px-5 rounded-lg w-full"
                         >
-                            Cancel
-                        </button>                    </div>
+                            <div className='flex gap-3 items-center'>
+                                <FaLocationArrow />
+                                Directions
+                            </div>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

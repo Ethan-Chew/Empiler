@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import Footer from '../components/Footer';
+import LiveChatPopup from '../components/Chat/LiveChatPopup';
 import NavigationBar from "../components/Navbar";
 import { useSearchParams } from 'react-router-dom';
 import Markdown from 'react-markdown'
 
 function FaqIndivPage() {
     const [faqDetail, setFaqDetail] = useState();
+    const [isOpen, setIsOpen] = useState(false);
     const [searchParams, setSearchParams] = useSearchParams();
     const title = searchParams.get('title');
+    const section = searchParams.get('section');
 
     useEffect(() => {
         const fetchDetail = async () => {
@@ -54,7 +57,9 @@ function FaqIndivPage() {
                     </div>
                 </div>
 
-                <Footer />
+                {isOpen && <LiveChatPopup section={section} question={title} isOpen={isOpen} setIsOpen={setIsOpen} />}
+
+                <Footer setIsOpen={setIsOpen} />
             </div>
         </>
     );

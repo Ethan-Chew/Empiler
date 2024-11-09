@@ -49,9 +49,7 @@ root.render(
       <Route path="/faq-article" element={<FAQDetail />} />
       <Route path="/faq" element={<FAQSection />} />
 
-
       <Route path="*" element={<h1>404 Not Found</h1>} />
-
 
       {/* Protected Routes (Staff) */}
       <Route path="/staff/home" element={<ProtectedRoute Component={StaffLandingPage} role="staff" />} />
