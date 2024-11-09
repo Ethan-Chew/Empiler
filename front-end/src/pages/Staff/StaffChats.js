@@ -172,11 +172,11 @@ export default function StaffChats() {
 
             <div className="flex flex-row flex-1">
                 {/* Active Chat List */}
-                <div id="chat-list" className="w-1/3 md:w-1/4 bg-neutral-100 border-r-2 border-neutral-600 overflow-y-auto">
+                <div id="chat-list" className="w-1/3 md:w-1/4 bg-neutral-100 border-r border-gray-300 overflow-y-auto">
                     <div>
 
                     </div>
-                    <div className="text-center py-4 border-y border-black cursor-pointer" onClick={() => showAwaitCustomerList()}>
+                    <div className="text-center py-4 border-y border-gray-300 cursor-pointer" onClick={() => showAwaitCustomerList()}>
                         <p className="font-semibold">Find and Start Live Chat</p>
                     </div>
 
@@ -194,7 +194,7 @@ export default function StaffChats() {
 
                 {/* Chat Window */}
                 <div id="chat-window" className={`flex flex-col flex-grow ${connectedChats.length === 0 && "items-center justify-center"} overflow-y-auto`}>
-                    <div id="chat-header" className={`w-full bg-neutral-100 border-y-2 border-neutral-600 flex flex-row px-4 py-2 ${selectedChatId == null ? "hidden" : ""}`}>
+                    <div id="chat-header" className={`w-full bg-neutral-100 border-y border-gray-300 flex flex-row px-4 py-2 ${selectedChatId == null ? "hidden" : ""}`}>
                         {selectedChatId && connectedChats.filter((chat) => chat.caseID === selectedChatId).map((selectedChat => (
                             <>
                                 <div>
@@ -231,7 +231,8 @@ export default function StaffChats() {
                                 className="p-3 border-2 w-full rounded-xl outline-none mx-5"
                                 placeholder="Enter a Message.."
                                 value={sentMessage}
-                                onChange={(e) => setSentMessage(e.target.value) }
+                                onChange={(e) => setSentMessage(e.target.value)}
+                                onKeyDown={(e) => e.key === "Enter" && sendMessage(null)}
                             />
                             <button className="border-2 rounded-xl px-4 hover:border-neutral-500 duration-200" onClick={() => sendMessage(null)}>
                                 <FaArrowCircleUp className="text-2xl text-neutral-400 hover:text-neutral-500" />
@@ -292,12 +293,18 @@ function ChatListItem({ chat, selectedChatId, setSelectedChatId }) {
     if (!chat.customer) return <></>
 
     return (
-        <div className={`border-y-2 border-neutral-600 px-5 py-2 flex flex-row gap-5 max-w-full hover:bg-neutral-200 ${(selectedChatId === chat.caseID && (selectedChatId !== undefined && selectedChatId !== null)) && "bg-chatred/20"}`} onClick={handleOnClick}>
+        <div
+            className={`border-y border-gray-300 px-5 py-2 flex flex-row gap-5 max-w-full hover:bg-neutral-200 ${(selectedChatId === chat.caseID && (selectedChatId !== undefined && selectedChatId !== null)) && "bg-chatred/20"}`}
+            onClick={handleOnClick}
+        >
+            {selectedChatId === chat.caseID && (
+                <div className="w-2 bg-gray-400 -ml-5 -my-2"></div>
+            )}
             <div className="min-w-0 flex-grow">
-                <p className="truncate font-semibold">{ chat.customer.faqQuestion }</p>
-                <p className="truncate">{ getLastSentText(chat.messages).message }</p>
+                <p className="truncate font-semibold">{chat.customer.faqQuestion}</p>
+                <p className="truncate">{getLastSentText(chat.messages).message}</p>
             </div>
-            <a className="flex-shrink-0">{ formatTimestamp(getLastSentText(chat.messages).timestamp) }</a>
+            {getLastSentText(chat.messages).timestamp ? <a className="flex-shrink-0">{formatTimestamp(getLastSentText(chat.messages).timestamp)}</a> : null}
         </div>
     )
 }
