@@ -33,8 +33,8 @@ root.render(
       <Route path="/login" element={<Login />} />
 
       {/* FAQ Routes */}
-      <Route path='/faq/:section' element={<FAQSection />} />
-      <Route path='/faq/:section/:article' element={<FAQDetail />} />
+      <Route path="/faq-article" element={<FAQDetail />} />
+      <Route path="/faq" element={<FAQSection />} />
 
       {/* Chat Routes */}
       <Route path="/awaitchat" element={<InitisaliseChat />} />
@@ -45,8 +45,7 @@ root.render(
       <Route path="/admin-support-log" element={<AdminSupportLog />} /> */}
       <Route path="/customer-menu" element={<CustomerMenuPage />} />
       <Route path="/view-upcoming-appointments" element={<ViewUpcomingAppointments />} />
-      <Route path="/faq-article" element={<FAQDetail />} />
-      <Route path="/faq" element={<FAQSection />} />
+
 
       <Route path="*" element={<h1>404 Not Found</h1>} />
 
