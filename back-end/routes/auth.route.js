@@ -9,4 +9,7 @@ router.route("/login")
 router.route("/verify")
     .get(AuthController.authVerifyToken)
 
+router.route("/logout")
+    .get(AuthController.authLogoutUser)
+
 export default router

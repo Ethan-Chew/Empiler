@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const verifyAuthentication = async (role) => {
     const verifyRequest = await fetch('http://localhost:8080/api/auth/verify', {
@@ -20,6 +20,7 @@ const verifyAuthentication = async (role) => {
 // role: customer, staff
 export default function ProtectedRoute({ Component, role }) {
     const navigate = useNavigate();
+    const location = useLocation();
     const [isLoading, setIsLoading] = useState(true);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -35,7 +36,11 @@ export default function ProtectedRoute({ Component, role }) {
 
     useEffect(() => {
         if (!isLoading && !isAuthenticated) {
-            navigate("/login");
+            navigate("/login", {
+                state: {
+                    callback: location.pathname
+                }
+            });
         }
     }, [isLoading]);
 

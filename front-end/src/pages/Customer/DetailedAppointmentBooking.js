@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { FaCalendarAlt, FaLocationArrow } from "react-icons/fa";
+import { format } from 'crypto-js';
 
 
 // TODO: Migrate to use <Suspense />
@@ -31,23 +32,24 @@ export default function DetailedAppointmentBooking() {
 
     const generateAvailableDates = () => {
         const today = new Date();
-        const currentDay = today.getDay(); // Get the current day (0 - Sunday, 6 - Saturday)
-        const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         const availableDates = [];
-
-        // Loop through the next 5 weekdays (Mon to Fri)
-        for (let i = 0; i < 5; i++) {
-            const dayIndex = (currentDay + i) % 7; // Get the index of the next weekday (Mon to Fri)
-            const day = daysOfWeek[dayIndex];
-            const dayOfMonth = new Date(today);
-            dayOfMonth.setDate(today.getDate() + i); // Set the date to the correct weekday
-
-            // Only add dates from the current date forward
-            if (dayOfMonth >= today) {
-                availableDates.push({ day, dayOfMonth });
+    
+        // Loop through the next 5 days (including Saturdays)
+        for (let i = 0; availableDates.length < 7; i++) {
+            const nextDate = new Date(today);
+            nextDate.setDate(today.getDate() + i); // Increment date by i days
+    
+            // Check if the date falls on Sunday (0 - Sunday)
+            if (nextDate.getDay() !== 0) {
+                // Format the date to YYYY-MM-DD
+                const formattedDate = nextDate.toISOString().split('T')[0]; // YYYY-MM-DD format
+                availableDates.push({
+                    day: nextDate.toLocaleString('en-US', { weekday: 'long' }), // e.g., Mon, Tue
+                    formattedDate,
+                });
             }
         }
-
+    
         setAvailableDates(availableDates);
     };
 
@@ -55,8 +57,7 @@ export default function DetailedAppointmentBooking() {
     const fetchAvailableTimeslots = async (date) => {
         setLoadingTimeslots(true);
         try {
-            const selectedDateObj = new Date(selectedDate);
-            selectedDateObj.setDate(selectedDateObj.getDate() + 1);  // Add one day
+            const selectedDateObj = new Date(date);
 
             const formattedDate = selectedDateObj.toISOString().split('T')[0];
             const response = await fetch(`http://localhost:8080/api/appointments/filter/${formattedDate}/${branchDetails.landmark}`);
@@ -82,7 +83,6 @@ export default function DetailedAppointmentBooking() {
         }
         
         const selectedDateObj = new Date(selectedDate);
-        selectedDateObj.setDate(selectedDateObj.getDate() + 1);  // Add one day
 
         const formattedDate = selectedDateObj.toISOString().split('T')[0];
 
@@ -214,13 +214,13 @@ export default function DetailedAppointmentBooking() {
                             {availableDates.map((date, index) => (
                                 <button 
                                     key={index}
-                                    onClick={() => handleDateSelect(date.dayOfMonth.toLocaleDateString())}
+                                    onClick={() => handleDateSelect(date.formattedDate)}
                                 >
                                     <div className='flex flex-col justify-center items-center gap-1'>
-                                        <p className={`p-2 border-3 ${selectedDate === date.dayOfMonth.toLocaleDateString() ? 'border-ocbcred text-ocbcred' : 'border-neutral-300 text-neutral-500'} rounded-full text-xl font-semibold w-12 h-12 flex items-center justify-center`}>
-                                            {date.dayOfMonth.getDate()}
+                                        <p className={`p-2 border-3 ${selectedDate === date.formattedDate ? 'border-ocbcred text-ocbcred' : 'border-neutral-300 text-neutral-500'} rounded-full text-xl font-semibold w-12 h-12 flex items-center justify-center`}>
+                                            {new Date(date.formattedDate).getDate()}
                                         </p>
-                                        <p className={`text-sm ${selectedDate === date.dayOfMonth.toLocaleDateString() ? 'text-ocbcred' : 'text-neutral-500'}`}>
+                                        <p className={`text-sm ${selectedDate === date.formattedDate ? 'text-ocbcred' : 'text-neutral-500'}`}>
                                             {date.day}
                                         </p>
                                     </div>
@@ -232,16 +232,6 @@ export default function DetailedAppointmentBooking() {
 
                     {/* Slot Selector */}
                     <div className='w-full border-3 border-neutral-200 rounded-xl p-3 flex flex-col gap-2'>
-                        {/* <div className='flex flex-row py-2 px-4 border-2 rounded-xl items-center'>
-                            <div>
-                                <p className="text-lg font-semibold">Some Branch Name</p>
-                                <p className="text-green-700">5:00pm - 5:30pm</p>
-                            </div>
-
-                            <button class="ml-auto w-10 h-10 flex items-center justify-center rounded-full border-2 border-ocbcred">
-                                <div class="w-4 h-4 bg-ocbcred rounded-full"></div>
-                            </button>
-                        </div> */}
                         {loadingTimeslots ? (
                             <p>Loading timeslots...</p>
                         ) : (
@@ -251,7 +241,7 @@ export default function DetailedAppointmentBooking() {
                                         
                                         <div
                                             key={timeslot.id}
-                                            className="flex flex-row py-2 px-4 border-2 rounded-xl items-center"
+                                            className={`flex flex-row py-2 px-4 border-2 rounded-xl items-center ${selectedAppointment?.id === timeslot.id ? "border-ocbcred" : "border-neutral-300"}`}
                                             onClick={() => handleAppointmentSelect(timeslot)}
                                             role="button"
                                             tabIndex={0}
@@ -262,8 +252,8 @@ export default function DetailedAppointmentBooking() {
                                             }}
                                         >
                                             <div>
-                                                <p className="text-lg font-semibold">Some Branch Name</p>
-                                                <p className="text-green-700">5:00pm - 5:30pm</p>
+                                                <p className="text-lg font-semibold">{branchDetails.landmark}</p>
+                                                <p className="text-green-700">{timeslot.timeslot}</p>
                                             </div>
 
                                             <button className={`ml-auto w-10 h-10 flex items-center justify-center rounded-full border-2 ${selectedAppointment?.id === timeslot.id ? "border-ocbcred" : "border-neutral-300"}`}>
@@ -292,7 +282,7 @@ export default function DetailedAppointmentBooking() {
 
                     <div>
                         <h2 className="text-2xl font-bold">Opening Hours</h2>
-                        { branchDetails.openingHours.split(", ").map((text, index) => (
+                        { branchDetails && branchDetails.openingHours.split(", ").map((text, index) => (
                             <p key={index}>{ text }</p>
                         ))}
                     </div>
@@ -300,7 +290,7 @@ export default function DetailedAppointmentBooking() {
                     <div className='mt-auto w-full space-y-3'>
                         <button
                             onClick={handleConfirmBooking}
-                            className="bg-[#DA291C] text-white font-semibold text-lg py-2 px-5 rounded-lg w-full"
+                            className="bg-[#DA291C] text-white font-medium text-lg py-2 px-5 rounded-lg w-full"
                         >
                             <div className='flex gap-3 items-center'>
                                 <FaCalendarAlt />
@@ -309,7 +299,7 @@ export default function DetailedAppointmentBooking() {
                         </button>
                         <button
                             onClick={handleConfirmBooking}
-                            className="bg-[#DA291C] text-white font-semibold text-lg py-2 px-5 rounded-lg w-full"
+                            className="bg-[#DA291C] text-white font-medium text-lg py-2 px-5 rounded-lg w-full"
                         >
                             <div className='flex gap-3 items-center'>
                                 <FaLocationArrow />
