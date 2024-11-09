@@ -28,23 +28,24 @@ export default function DetailedAppointmentBooking() {
 
     const generateAvailableDates = () => {
         const today = new Date();
-        const currentDay = today.getDay(); // Get the current day (0 - Sunday, 6 - Saturday)
-        const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         const availableDates = [];
-
-        // Loop through the next 5 weekdays (Mon to Fri)
-        for (let i = 1; i <= 5; i++) {
-            const dayIndex = (currentDay + i) % 7; // Get the index of the next weekday (Mon to Fri)
-            const day = daysOfWeek[dayIndex];
-            const dayOfMonth = new Date(today);
-            dayOfMonth.setDate(today.getDate() + i); // Set the date to the correct weekday
-
-            // Only add dates from the current date forward
-            if (dayOfMonth >= today) {
-                availableDates.push({ day, dayOfMonth });
+    
+        // Loop through the next 5 days (including Saturdays)
+        for (let i = 1; availableDates.length < 5; i++) {
+            const nextDate = new Date(today);
+            nextDate.setDate(today.getDate() + i); // Increment date by i days
+    
+            // Check if the date falls on Sunday (0 - Sunday)
+            if (nextDate.getDay() !== 0) {
+                // Format the date to YYYY-MM-DD
+                const formattedDate = nextDate.toISOString().split('T')[0]; // YYYY-MM-DD format
+                availableDates.push({
+                    day: nextDate.toLocaleString('en-US', { weekday: 'short' }), // e.g., Mon, Tue
+                    formattedDate,
+                });
             }
         }
-
+    
         setAvailableDates(availableDates);
     };
 
@@ -52,8 +53,7 @@ export default function DetailedAppointmentBooking() {
     const fetchAvailableTimeslots = async (date) => {
         setLoadingTimeslots(true);
         try {
-            const selectedDateObj = new Date(selectedDate);
-            selectedDateObj.setDate(selectedDateObj.getDate() + 1);  // Add one day
+            const selectedDateObj = new Date(date);
 
             const formattedDate = selectedDateObj.toISOString().split('T')[0];
             const response = await fetch(`http://localhost:8080/api/appointments/filter/${formattedDate}/${branchDetails.landmark}`);
@@ -81,7 +81,6 @@ export default function DetailedAppointmentBooking() {
         }
         
         const selectedDateObj = new Date(selectedDate);
-        selectedDateObj.setDate(selectedDateObj.getDate() + 1);  // Add one day
 
         const formattedDate = selectedDateObj.toISOString().split('T')[0];
 
@@ -215,11 +214,11 @@ export default function DetailedAppointmentBooking() {
                             {availableDates.map((date, idx) => (
                                 <button
                                     key={idx}
-                                    className={`w-12 h-16 rounded-lg flex flex-col items-center justify-center cursor-pointer ${selectedDate === date.dayOfMonth.toLocaleDateString() ? 'bg-[#DA291C]' : 'bg-[#F5F5F5]'}`}
-                                    onClick={() => handleDateSelect(date.dayOfMonth.toLocaleDateString())}
+                                    className={`w-12 h-16 mr-2 rounded-lg flex flex-col items-center justify-center cursor-pointer ${selectedDate === date.formattedDate ? 'bg-[#DA291C]' : 'bg-[#F5F5F5]'}`}
+                                    onClick={() => handleDateSelect(date.formattedDate)}
                                 >
-                                    <p className="text-sm font-semibold">{date.dayOfMonth.getDate()}</p> {/* Date on top */}
-                                    <p className="text-xs">{date.day}</p> {/* Day below */}
+                                    <p className="text-sm font-semibold">{new Date(date.formattedDate).getDate()}</p> 
+                                    <p className="text-xs">{date.day}</p> {/* e.g., Mon, Tue */}
                                 </button>
                             ))}
                         </div>
