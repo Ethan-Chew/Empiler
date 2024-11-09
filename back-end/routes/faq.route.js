@@ -3,29 +3,8 @@ import FreqAskedQnsController from "../controllers/faq.controller.js";
 
 const router = express.Router()
 
-// Route to create a new FAQ
-router.route("/create")
-    .post(FreqAskedQnsController.createFaq);
-
-// Route to get all FAQs
-router.route("/faq")
-    .get(FreqAskedQnsController.getAllFaqs);
-
-// Route to get FAQ by title
-router.route("/:title")
-    .get(FreqAskedQnsController.getFaqByTitle);
-
-// Route to get FAQ by section
-router.route("/:section")
-    .get(FreqAskedQnsController.getFaqBySection);
-
-// Route to update an FAQ 
-router.route("/update")
-    .put(FreqAskedQnsController.updateFaq);
-
-// Route to delete an FAQ
-router.route("/delete")
-    .delete(FreqAskedQnsController.deleteFaq);
+router.route("/section")
+    .get(FreqAskedQnsController.getAllSections);
 
 // Route to create an FAQ Section
 router.route("/section/create")
@@ -39,12 +18,38 @@ router.route("/section/update")
 router.route("/section/delete")
     .delete(FreqAskedQnsController.deleteFaqSection);
 
-// Route to display all FAQ Section
-router.route("/section")
-    .get(FreqAskedQnsController.getAllSections);
+// Route to get FAQ by section
+router.route("/section/:section")
+    .get(FreqAskedQnsController.getFaqBySection);
+
+// Route to create a new FAQ
+router.route("/create")
+    .post(FreqAskedQnsController.createFaq);
+
+// Route to get all FAQs
+router.route("/faq")
+    .get(FreqAskedQnsController.getAllFaqs);
+
+// Route to get FAQ by title
+router.route("/title/:title")
+    .get(FreqAskedQnsController.getFaqByTitle);
+
+// Route to update an FAQ 
+router.route("/update")
+    .put(FreqAskedQnsController.updateFaq);
+
+// Route to delete an FAQ
+router.route("/delete")
+    .delete(FreqAskedQnsController.deleteFaq);
 
 router.route("/routes")
 
 router.route("/questions")
+
+router.route("/detail/:title")
+    .get(FreqAskedQnsController.getDetailByTitle);
+
+router.route("/details")
+    .get(FreqAskedQnsController.getAllFaqDetails);
 
 export default router

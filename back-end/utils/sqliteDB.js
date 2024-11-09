@@ -2,7 +2,6 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
-import chatHistory from '../models/chatHistory.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const dbFile = join(__dirname, 'db.sqlite');
@@ -24,7 +23,8 @@ export const initialiseDB = async () => {
         );
         CREATE TABLE IF NOT EXISTS availStaff (
             staffID TEXT PRIMARY KEY,
-            socketIDs TEXT
+            socketIDs TEXT,
+            name TEXT
         );
         CREATE TABLE IF NOT EXISTS activeChats (
             caseID TEXT PRIMARY KEY,
@@ -41,6 +41,7 @@ export const initialiseDB = async () => {
             sessionIdentifier TEXT,
             timestamp INTEGER,
             message TEXT,
+            fileUrl TEXT,
             sender TEXT,
             PRIMARY KEY (caseID, timestamp, sender)
         );
@@ -81,13 +82,13 @@ export const searchForWaitingCustomer = async (db, customerSessionIdentifier) =>
 export const addAvailStaff = async (db, staffData) => {
     const staffProfile = await searchForAvailStaff(db, staffData.staffID);
     if (staffProfile) {
-        const socketIDs = staffProfile.socketIDs;
+        const socketIDs = staffData.socketIDs;
         socketIDs.push(staffProfile.socketIDs[0]);
         await db.run('UPDATE availStaff SET socketIDs = ? WHERE staffID = ?', JSON.stringify(socketIDs), staffData.staffID);
     } else {
         staffData.socketIDs = JSON.stringify(staffData.socketIDs);
-        await db.run('INSERT INTO availStaff (socketIDs, staffID) VALUES (?, ?)', 
-            staffData.socketIDs, staffData.staffID);
+        await db.run('INSERT INTO availStaff (socketIDs, staffID, name) VALUES (?, ?, ?)', 
+            staffData.socketIDs, staffData.staffID, staffData.name);
     }
 };
 export const retrieveAvailStaff = async (db) => {
@@ -108,22 +109,54 @@ export const startActiveChat = async (db, activeChat) => {
     activeChat.customer.socketIDs = JSON.stringify(activeChat.customer.socketIDs);
     activeChat.staff.socketIDs = JSON.stringify(activeChat.staff.socketIDs);
     await db.run('INSERT INTO activeChats (caseID, customerSessionIdentifier, customerSocketIDs, faqSection, faqQuestion, userID, timeConnected, staffID) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', 
-        activeChat.caseId, activeChat.customer.customerSessionIdentifier, activeChat.customer.socketIDs, activeChat.customer.faqSection, activeChat.customer.faqQuestion, activeChat.customer.userID, activeChat.customer.timeConnected, activeChat.staff.staffID);
+        activeChat.caseID, activeChat.customer.customerSessionIdentifier, activeChat.customer.socketIDs, activeChat.customer.faqSection, activeChat.customer.faqQuestion, activeChat.customer.userID, activeChat.customer.timeConnected, activeChat.staff.staffID);
 };
 
 export const endActiveChat = async (db, caseID) => {
     // Save the Chat to the Chat History DB (Supabase)
-    const chat = await db.run('SELECT * FROM activeChats WHERE caseID = ?', caseID);
+    const chat = await db.get('SELECT * FROM activeChats WHERE caseID = ?', caseID);
     const chatMessages = await retrieveChatMessages(db, caseID);
     const formattedChatMessages = chatMessages.map(msg => ({
         timestamp: msg.timestamp,
         message: msg.message,
         sender: msg.sender
     }));
-    await chatHistory.createChatHistory(chat.userID, chat.staffID, formattedChatMessages);
+
+    // DEV: Commented to prevent spam to Databse when testing.
+    // try {
+    //     await chatHistory.createChatHistory(chat.userID, chat.staffID, formattedChatMessages);
+    // } catch (err) {
+    //     console.error(err);
+    // }
 
     await db.run('DELETE FROM activeChats WHERE caseID = ?', caseID);
     await db.run('DELETE FROM chatHistory WHERE caseID = ?', caseID);
+};
+
+export const getActiveChatsForStaff = async (db, staffID) => {
+    const chats = await db.all('SELECT * FROM activeChats WHERE staffID = ?', staffID);
+    
+    const formattedChats = await Promise.all(chats.map(async (chat) => {
+        const chatMessages = await retrieveChatMessages(db, chat.caseID);
+
+        return {
+            caseID: chat.caseID,
+            customer: {
+                customerSessionIdentifier: chat.customerSessionIdentifier,
+                socketIDs: chat.customerSocketIDs,
+                faqSection: chat.faqSection,
+                faqQuestion: chat.faqQuestion,
+                userID: chat.userID,
+                timeConnected: chat.timeConnected
+            },
+            staff: {
+                staffID: chat.staffID,
+            },
+            messages: chatMessages
+        };
+    }));
+
+    return formattedChats;
 };
 
 export const appendCustSIDToActiveChat = async (db, caseID, socketID) => {
@@ -135,8 +168,8 @@ export const appendCustSIDToActiveChat = async (db, caseID, socketID) => {
 
 // Save Chat Messages
 export const saveMessages = async (db, msg) => {
-    await db.run('INSERT INTO chatHistory (caseID, sessionIdentifier, timestamp, message, sender) VALUES (?, ?, ?, ?, ?)', 
-        msg.case, msg.sessionIdentifier, msg.timestamp, msg.message, msg.sender);
+    await db.run('INSERT INTO chatHistory (caseID, sessionIdentifier, timestamp, message, fileUrl, sender) VALUES (?, ?, ?, ?, ?, ?)', 
+        msg.case, msg.sessionIdentifier, msg.timestamp, msg.message, msg.fileUrl, msg.sender);
 }
 export const retrieveChatMessages = async (db, caseID) => {
     const rows = await db.all('SELECT * FROM chatHistory WHERE caseID = ?', caseID);

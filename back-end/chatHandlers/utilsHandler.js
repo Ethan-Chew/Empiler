@@ -1,4 +1,4 @@
-import { appendCustSIDToActiveChat, searchCustomerInActiveChat, searchForWaitingCustomer, saveMessages, retrieveChatMessages, addSocketIdToAvailStaff, getChatIdsForStaff, endActiveChat } from "../utils/sqliteDB.js";
+import { appendCustSIDToActiveChat, searchCustomerInActiveChat, searchForWaitingCustomer, saveMessages, retrieveChatMessages, addSocketIdToAvailStaff, getChatIdsForStaff, endActiveChat, searchForAvailStaff } from "../utils/sqliteDB.js";
 
 export default function (io, db, socket) {
     /*
@@ -42,7 +42,6 @@ export default function (io, db, socket) {
 
     socket.on("utils:verify-waitinglist", async (customerSessionIdentifier, callback) => {
         const searchCustomer = await searchForWaitingCustomer(db, customerSessionIdentifier);
-        console.log(customerSessionIdentifier, searchCustomer)
         if (searchCustomer) {
             callback(true);
         } else {
@@ -55,10 +54,12 @@ export default function (io, db, socket) {
 
         if (searchActiveChat) {
             const chatHistory = await retrieveChatMessages(db, searchActiveChat.caseID);
+            const staffInformation = await searchForAvailStaff(db, searchActiveChat.staffID);
             callback({
                 exist: true,
                 caseID: searchActiveChat.caseID,
-                chatHistory: chatHistory
+                chatHistory: chatHistory,
+                staffName: staffInformation.name
             });
         } else {
             callback({
@@ -67,11 +68,11 @@ export default function (io, db, socket) {
         }
     });
     
-    socket.on("utils:end-chat", async (caseId) => {
+    socket.on("utils:end-chat", async (caseID) => {
         // Let the Customer know the Chat has ended
-        io.to(caseId).emit("utils:chat-ended", caseId);
+        io.to(caseID).emit("utils:chat-ended", caseID);
 
         // Remove the Chat from the list of Active Chats
-        await endActiveChat(db, caseId);
+        await endActiveChat(db, caseID);
     });
 }

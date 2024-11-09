@@ -1,20 +1,27 @@
 import NavigationBar from "../../components/Navbar";
 import MessageContainer from "../../components/Chat/MessageContainer";
+import handleFileUpload from "../../utils/handleFileUpload";
 import { socket } from "../../utils/chatSocket";
+
 import { useSearchParams } from "react-router-dom";
 import { FaArrowCircleUp } from "react-icons/fa";
+import { AiFillPlusCircle } from "react-icons/ai";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 
 export default function CustomerChat() {
     const navigate = useNavigate();
+    
     const [isConnected, setIsConnected] = useState(false);
     const [isDisconnected, setIsDisconnected] = useState(false);
-    const [searchParams, setSearchParams] = useSearchParams();  
-    const [messages, setMessages] = useState([]);
-    const [sentMessage, setSentMessage] = useState("");
-    const [chatEnded, setChatEnded] = useState(false);
+    const [searchParams, setSearchParams] = useSearchParams();
     const caseID = searchParams.get("caseID");
+
+    const [messages, setMessages] = useState([]);
+    const [chatEnded, setChatEnded] = useState(false);
+    const [sentMessage, setSentMessage] = useState("");
+    const [staffName, setStaffName] = useState("[insert name]");
+    const [error, setError] = useState('');
 
     // User Inactivity States
     const [inactivityTimer, setInactivityTimer] = useState(0);
@@ -46,7 +53,7 @@ export default function CustomerChat() {
 
             if (inactivityTimer >= disconnectLimit) {
                 setUserDisconnect(true);
-                socket.emit("utils:disconnect", sessionStorage.getItem("customerSessionIdentifier"));
+                socket.emit("utils:end-chat", caseID);
             }
         }, 60000);
 
@@ -83,6 +90,8 @@ export default function CustomerChat() {
             }
 
             socket.emit("utils:verify-activechat", customerSessionIdentifier, (chatExistanceReq) => {
+                console.log(chatExistanceReq)
+                setStaffName(chatExistanceReq.staffName);
                 if (chatExistanceReq.exist && chatExistanceReq.caseID === caseID) {
                     socket.emit("utils:add-socket", customerSessionIdentifier, "customer");
                     setMessages(chatExistanceReq.chatHistory);
@@ -111,20 +120,36 @@ export default function CustomerChat() {
         socket.on("utils:chat-ended", handleChatClosure);
 
         return () => {
+            socket.off("connect", handleConnection);
             socket.off("disconnect", handleDisconnection);
+            socket.off("utils:receive-msg", handleReceiveMessage);
+            socket.off("utils:chat-ended", handleChatClosure);
         }
     }, []);
 
-    function sendMessage() {
+    function sendMessage(fileUrl) {
+        if (sentMessage === "" && fileUrl === null) return;
         const formattedMsg = {
             case: caseID,
-            message: sentMessage,
+            message: fileUrl ? "" : sentMessage,
+            fileUrl: fileUrl ? fileUrl : null,
             timestamp: Date.now(),
             sender: "customer",
             sessionIdentifier: sessionStorage.getItem("customerSessionIdentifier"),
         }
+
         socket.emit("utils:send-msg", formattedMsg);
         setSentMessage("");
+    }
+
+    async function onUploadClick() {
+        try {
+            const fileUrl = await handleFileUpload(caseID);
+
+            sendMessage(fileUrl);
+        } catch (err) {
+            console.error('Error during file upload:', err);
+        }
     }
 
     function handleEndChat() {
@@ -157,12 +182,12 @@ export default function CustomerChat() {
                 {/* Live Chat Container */}
                 <div id="live-chat" className="flex-grow h-full md:mt-10 w-full rounded-xl flex flex-col bg-white md:drop-shadow-[0_0px_4px_rgba(0,0,0,.3)]">
                     <div className="flex-grow overflow-y-scroll p-6 md:p-4 min-h-0">
-                        <a>You are now chatting with [insert name].</a>
+                        { staffName !== "[insert name]" ? <a>You are now chatting with {staffName}.</a> : <></>}
                         
                         {/* Messages Area */}
                         <div id="chat-messages" className="overflow-y-scroll my-4 min-h-0">
                             {messages.map((msg) => (
-                                <MessageContainer key={msg.timestamp} isSender={msg.sender === "customer"} messages={[msg.message]} timestamp={msg.timestamp} />
+                                <MessageContainer key={msg.timestamp} isSender={msg.sender === "customer"} message={msg.message || null} fileUrl={msg.fileUrl || null} timestamp={msg.timestamp} />
                             ))}
                         </div>
                     </div>
@@ -170,13 +195,16 @@ export default function CustomerChat() {
                     {/* Message Field */}
                     {!chatEnded ? (
                         <div className="px-10 py-6 md:py-4 w-full rounded-b-xl flex flex-row justify-between">
+                            <button className="border-2 rounded-xl px-4 hover:border-neutral-500 duration-200" onClick={onUploadClick}>
+                                <AiFillPlusCircle className="text-3xl text-neutral-400 hover:text-neutral-500" />
+                            </button>
                             <input 
-                                className="p-3 border-2 w-full rounded-xl outline-none mr-5"
+                                className="p-3 border-2 w-full rounded-xl outline-none mx-5"
                                 placeholder="Enter a Message.."
                                 value={sentMessage} // Bind input to `sentMessage`
                                 onChange={(e) => setSentMessage(e.target.value)}
                             />
-                            <button className="border-2 rounded-xl px-4 hover:border-neutral-500 duration-200" onClick={sendMessage}>
+                            <button className="border-2 rounded-xl px-4 hover:border-neutral-500 duration-200" onClick={() => sendMessage(null)}>
                                 <FaArrowCircleUp className="text-2xl text-neutral-400 hover:text-neutral-500" />
                             </button>
                         </div>

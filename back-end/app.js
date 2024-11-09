@@ -9,16 +9,18 @@ import supabase from './utils/supabase.js';
 import cors from 'cors';
 import { initialiseDB } from './utils/sqliteDB.js';
 
+
+
 // Routes
 import user from './routes/user.route.js';
 import chatHistory from './routes/chatHistory.route.js';
 import faq from './routes/faq.route.js';
 import auth from './routes/auth.route.js';
 import appointment from './routes/appointment.route.js';
-
 import branches from './controllers/branches.controller.js';
 
 // Socket.IO Event Handlers
+import chatAttachments from './routes/chatAttachments.route.js';
 import staffHandler from './chatHandlers/staffHandler.js';
 import customerHandler from './chatHandlers/customerHandler.js';
 import utilsHandler from './chatHandlers/utilsHandler.js';
@@ -50,6 +52,8 @@ app.use("/api/auth", auth);
 app.post("/api/branches", branches.getOCBCBranches);
 app.get("/api/branch", branches.getSpecificOCBCBranch);
 app.use("/api/appointments", appointment);
+app.post("/api/branches", getOCBCBranches);
+app.use("/api/chat/upload", chatAttachments);
 
 // Handle Socket.IO Connection
 const server = createServer(app);

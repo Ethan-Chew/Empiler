@@ -11,6 +11,11 @@ import InitisaliseChat from './pages/Customer/InitialiseChat';
 import CustomerChat from './pages/Customer/CustomerChat';
 import FAQSection from './pages/FAQSection';
 import FAQDetail from './pages/FAQDetail';
+import ViewDetailedAppointments from './pages/ViewDetailedAppointments';
+// import ViewOutstandingChatCustomers from './pages/ViewOutstandingChatCustomers';
+// import AdminSupportLog from './pages/AdminSupportLog';
+import CustomerMenuPage from './pages/CustomerMenuPage';
+import ViewUpcomingAppointments from './pages/ViewUpcomingAppointments';
 
 // Staff Routes
 import StaffLandingPage from './pages/Staff/StaffLandingPage';
@@ -35,6 +40,15 @@ root.render(
       {/* Chat Routes */}
       <Route path="/awaitchat" element={<InitisaliseChat />} />
       <Route path="/chat" element={<CustomerChat />} />
+      <Route path="/view-branch-appointments" element={<ViewBranchAppointments />} />
+      <Route path="/view-detailed-appointments" element={<ViewDetailedAppointments />} />
+      {/* <Route path="/view-outstanding-chat-customers" element={<ViewOutstandingChatCustomers />} />
+      <Route path="/admin-support-log" element={<AdminSupportLog />} /> */}
+      <Route path="/customer-menu" element={<CustomerMenuPage />} />
+      <Route path="/view-upcoming-appointments" element={<ViewUpcomingAppointments />} />
+      <Route path="/faq-article" element={<FAQDetail />} />
+      <Route path="/faq" element={<FAQSection />} />
+
 
       <Route path="*" element={<h1>404 Not Found</h1>} />
 
