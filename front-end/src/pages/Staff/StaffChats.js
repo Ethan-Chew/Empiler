@@ -9,6 +9,7 @@ import { AiFillPlusCircle } from "react-icons/ai";
 import AwaitChatContainer from "../../components/Chat/AwaitingChatContainer";
 import StaffNavigationBar from "../../components/StaffNavbar";
 import MessageContainer from "../../components/Chat/MessageContainer";
+import ToastMessage from "../../components/ToastMessage";
 
 export default function StaffChats() {
     // Page Management
@@ -20,7 +21,8 @@ export default function StaffChats() {
     const [connectedChats, setConnectedChats] = useState([]);
     const [selectedChatId, setSelectedChatId] = useState(null);
     const [sentMessage, setSentMessage] = useState("");
-    // const [disconnectedChats, setDisconnectedChats] = useState([]);
+    const [disconnectedChats, setDisconnectedChats] = useState([]);
+    const [toastVisiblities, setToastVisibilities] = useState([]);
 
     // Setter Functions
     const joinChat = async (customerSessionIdentifier) => {    
@@ -86,6 +88,18 @@ export default function StaffChats() {
         });
     }
 
+    const handleHideToastMsg = (index) => {
+        setToastVisibilities((prev) => {
+            const updated = prev.map((toast, i) => {
+                if (i === index) {
+                    return false;
+                }
+                return toast;
+            });
+            return updated;
+        });
+    }
+
     useEffect(() => {  
         const handleConnection = () => {
             setIsConnected(true);
@@ -121,7 +135,13 @@ export default function StaffChats() {
                 setSelectedChatId(null);
             }
 
-            setConnectedChats((prevChats) => prevChats.filter((chat) => chat.caseID !== caseID));
+            setConnectedChats((prevChats) => {
+                setDisconnectedChats((prevDisconChats) => [...prevDisconChats, prevChats.filter((chat) => chat.caseID === caseID)[0]]);
+                setToastVisibilities((prev) => [...prev, true]);
+
+                const updatedChats = prevChats.filter((chat) => chat.caseID !== caseID);
+                return updatedChats;
+            });
         }
 
         const handleReconnectAddChats = (chats) => {
@@ -194,7 +214,7 @@ export default function StaffChats() {
 
                 {/* Chat Window */}
                 <div id="chat-window" className={`flex flex-col flex-grow ${connectedChats.length === 0 && "items-center justify-center"} overflow-y-auto`}>
-                    <div id="chat-header" className={`w-full bg-neutral-100 border-y-2 border-neutral-600 flex flex-row px-4 py-2 ${selectedChatId == null ? "hidden" : ""}`}>
+                    <div id="chat-header" className={`${!selectedChatId ? "hidden" : ""} w-full bg-neutral-100 border-y-2 border-neutral-600 flex flex-row px-4 py-2`}>
                         {selectedChatId && connectedChats.filter((chat) => chat.caseID === selectedChatId).map((selectedChat => (
                             <>
                                 <div>
@@ -209,7 +229,7 @@ export default function StaffChats() {
                         )))}
                     </div>
 
-                    <div id="chat" className={`w-full flex-grow flex flex-col ${selectedChatId === null ? "hidden" : ""}`}>
+                    <div id="chat" className={`w-full flex-grow flex flex-col ${!selectedChatId ? "hidden" : ""}`}>
                         <div id="chat-container" className="flex-grow p-10">
                             {selectedChatId && 
                             connectedChats
@@ -252,10 +272,6 @@ export default function StaffChats() {
                 </div>
             </div>
 
-            {/* <div className="fixed bottom-10 left-10 px-3 py-2 bg-ocbcred text-white">
-                <a>HELLO</a>
-            </div> */}
-
             {displayAwaitCustomerList && (
                 <div
                     className="fixed top-0 left-0 h-screen w-screen bg-neutral-900/20 backdrop-blur-sm flex items-center justify-center duration-200 z-10"
@@ -267,6 +283,13 @@ export default function StaffChats() {
                     />
                 </div>
             )}
+
+            {/* Handle Disconnect Messages */}
+            <div className="fixed bottom-5 left-5">
+                {disconnectedChats.map((chat, index) => (
+                    toastVisiblities[index] && <ToastMessage key={index} index={index} message={`Customer with Case ID: ${chat.caseID} has left the chat`} isShown={toastVisiblities[index]} hideToast={handleHideToastMsg} />
+                ))}
+            </div>
         </div>
     )
 }
