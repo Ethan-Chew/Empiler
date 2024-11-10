@@ -22,38 +22,73 @@ export default function DetailedAppointmentBooking() {
         // TODO: Retrieve branch details from backend
         const branch = location.state.branch; // Retrieve the branch data
         setBranchDetails(branch); // Set the branch data
-
+        console.log(getEarliestAvailableTime(branch.openingHours));
         generateAvailableDates();
     }, [location.state, navigate]);
 
     const generateAvailableDates = () => {
         const today = new Date();
-        const currentDay = today.getDay(); // Get the current day (0 - Sunday, 6 - Saturday)
-        const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         const availableDates = [];
-
-        // Loop through the next 5 weekdays (Mon to Fri)
-        for (let i = 1; i <= 5; i++) {
-            const dayIndex = (currentDay + i) % 7; // Get the index of the next weekday (Mon to Fri)
-            const day = daysOfWeek[dayIndex];
-            const dayOfMonth = new Date(today);
-            dayOfMonth.setDate(today.getDate() + i); // Set the date to the correct weekday
-
-            // Only add dates from the current date forward
-            if (dayOfMonth >= today) {
-                availableDates.push({ day, dayOfMonth });
+    
+        // Loop through the next 5 days (including Saturdays)
+        for (let i = 1; availableDates.length < 5; i++) {
+            const nextDate = new Date(today);
+            nextDate.setDate(today.getDate() + i); // Increment date by i days
+    
+            // Check if the date falls on Sunday (0 - Sunday)
+            if (nextDate.getDay() !== 0) {
+                // Format the date to YYYY-MM-DD
+                const formattedDate = nextDate.toISOString().split('T')[0]; // YYYY-MM-DD format
+                availableDates.push({
+                    day: nextDate.toLocaleString('en-US', { weekday: 'short' }), // e.g., Mon, Tue
+                    formattedDate,
+                });
             }
         }
-
+    
         setAvailableDates(availableDates);
+    };
+
+    const getEarliestAvailableTime = (openingHours) => {
+        const today = new Date();
+        const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        const todayName = dayNames[today.getDay()];
+    
+        console.log(todayName);  // This will show the day name today.
+        console.log(openingHours);  // This will show the full opening hours string.
+    
+        // First, check if Sundays are explicitly marked as "Closed"
+        if (openingHours.toLowerCase().includes('sundays and public holidays: closed')) {
+            if (todayName === 'Sun') {
+                return "Closed";
+            }
+        }
+    
+        // Updated regex to handle specific days and ranges of times (mon-fri, etc.)
+        const regex = new RegExp(`(?:${todayName}|${dayNames.join('|')})(?:\\s*-\\s*${dayNames.join('|')})?:\\s*(\\d{1,2}\\.\\d{2}[ap]m)\\s*[-to]{1,2}\\s*(\\d{1,2}\\.\\d{2}[ap]m)`, 'i');
+        const match = openingHours.match(regex);
+    
+        if (match) {
+            const openingTime = match[1];
+            const closingTime = match[2];
+            return `${formatTo24Hour(openingTime)} - ${formatTo24Hour(closingTime)}`;
+        }
+        return null;
+    };
+    
+    const formatTo24Hour = (time) => {
+        const [timePart, period] = time.toLowerCase().split(/[ap]m/);
+        let [hours, minutes] = timePart.split('.').map(Number);
+        if (period === 'p' && hours !== 12) hours += 12;
+        if (period === 'a' && hours === 12) hours = 0;
+        return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
     };
 
     // Fetch available timeslots from the backend
     const fetchAvailableTimeslots = async (date) => {
         setLoadingTimeslots(true);
         try {
-            const selectedDateObj = new Date(selectedDate);
-            selectedDateObj.setDate(selectedDateObj.getDate() + 1);  // Add one day
+            const selectedDateObj = new Date(date);
 
             const formattedDate = selectedDateObj.toISOString().split('T')[0];
             const response = await fetch(`http://localhost:8080/api/appointments/filter/${formattedDate}/${branchDetails.landmark}`);
@@ -81,7 +116,6 @@ export default function DetailedAppointmentBooking() {
         }
         
         const selectedDateObj = new Date(selectedDate);
-        selectedDateObj.setDate(selectedDateObj.getDate() + 1);  // Add one day
 
         const formattedDate = selectedDateObj.toISOString().split('T')[0];
 
@@ -215,11 +249,11 @@ export default function DetailedAppointmentBooking() {
                             {availableDates.map((date, idx) => (
                                 <button
                                     key={idx}
-                                    className={`w-12 h-16 rounded-lg flex flex-col items-center justify-center cursor-pointer ${selectedDate === date.dayOfMonth.toLocaleDateString() ? 'bg-[#DA291C]' : 'bg-[#F5F5F5]'}`}
-                                    onClick={() => handleDateSelect(date.dayOfMonth.toLocaleDateString())}
+                                    className={`w-12 h-16 mr-2 rounded-lg flex flex-col items-center justify-center cursor-pointer ${selectedDate === date.formattedDate ? 'bg-[#DA291C]' : 'bg-[#F5F5F5]'}`}
+                                    onClick={() => handleDateSelect(date.formattedDate)}
                                 >
-                                    <p className="text-sm font-semibold">{date.dayOfMonth.getDate()}</p> {/* Date on top */}
-                                    <p className="text-xs">{date.day}</p> {/* Day below */}
+                                    <p className="text-sm font-semibold">{new Date(date.formattedDate).getDate()}</p> 
+                                    <p className="text-xs">{date.day}</p> {/* e.g., Mon, Tue */}
                                 </button>
                             ))}
                         </div>
@@ -278,9 +312,14 @@ export default function DetailedAppointmentBooking() {
                     <div className="bg-white rounded-lg shadow-md p-3">
                         <h2 className="text-xl font-semibold">Opening Hours</h2>
                         <p className="text-sm text-[#060313]">
-                            Mon-Fri: 9:00 AM to 4:30 PM<br />
-                            Sat: 9:00 AM to 11:30 AM<br />
-                            Sun: Closed
+                            {branchDetails.openingHours
+                                .split(',') // Split by comma to separate day groups
+                                .map((item, index) => (
+                                    <span key={index}>
+                                        {item.trim()}
+                                        <br />
+                                    </span>
+                                ))}
                         </p>
                     </div>
 

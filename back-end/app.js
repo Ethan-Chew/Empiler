@@ -52,7 +52,6 @@ app.use("/api/auth", auth);
 app.post("/api/branches", branches.getOCBCBranches);
 app.get("/api/branch", branches.getSpecificOCBCBranch);
 app.use("/api/appointments", appointment);
-app.post("/api/branches", getOCBCBranches);
 app.use("/api/chat/upload", chatAttachments);
 
 // Handle Socket.IO Connection

@@ -105,8 +105,34 @@ export default function AppointmentBooking() {
     );
 }
 
+const getEarliestAvailableTime = (openingHours) => {
+    const today = new Date();
+    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const todayName = dayNames[today.getDay()];
+    if (todayName === "Sun") return "Closed";
+
+    // Updated regex to handle variations in spaces and separators
+    const regex = new RegExp(`(?:${todayName}|${dayNames.join('|')})(?:\\s*-\\s*${dayNames.join('|')})?:\\s*(\\d{1,2}\\.\\d{2}[ap]m)\\s*[-to]{1,2}\\s*(\\d{1,2}\\.\\d{2}[ap]m)`, 'i');
+    const match = openingHours.match(regex);
+
+    if (match) {
+        const openingTime = match[1];
+        return formatTo24Hour(openingTime);
+    }
+    return null;
+};
+
+const formatTo24Hour = (time) => {
+    const [timePart, period] = time.toLowerCase().split(/[ap]m/);
+    let [hours, minutes] = timePart.split('.').map(Number);
+    if (period === 'p' && hours !== 12) hours += 12;
+    if (period === 'a' && hours === 12) hours = 0;
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+};
+
 function BranchItem({ branch }) {
     const navigate = useNavigate();
+    const earliestTime = getEarliestAvailableTime(branch.openingHours);
 
     return (
         <div className="px-3 py-2 border-2 border-neutral-500 rounded-xl" onClick={() => navigate("/appointments/timeslots", {
@@ -117,7 +143,9 @@ function BranchItem({ branch }) {
             <div className="mb-2">
                 <p className="text-lg font-semibold">{ branch.landmark }</p>
                 <p className="text-neutral-500 text-sm">{ branch.address }</p>
-                <p className="text-green-700">Available today, 3:00 PM</p>
+                <p className={`text-${earliestTime === "Closed" ? "red-500" : "green-700"}`}>
+                    {earliestTime === "Closed" ? "Closed today" : `Available today at ${earliestTime}`}
+                </p>
             </div>
             <p></p>
         </div>
