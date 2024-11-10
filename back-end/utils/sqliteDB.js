@@ -83,7 +83,8 @@ export const addAvailStaff = async (db, staffData) => {
     const staffProfile = await searchForAvailStaff(db, staffData.staffID);
     if (staffProfile) {
         const socketIDs = staffData.socketIDs;
-        socketIDs.push(staffProfile.socketIDs[0]);
+        if (staffProfile.socketIDs.includes(socketIDs[0])) return;
+        socketIDs.push(socketIDs[0]);
         await db.run('UPDATE availStaff SET socketIDs = ? WHERE staffID = ?', JSON.stringify(socketIDs), staffData.staffID);
     } else {
         staffData.socketIDs = JSON.stringify(staffData.socketIDs);

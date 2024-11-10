@@ -43,10 +43,7 @@ export default function StaffChats() {
             };
     
             setConnectedChats((prev) => [...prev, formattedChat]);
-
-            if (selectedChatId === null) {
-                setSelectedChatId(formattedChat.caseID);
-            }
+            setSelectedChatId(formattedChat.caseID);
     
             return true;
     
@@ -101,7 +98,7 @@ export default function StaffChats() {
     }
 
     useEffect(() => {  
-        const handleConnection = () => {
+        const handleConnection = (params) => {
             setIsConnected(true);
             socket.emit('staff:avail'); 
         }
@@ -131,9 +128,12 @@ export default function StaffChats() {
         }
 
         const handleChatEnded = (caseID) => {
-            if (selectedChatId === caseID) {
-                setSelectedChatId(null);
-            }
+            setSelectedChatId((prev) => {
+                if (prev === caseID) {
+                    return null;
+                }
+                return prev;
+            })
 
             setConnectedChats((prevChats) => {
                 setDisconnectedChats((prevDisconChats) => [...prevDisconChats, prevChats.filter((chat) => chat.caseID === caseID)[0]]);
@@ -156,6 +156,7 @@ export default function StaffChats() {
         socket.on("utils:receive-msg", handleReceiveMessage);
         socket.on("utils:chat-ended", handleChatEnded);
         socket.on("staff:active-chats", handleReconnectAddChats);
+        socket.on("error", (err) => console.error(err));
         
         return () => {
             // Clear Event Listeners on Deconstructor
@@ -169,8 +170,11 @@ export default function StaffChats() {
     }, []);
 
     useEffect(() => {
-        // Retrieve Active Chats, if exists, load it
-        socket.emit("staff:active-chats");
+        if (isConnected) {
+            socket.emit('staff:avail'); 
+            // Retrieve Active Chats, if exists, load it
+            socket.emit("staff:active-chats");
+        }
     }, [isConnected])
 
     async function onUploadClick() {
@@ -182,6 +186,8 @@ export default function StaffChats() {
             console.error('Error during file upload:', err);
         }
     }
+
+    if (!isConnected) return <p>Error no connect sad</p>
 
     return (
         <div className="max-h-screen h-screen flex flex-col">
@@ -214,22 +220,21 @@ export default function StaffChats() {
 
                 {/* Chat Window */}
                 <div id="chat-window" className={`flex flex-col flex-grow ${connectedChats.length === 0 && "items-center justify-center"} overflow-y-auto`}>
-                    <div id="chat-header" className={`${!selectedChatId ? "hidden" : ""} w-full bg-neutral-100 border-y-2 border-neutral-600 flex flex-row px-4 py-2`}>
-                        {selectedChatId && connectedChats.filter((chat) => chat.caseID === selectedChatId).map((selectedChat => (
-                            <>
-                                <div>
-                                    <p className="text-lg font-bold mb-0">{ selectedChat.customer?.faqQuestion }</p>
-                                    <p className="text-neutral-500 text-sm">Case ID: { selectedChat.caseID }{ selectedChat.customer?.userID && " | Logged In" }</p>
-                                </div>
+                    {selectedChatId && connectedChats.filter((chat) => chat.caseID === selectedChatId).map((selectedChat => (
+                        <div id="chat-header" className={`${selectedChatId ? "" : "hidden"} w-full bg-neutral-100 border-y-2 border-neutral-600 flex flex-row px-4 py-2`}>
+                            <div>
+                                <p className="text-lg font-bold mb-0">{ selectedChat.customer?.faqQuestion }</p>
+                                <p className="text-neutral-500 text-sm">FAQ Category: { selectedChat.customer?.faqSection }</p>
+                                <p className="text-neutral-500 text-sm">Case ID: { selectedChat.caseID }{ selectedChat.customer?.userID && " | Logged In" }</p>
+                            </div>
 
-                                <button className="ml-auto px-4 py-1 bg-ocbcred hover:bg-ocbcdarkred text-white rounded-lg" onClick={handleEndChat}>
-                                    End Chat
-                                </button>
-                            </>
-                        )))}
-                    </div>
+                            <button className="ml-auto px-4 py-1 bg-ocbcred hover:bg-ocbcdarkred text-white rounded-lg" onClick={handleEndChat}>
+                                End Chat
+                            </button>
+                        </div>
+                    )))}
 
-                    <div id="chat" className={`w-full flex-grow flex flex-col ${!selectedChatId ? "hidden" : ""}`}>
+                    <div id="chat" className={`w-full flex-grow flex flex-col ${selectedChatId ? "" : "hidden"}`}>
                         <div id="chat-container" className="flex-grow p-10">
                             {selectedChatId && 
                             connectedChats

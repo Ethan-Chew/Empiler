@@ -6,12 +6,13 @@ import { socket } from "../../utils/chatSocket";
 import { useSearchParams } from "react-router-dom";
 import { FaArrowCircleUp } from "react-icons/fa";
 import { AiFillPlusCircle } from "react-icons/ai";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 
 export default function CustomerChat() {
     const navigate = useNavigate();
-    
+    const location = useLocation();
+
     const [isConnected, setIsConnected] = useState(false);
     const [isDisconnected, setIsDisconnected] = useState(false);
     const [searchParams, setSearchParams] = useSearchParams();
@@ -80,6 +81,11 @@ export default function CustomerChat() {
             navigateHome();
         }
 
+        // Retrieve the Staff Name from the Location State
+        if (location.state && "staffName" in location.state) {
+            setStaffName(location.state.staffName);
+        }
+
         // Socket.IO Event Handlers
         const handleConnection = () => {
             setIsConnected(true);
@@ -90,7 +96,6 @@ export default function CustomerChat() {
             }
 
             socket.emit("utils:verify-activechat", customerSessionIdentifier, (chatExistanceReq) => {
-                console.log(chatExistanceReq)
                 setStaffName(chatExistanceReq.staffName);
                 if (chatExistanceReq.exist && chatExistanceReq.caseID === caseID) {
                     socket.emit("utils:add-socket", customerSessionIdentifier, "customer");
@@ -174,7 +179,7 @@ export default function CustomerChat() {
                         <a className="text-sm text-neutral-400">Case ID: {caseID}</a>
                     </div>
 
-                    <button className="ml-auto px-4 py-1 bg-ocbcred hover:bg-ocbcdarkred text-white rounded-lg" onClick={handleEndChat}>
+                    <button className={`ml-auto px-4 py-1 bg-ocbcred hover:bg-ocbcdarkred text-white rounded-lg ${chatEnded && "cursor-not-allowed"}`} disabled={chatEnded} onClick={handleEndChat}>
                         End Chat
                     </button>
                 </div>

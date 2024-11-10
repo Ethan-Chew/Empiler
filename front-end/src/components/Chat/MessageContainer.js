@@ -55,7 +55,6 @@ function ImageViewer({ fileUrl }) {
                         src={fileUrl}
                         alt="Large View"
                         className="object-contain w-full h-full"
-                        layoutId={fileUrl}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.3 }}
