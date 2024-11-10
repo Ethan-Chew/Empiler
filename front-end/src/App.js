@@ -13,19 +13,19 @@ export default function App() {
   const [faqQuestion, setFaqQuestion] = useState('');
   const algoilaAdminKey = process.env.REACT_APP_ALGOILA_ADMIN_KEY;
 
-  // useEffect(() => {
-  //   const fetchFaqs = async () => {
-  //     try {
-  //       const response = await fetch('http://localhost:8080/api/faq/section');
-  //       const data = await response.json();
-  //       setFaqs(data.sections);
-  //     } catch (error) {
-  //       console.error('Error fetching faq sections:', error);
-  //     }
-  //   };
+  useEffect(() => {
+    const fetchFaqs = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/api/faq/section');
+        const data = await response.json();
+        setFaqs(data.sections);
+      } catch (error) {
+        console.error('Error fetching faq sections:', error);
+      }
+    };
 
-  //   fetchFaqs();
-  // }, []);
+    fetchFaqs();
+  }, []);
 
   const processRecords = async () => {
     const client = searchClient('AFO67MRW1I', algoilaAdminKey);

@@ -187,7 +187,8 @@ export default function StaffChats() {
         }
     }
 
-    if (!isConnected) return <p>Error no connect sad</p>
+    // TODO: Improve Error 
+    if (!isConnected) return <p>Error: Socket connection not made</p>
 
     return (
         <div className="max-h-screen h-screen flex flex-col">
