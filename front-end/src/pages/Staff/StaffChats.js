@@ -193,7 +193,7 @@ export default function StaffChats() {
                 </div>
 
                 {/* Chat Window */}
-                <div id="chat-window" className={`flex flex-col flex-grow ${connectedChats.length === 0 && "items-center justify-center"} overflow-y-auto`}>
+                <div id="chat-window" className={`flex flex-col flex-grow ${connectedChats.length === 0 && "items-center justify-center"} overflow-hidden`}>
                     <div id="chat-header" className={`w-full bg-neutral-100 border-y border-gray-300 flex flex-row px-4 py-2 ${selectedChatId == null ? "hidden" : ""}`}>
                         {selectedChatId && connectedChats.filter((chat) => chat.caseID === selectedChatId).map((selectedChat => (
                             <>
@@ -210,7 +210,7 @@ export default function StaffChats() {
                     </div>
 
                     <div id="chat" className={`w-full flex-grow flex flex-col ${selectedChatId === null ? "hidden" : ""}`}>
-                        <div id="chat-container" className="flex-grow p-10">
+                        <div id="chat-container" className="flex-grow p-4 overflow-y-auto max-h-[calc(100vh-18rem)]">
                             {selectedChatId && 
                             connectedChats
                                 .filter((chat) => chat.caseID === selectedChatId)

@@ -188,7 +188,7 @@ export default function CustomerChat() {
                         { staffName !== "[insert name]" ? <a>You are now chatting with {staffName}.</a> : <></>}
                         
                         {/* Messages Area */}
-                        <div id="chat-messages" className="overflow-y-scroll my-4 min-h-0">
+                        <div id="chat-messages" className=" my-4 min-h-0 flex-grow overflow-y-scroll max-h-[calc(100vh-30rem)]">
                             {messages.map((msg) => (
                                 <MessageContainer key={msg.timestamp} isSender={msg.sender === "customer"} message={msg.message || null} fileUrl={msg.fileUrl || null} timestamp={msg.timestamp} />
                             ))}
