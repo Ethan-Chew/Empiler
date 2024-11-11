@@ -14,6 +14,7 @@ export default function ChatRating() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isUpdateSuccess, setIsUpdateSuccess] = useState(null);
     const [redirectCountdown, setRedirectCountdown] = useState(5);
+    const [blockSending, setBlockSending] = useState(false);
 
     useEffect(() => {
         const verifyAuthentication = async () => {
@@ -58,6 +59,12 @@ export default function ChatRating() {
     }, [isUpdateSuccess])
 
     const handleSubmitRating = async () => {
+        if (isUpdateSuccess) {
+            navigate("/");
+            return;
+        }
+
+        setBlockSending(true);
         const updateRatingRequest = await fetch(`http://localhost:8080/api/chatHistory/${caseID}/rating`, {
             method: "POST",
             headers: {
@@ -73,6 +80,8 @@ export default function ChatRating() {
         } else {
             setIsUpdateSuccess(false);
         }
+
+        setBlockSending(false);
     }
 
     return (
@@ -89,15 +98,15 @@ export default function ChatRating() {
                     <div className="flex flex-row gap-3">
                         {Array(5).fill(0).map((_, index) => {
                             if (index < rating) {
-                                return <FaStar className="text-5xl text-ocbcred cursor-pointer" onMouseEnter={() => setRating(index + 1)} onClick={() => setRating(index + 1)} />
+                                return <FaStar key={index} className="text-5xl text-ocbcred cursor-pointer" onMouseEnter={() => setRating(index + 1)} onClick={() => setRating(index + 1)} />
                             } else {
-                                return <FaRegStar className="text-5xl text-ocbcred cursor-pointer" onMouseEnter={() => setRating(index + 1)} onClick={() => setRating(index + 1)} />
+                                return <FaRegStar key={index} className="text-5xl text-ocbcred cursor-pointer" onMouseEnter={() => setRating(index + 1)} onClick={() => setRating(index + 1)} />
                             }
                         })}
                     </div>
                     <div className="flex flex-col gap-2">
-                        <button className="px-6 py-3 bg-ocbcred hover:bg-ocbcdarkred rounded-xl text-white" onClick={handleSubmitRating}>
-                            Submit Review
+                        <button className={`px-6 py-3 bg-ocbcred hover:bg-ocbcdarkred rounded-xl text-white ${blockSending ? "cursor-not-allowed" : "cursor-pointer"}`} onClick={handleSubmitRating} disabled={blockSending}>
+                            {isUpdateSuccess === true ? "Continue" : "Submit Review"}
                         </button>
                         {isUpdateSuccess === true ? <p>Thank you! Redirecting you in {redirectCountdown} second{redirectCountdown === 1 ? "" : "s"}...</p> : (isUpdateSuccess === false ? <p>Failed to update your rating. Try again!</p> : <></>)}
                         <button className="text-ocbcred hover:text-ocbcdarkred font-lg">

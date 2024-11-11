@@ -71,7 +71,6 @@ export default class chatHistory {
             .update({ rating: rating })
             .eq('caseId', caseId)
             .select();
-        console.log(data)
         
         if (error) {
             console.error('Error updating rating:', error);
