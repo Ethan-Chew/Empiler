@@ -1,8 +1,21 @@
 import { FaArrowRightLong } from "react-icons/fa6";
+import { GrHelpBook, GrMoney, GrCalculator, GrChat, GrGlobe, GrCreditCard, GrAtm } from "react-icons/gr";
+import React from "react";
 
-export default function SectionContainer({ icon, title, description, link }) {
+const Icons = {
+    GrHelpBook, 
+    GrMoney, 
+    GrCalculator, 
+    GrChat, 
+    GrGlobe, 
+    GrCreditCard, 
+    GrAtm
+};
+
+export default function SectionContainer({ icon, title, description }) {
     return (
         <div className="h-full flex flex-col border-2 border-neutral-600 p-5 rounded-xl bg-white group">
+            {Icons[icon] && React.createElement(Icons[icon], { className: "text-5xl mb-2" })}
             <div className="flex-grow">
                 <p className="text-2xl font-bold">{ title }</p>
                 <p>{ description }</p>

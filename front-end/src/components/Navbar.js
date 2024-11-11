@@ -29,6 +29,7 @@ export default function NavigationBar() {
 
         if (logoutRequest.status === 200) {
             setIsLoggedIn(false);
+            navigate('/');
         }
     }
 
