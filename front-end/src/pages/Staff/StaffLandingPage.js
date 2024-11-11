@@ -1,7 +1,9 @@
+import Navbar from "../../components/Navbar";
+
 export default function StaffLandingPage() {
     return (
         <div className="font-sans h-screen overflow-hidden">
-            <div className="bg-custom-blue-gray w-full h-12"></div>
+            <Navbar />
 
             {/* Header Image */}
             <img 
@@ -41,10 +43,10 @@ export default function StaffLandingPage() {
                             <p className="text-sm text-gray-600">View and adjust schedules</p>
                         </div>
                         
-                        <div className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:scale-105 transition-transform">
-                            <p className="text-lg font-semibold text-gray-800">Manage Tasks</p>
-                            <p className="text-sm text-gray-600">View and assign tasks</p>
-                        </div>
+                        <a className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:scale-105 transition-transform" href="/staff/chats">
+                            <p className="text-lg font-semibold text-gray-800">View Chats</p>
+                            <p className="text-sm text-gray-600">View active live chats</p>
+                        </a>
                         
                         <div className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:scale-105 transition-transform">
                             <p className="text-lg font-semibold text-gray-800">View Reports</p>
