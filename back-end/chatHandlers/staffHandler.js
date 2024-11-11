@@ -1,4 +1,4 @@
-import { endActiveChat, retrieveWaitingCustomers, addAvailStaff, searchForWaitingCustomer, searchForAvailStaff, removeWaitingCustomer, startActiveChat, getActiveChatsForStaff } from "../utils/sqliteDB.js";
+import { retrieveWaitingCustomers, addAvailStaff, searchForWaitingCustomer, searchForAvailStaff, removeWaitingCustomer, startActiveChat, getActiveChatsForStaff } from "../utils/sqliteDB.js";
 import crypto from "crypto";
 
 export async function notifyForWaitingCustomers(db, io) {
@@ -28,6 +28,7 @@ export default function (io, db, socket) {
             socketIDs: [socket.id],
             name: socket.user.name,
         };
+
         socket.join(staffData.staffID);
         await addAvailStaff(db, staffData);
         await notifyForWaitingCustomers(db, io);
@@ -58,6 +59,7 @@ export default function (io, db, socket) {
 
         // Add the Chat to the list of Active Chats
         const staff = await searchForAvailStaff(db, socket.user.id);
+
         const newChat = {
             caseID: caseID,
             customer: customer,
@@ -69,7 +71,7 @@ export default function (io, db, socket) {
         await removeWaitingCustomer(db, customerSessionIdentifier);
 
         // Broadcast caseID to Customer (notify that connection has been made successfully)
-        io.to(customerSessionIdentifier).emit('utils:joined-chat', caseID);
+        io.to(customerSessionIdentifier).emit('utils:joined-chat', caseID, staff.name);
 
         // Send a Callback to the Staff (notify successfully started Live Chat)
         callback({

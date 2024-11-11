@@ -68,11 +68,11 @@ export default function (io, db, socket) {
         }
     });
     
-    socket.on("utils:end-chat", async (caseID) => {
+    socket.on("utils:end-chat", async (caseID, isCustomerDisconnect) => {
         // Let the Customer know the Chat has ended
-        io.to(caseID).emit("utils:chat-ended", caseID);
+        socket.to(caseID).emit("utils:chat-ended", caseID);
 
         // Remove the Chat from the list of Active Chats
-        await endActiveChat(db, caseID);
+        await endActiveChat(db, caseID, isCustomerDisconnect);
     });
 }

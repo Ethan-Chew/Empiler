@@ -2,6 +2,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
+import chatHistory from '../models/chatHistory.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const dbFile = join(__dirname, 'db.sqlite');
@@ -83,7 +84,8 @@ export const addAvailStaff = async (db, staffData) => {
     const staffProfile = await searchForAvailStaff(db, staffData.staffID);
     if (staffProfile) {
         const socketIDs = staffData.socketIDs;
-        socketIDs.push(staffProfile.socketIDs[0]);
+        if (staffProfile.socketIDs.includes(socketIDs[0])) return;
+        socketIDs.push(socketIDs[0]);
         await db.run('UPDATE availStaff SET socketIDs = ? WHERE staffID = ?', JSON.stringify(socketIDs), staffData.staffID);
     } else {
         staffData.socketIDs = JSON.stringify(staffData.socketIDs);
@@ -112,7 +114,7 @@ export const startActiveChat = async (db, activeChat) => {
         activeChat.caseID, activeChat.customer.customerSessionIdentifier, activeChat.customer.socketIDs, activeChat.customer.faqSection, activeChat.customer.faqQuestion, activeChat.customer.userID, activeChat.customer.timeConnected, activeChat.staff.staffID);
 };
 
-export const endActiveChat = async (db, caseID) => {
+export const endActiveChat = async (db, caseID, isCustomerDisconnect) => {
     // Save the Chat to the Chat History DB (Supabase)
     const chat = await db.get('SELECT * FROM activeChats WHERE caseID = ?', caseID);
     const chatMessages = await retrieveChatMessages(db, caseID);
@@ -123,11 +125,12 @@ export const endActiveChat = async (db, caseID) => {
     }));
 
     // DEV: Commented to prevent spam to Databse when testing.
-    // try {
-    //     await chatHistory.createChatHistory(chat.userID, chat.staffID, formattedChatMessages);
-    // } catch (err) {
-    //     console.error(err);
-    // }
+    try {
+        const status = isCustomerDisconnect ? "userdisconnect" : null;
+        await chatHistory.createChatHistory(chat.caseID, chat.userID, chat.staffID, formattedChatMessages, status);
+    } catch (err) {
+        console.error(err);
+    }
 
     await db.run('DELETE FROM activeChats WHERE caseID = ?', caseID);
     await db.run('DELETE FROM chatHistory WHERE caseID = ?', caseID);

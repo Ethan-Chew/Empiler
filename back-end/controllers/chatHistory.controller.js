@@ -109,27 +109,41 @@ const createChatHistory = async (req, res) => {
     }
 }
 
-const deleteChatHistory = async (req, res) => {
-    const { id } = req.params;
-
+const updateChatRating = async (req, res) => {
     try {
-        const chat = await ChatHistory.deleteChatHistory(id);
+        const { id } = req.params;
+        const { rating } = req.body;
 
-        if (!chat) {
-            return res.status(404).json({
+        if (!id || !rating) {
+            return res.status(400).json({
                 status: 'Error',
-                message: `Chat with id ${id} not found.`
+                message: 'Missing required fields.'
             });
         }
 
-        res.status(200).json({
-            status: 'Success',
-            message: 'Chat history deleted successfully.',
-            chat: chat
+        if (rating < 1 || rating > 5) {
+            return res.status(400).json({
+                status: 'Error',
+                message: 'Rating must be between 1 and 5.'
+            });
+        }
+
+        const updateRequest = await ChatHistory.updateChatRating(id, rating);
+
+        if (updateRequest) {
+            return res.status(200).json({
+                status: 'Success',
+                message: 'Rating updated successfully.'
+            });
+        }
+
+        return res.status(500).json({
+            status: 'Error',
+            message: 'Failed to update rating.'
         });
     } catch (error) {
         console.error(error);
-        res.status(500).json({
+        return res.status(500).json({
             status: 'Error',
             message: 'Internal Server Error',
             error: error
@@ -142,5 +156,5 @@ export default {
     getChatByCustomerId,
     getChatByStaffId,
     createChatHistory,
-    deleteChatHistory
+    updateChatRating
 }

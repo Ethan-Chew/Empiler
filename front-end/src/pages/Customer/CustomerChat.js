@@ -6,22 +6,21 @@ import { socket } from "../../utils/chatSocket";
 import { useSearchParams } from "react-router-dom";
 import { FaArrowCircleUp } from "react-icons/fa";
 import { AiFillPlusCircle } from "react-icons/ai";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 
 export default function CustomerChat() {
     const navigate = useNavigate();
-    
+    const location = useLocation();
+
     const [isConnected, setIsConnected] = useState(false);
-    const [isDisconnected, setIsDisconnected] = useState(false);
-    const [searchParams, setSearchParams] = useSearchParams();
+    const [searchParams] = useSearchParams();
     const caseID = searchParams.get("caseID");
 
     const [messages, setMessages] = useState([]);
     const [chatEnded, setChatEnded] = useState(false);
     const [sentMessage, setSentMessage] = useState("");
     const [staffName, setStaffName] = useState("[insert name]");
-    const [error, setError] = useState('');
 
     // User Inactivity States
     const [inactivityTimer, setInactivityTimer] = useState(0);
@@ -53,7 +52,7 @@ export default function CustomerChat() {
 
             if (inactivityTimer >= disconnectLimit) {
                 setUserDisconnect(true);
-                socket.emit("utils:end-chat", caseID);
+                socket.emit("utils:end-chat", caseID, true);
             }
         }, 60000);
 
@@ -80,6 +79,11 @@ export default function CustomerChat() {
             navigateHome();
         }
 
+        // Retrieve the Staff Name from the Location State
+        if (location.state && "staffName" in location.state) {
+            setStaffName(location.state.staffName);
+        }
+
         // Socket.IO Event Handlers
         const handleConnection = () => {
             setIsConnected(true);
@@ -90,7 +94,6 @@ export default function CustomerChat() {
             }
 
             socket.emit("utils:verify-activechat", customerSessionIdentifier, (chatExistanceReq) => {
-                console.log(chatExistanceReq)
                 setStaffName(chatExistanceReq.staffName);
                 if (chatExistanceReq.exist && chatExistanceReq.caseID === caseID) {
                     socket.emit("utils:add-socket", customerSessionIdentifier, "customer");
@@ -153,12 +156,17 @@ export default function CustomerChat() {
     }
 
     function handleEndChat() {
-        socket.emit("utils:end-chat", caseID);
-        setIsDisconnected(true);
+        socket.emit("utils:end-chat", caseID, false);
+        navigateRating();
     }
 
     function navigateHome() {
         navigate("/");
+        sessionStorage.removeItem("customerSessionIdentifier");
+    }
+
+    function navigateRating() {
+        navigate("/chat/rating", { state: { caseID: caseID, staffName: staffName } });
         sessionStorage.removeItem("customerSessionIdentifier");
     }
 
@@ -177,7 +185,7 @@ export default function CustomerChat() {
                         <a className="text-sm text-neutral-400">Case ID: {caseID}</a>
                     </div>
 
-                    <button className="ml-auto px-4 py-1 bg-ocbcred hover:bg-ocbcdarkred text-white rounded-lg" onClick={handleEndChat}>
+                    <button className={`ml-auto px-4 py-1 bg-ocbcred hover:bg-ocbcdarkred text-white rounded-lg ${chatEnded && "cursor-not-allowed"}`} disabled={chatEnded} onClick={handleEndChat}>
                         End Chat
                     </button>
                 </div>
@@ -204,7 +212,7 @@ export default function CustomerChat() {
                             <input 
                                 className="p-3 border-2 w-full rounded-xl outline-none mx-5"
                                 placeholder="Enter a Message.."
-                                value={sentMessage} // Bind input to `sentMessage`
+                                value={sentMessage}
                                 onChange={(e) => setSentMessage(e.target.value)}
                                 onKeyPress={(e) => e.key === "Enter" && sendMessage(null)}
                             />
@@ -215,8 +223,8 @@ export default function CustomerChat() {
                     ) : (
                         <div className="px-10 py-6 md:py-4 w-full rounded-b-xl flex flex-col items-center border-t-2">
                             <p className="font-semibold text-lg mb-3">The Customer Support Representative has ended the Live Chat. We hope your problem was resolved!</p>
-                            <button className="px-4 py-2 bg-ocbcred hover:bg-ocbcdarkred rounded-lg text-white" onClick={navigateHome}>
-                                Back to Home
+                            <button className="px-4 py-2 bg-ocbcred hover:bg-ocbcdarkred rounded-lg text-white" onClick={navigateRating}>
+                                Continue
                             </button>
                         </div>
                     )}
@@ -227,14 +235,8 @@ export default function CustomerChat() {
                 <div className="p-5 bg-white flex flex-col items-center justify-center">
                     <h2 className="font-semibold text-2xl mb-2">Looks like you've been inactive for awhile.</h2>
                     <p className="text-lg">{ userDisconnected ? "You have been disconnected from the Live Chat." : "Please interact with the window to continue." }</p>
-                </div>
-            </div>
-
-            <div id="disconnected-popup" className={`${isDisconnected ? "" : "hidden"} fixed top-0 left-0 h-screen w-screen bg-neutral-900/20 backdrop-blur-sm flex items-center justify-center duration-200 z-10`}>
-                <div className="p-5 bg-white flex flex-col items-center justify-center">
-                    <h2 className="font-semibold text-2xl mb-2">You have disconnected from the chat.</h2>
-                    <button className="px-4 py-2 bg-ocbcred hover:bg-ocbcdarkred rounded-lg text-white" onClick={navigateHome}>
-                        Back to Home
+                    <button className="mt-3 px-4 py-2 bg-ocbcred hover:bg-ocbcdarkred rounded-lg text-white" onClick={navigateRating}>
+                        Continue
                     </button>
                 </div>
             </div>

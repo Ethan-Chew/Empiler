@@ -9,8 +9,6 @@ import supabase from './utils/supabase.js';
 import cors from 'cors';
 import { initialiseDB } from './utils/sqliteDB.js';
 
-
-
 // Routes
 import user from './routes/user.route.js';
 import chatHistory from './routes/chatHistory.route.js';

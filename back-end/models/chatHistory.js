@@ -51,10 +51,10 @@ export default class chatHistory {
         return data;
     }
 
-    static async createChatHistory(customerId, staffId, chatLog) {
+    static async createChatHistory(caseId, customerId, staffId, chatLog) {
         const { data, error } = await supabase
             .from('chat_history')
-            .insert([{ customerId, staffId, chatLog }])
+            .insert([{ caseId, customerId, staffId, chatLog }])
             .single();
 
         if (error) {
@@ -65,17 +65,20 @@ export default class chatHistory {
         return data
     }
 
-    static async deleteChatHistory() {
+    static async updateChatRating(caseId, rating) {
         const { data, error } = await supabase
             .from('chat_history')
-            .delete()
-            .eq('id', this.id);
-
+            .update({ rating: rating })
+            .eq('caseId', caseId)
+            .select();
+        
         if (error) {
-            console.log(error)
+            console.error('Error updating rating:', error);
             return null;
         }
-
-        return data
+    
+        return data;
     }
+
+    // static async updateChatHistory()
 }
