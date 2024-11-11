@@ -127,10 +127,6 @@ export default function AwaitChatContainer({ joinChat, hideAwaitCustomerList, wa
 }
 
 function FAQSectionCustomer({ section, requests, joinChat }) {
-    useState(() => {
-        console.log(section)
-        console.log(requests)
-    }, [])
     return (
         <div className="w-full">
             <h3 className="ml-10 mr-5 py-2 text-lg font-bold text-neutral-600">{ section }</h3>

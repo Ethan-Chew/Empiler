@@ -12,8 +12,7 @@ import CustomerChat from './pages/Customer/CustomerChat';
 import FAQSection from './pages/FAQSection';
 import FAQDetail from './pages/FAQDetail';
 import ViewDetailedAppointments from './pages/ViewDetailedAppointments';
-// import ViewOutstandingChatCustomers from './pages/ViewOutstandingChatCustomers';
-// import AdminSupportLog from './pages/AdminSupportLog';
+import ChatRating from './pages/Customer/ChatRating';
 import CustomerMenuPage from './pages/CustomerMenuPage';
 import ViewUpcomingAppointments from './pages/ViewUpcomingAppointments';
 
@@ -40,11 +39,11 @@ root.render(
       {/* Chat Routes */}
       <Route path="/awaitchat" element={<InitisaliseChat />} />
       <Route path="/chat" element={<CustomerChat />} />
+      <Route path="/chat/rating" element={<ChatRating />} />
       <Route path="/view-branch-appointments" element={<ViewBranchAppointments />} />
       <Route path="/view-detailed-appointments" element={<ViewDetailedAppointments />} />
       {/* <Route path="/view-outstanding-chat-customers" element={<ViewOutstandingChatCustomers />} />
       <Route path="/admin-support-log" element={<AdminSupportLog />} /> */}
-      <Route path="/customer-menu" element={<CustomerMenuPage />} />
       <Route path="/view-upcoming-appointments" element={<ViewUpcomingAppointments />} />
       <Route path="/faq-article" element={<FAQDetail />} />
       <Route path="/faq" element={<FAQSection />} />
@@ -59,6 +58,8 @@ root.render(
       <Route path="/staff/branches" element={<ProtectedRoute Component={ViewBranchAppointments} role="staff" />} />
 
       {/* Protected Routes (Customer) */}
+      <Route path="/customer/home" element={<ProtectedRoute Component={CustomerMenuPage} role="customer" />} />
+      <Route path="/appointments/branches" element={<ProtectedRoute Component={AppointmentBooking} role="customer" />} />
       <Route path="/appointments/branches" element={<ProtectedRoute Component={AppointmentBooking} role="customer" />} />
       <Route path="/appointments/timeslots" element={<ProtectedRoute Component={DetailedAppointmentBooking} role="customer" />} />
     </Routes>

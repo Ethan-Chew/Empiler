@@ -7,6 +7,9 @@ const router = express.Router()
 router.route("/:id")
     .get(ChatHistoryController.getChatById);
 
+router.route("/:id/rating")
+    .post(ChatHistoryController.updateChatRating)
+
 // Route to get chat by customer ID
 router.route("/:customerId")
     .get(ChatHistoryController.getChatByCustomerId);
@@ -18,11 +21,5 @@ router.route("/:staffId")
 // Route to create chat history
 router.route("/create")
     .post(ChatHistoryController.createChatHistory);
-
-// Route to delete chat history
-router.route("/delete/:id")
-    .delete(ChatHistoryController.deleteChatHistory);
-
-router.route("/")
 
 export default router;

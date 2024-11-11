@@ -159,7 +159,9 @@ export default function CustomerChat() {
 
     function handleEndChat() {
         socket.emit("utils:end-chat", caseID);
-        setIsDisconnected(true);
+        navigate("/chat/rating", { state: { caseID: caseID, staffName: staffName } });
+
+        // setIsDisconnected(true);
     }
 
     function navigateHome() {

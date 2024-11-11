@@ -1,6 +1,6 @@
 export default function NavigationBar() {
     return (
-        <div className="z-10 px-10 py-4 flex flex-row items-center shadow">
+        <div className="z-10 px-10 py-4 flex flex-row items-center shadow bg-white">
             <a className="text-lg font-semibold" href="/">OCBC Support Centre</a>
             <div className="ml-auto duration-200">
                 <a className="px-3 py-2 border-2 border-ocbcred hover:bg-ocbcred hover:text-white rounded-lg">Sign Up</a>

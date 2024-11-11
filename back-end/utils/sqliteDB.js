@@ -2,6 +2,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
+import chatHistory from '../models/chatHistory.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const dbFile = join(__dirname, 'db.sqlite');
@@ -124,11 +125,11 @@ export const endActiveChat = async (db, caseID) => {
     }));
 
     // DEV: Commented to prevent spam to Databse when testing.
-    // try {
-    //     await chatHistory.createChatHistory(chat.userID, chat.staffID, formattedChatMessages);
-    // } catch (err) {
-    //     console.error(err);
-    // }
+    try {
+        await chatHistory.createChatHistory(chat.caseID, chat.userID, chat.staffID, formattedChatMessages);
+    } catch (err) {
+        console.error(err);
+    }
 
     await db.run('DELETE FROM activeChats WHERE caseID = ?', caseID);
     await db.run('DELETE FROM chatHistory WHERE caseID = ?', caseID);
