@@ -56,10 +56,11 @@ export default function AppointmentBooking() {
         }
     }, []);
 
+    // TODO: Update the 'Showing Branches near xxxx'
     return (
-        <>
+        <div className="h-screen flex flex-col">
             <NavigationBar />
-            <div className="flex flex-col items-center font-inter overflow-x-hidden w-full">
+            <div className="flex-grow flex flex-col items-center font-inter overflow-x-hidden">
                 {/* Header and Title */}
                 <div className="w-full bg-gray-200 text-left py-5">
                     <h1 className="text-4xl font-semibold text-black mb-2 px-5">Schedule an Appointment</h1>
@@ -67,21 +68,23 @@ export default function AppointmentBooking() {
                 </div>
 
                 {/* Main Content */}
-                <div className="flex w-full mt-5 px-5">
-                    <div className="w-1/2 pr-5">
+                <div className="w-full max-h-[60vh] flex-grow flex flex-row gap-5 p-5">
+                    {/* Branch List */}
+                    <div className="flex-grow basis-1/2 max-h-full overflow-y-auto">
                         <p className="text-xl font-semibold text-black mb-2">Select a Branch</p>
                         <p className="text-base font-light text-black mb-2">
                             Showing OCBC Branches near <span className="text-[#DA291C]">Ngee Ann Polytechnic, Singapore.</span>
                         </p>
 
-                        <div className="mt-3 h-[40vh] overflow-y-scroll pr-2">
+                        <div className="flex flex-col gap-3 overflow-y-auto">
                             {branches.map((branch, index) => (
                                 <BranchItem branch={branch} key={index} />
                             ))}
                         </div>
                     </div>
 
-                    <div className="w-1/2 flex justify-center items-center">
+                    {/* Branch Map */}
+                    <div className="flex-grow basis-1/2">
                         {userLatitude && userLongitude ? (
                             <MapContainer center={[userLatitude, userLongitude]} zoom={13} scrollWheelZoom={false} className="w-full h-full">
                                 <TileLayer
@@ -101,7 +104,7 @@ export default function AppointmentBooking() {
                     </div>
                 </div>
             </div>
-        </>
+        </div>
     );
 }
 

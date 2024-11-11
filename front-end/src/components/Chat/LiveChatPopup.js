@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { IoMdClose } from "react-icons/io";
 
-function LiveChatPopup({ isOpen, setIsOpen }) {
+function LiveChatPopup({ section, question, isOpen, setIsOpen }) {
   const [faqSection, setFaqSection] = useState('');
   const [faqQuestion, setFaqQuestion] = useState('');
 
@@ -18,6 +18,17 @@ function LiveChatPopup({ isOpen, setIsOpen }) {
     initChat();
   };
 
+  useEffect(() => {
+    // If not null, set the FAQ Section and/or FAQ Question to it's variables
+    if (section) {
+      setFaqSection(section);
+    }
+
+    if (question) {
+      setFaqQuestion(question);
+    }
+  }, []);
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -29,7 +40,7 @@ function LiveChatPopup({ isOpen, setIsOpen }) {
           transition={{ duration: 0.3 }}
         >
           <motion.div
-            className="bg-white w-80 p-6 rounded-lg shadow-lg relative"
+            className="bg-white w-2/3 md:w-1/2 p-6 rounded-lg shadow-lg relative"
             initial={{ scale: 0.95 }}
             animate={{ scale: 1 }}
             exit={{ scale: 0.95 }}
@@ -41,7 +52,10 @@ function LiveChatPopup({ isOpen, setIsOpen }) {
             >
               <IoMdClose />
             </button>
-            <h2 className="text-xl font-semibold mb-4">Request Live Chat</h2>
+            <div className='mb-4'>
+              <h2 className="text-xl font-semibold mb-1">Request Live Chat</h2>
+              <p className='text-neutral-700'>Need to speak to our Customer Support Agent? Start a Live Chat and have a conversation online.</p>
+            </div>
             <form onSubmit={handleSubmit}>
               <div className="mb-4">
                 <label className="block text-sm text-gray-600">Question Category</label>

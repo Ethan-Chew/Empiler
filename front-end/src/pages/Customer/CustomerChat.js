@@ -165,6 +165,9 @@ export default function CustomerChat() {
     return (
         <div className="flex flex-col min-h-screen max-h-screen">
             <NavigationBar />
+            <div className="w-full bg-ocbcred text-white py-3 px-5">
+                <h1 className="text-2xl font-semibold">OCBC Support  |  Live Chat</h1>
+            </div>
 
             <div className="flex-grow flex flex-col p-0 md:p-10">
                 {/* Live Chat Info Window */}
@@ -185,7 +188,7 @@ export default function CustomerChat() {
                         { staffName !== "[insert name]" ? <a>You are now chatting with {staffName}.</a> : <></>}
                         
                         {/* Messages Area */}
-                        <div id="chat-messages" className="overflow-y-scroll my-4 min-h-0">
+                        <div id="chat-messages" className=" my-4 min-h-0 flex-grow overflow-y-scroll max-h-[calc(100vh-30rem)]">
                             {messages.map((msg) => (
                                 <MessageContainer key={msg.timestamp} isSender={msg.sender === "customer"} message={msg.message || null} fileUrl={msg.fileUrl || null} timestamp={msg.timestamp} />
                             ))}
@@ -203,6 +206,7 @@ export default function CustomerChat() {
                                 placeholder="Enter a Message.."
                                 value={sentMessage} // Bind input to `sentMessage`
                                 onChange={(e) => setSentMessage(e.target.value)}
+                                onKeyPress={(e) => e.key === "Enter" && sendMessage(null)}
                             />
                             <button className="border-2 rounded-xl px-4 hover:border-neutral-500 duration-200" onClick={() => sendMessage(null)}>
                                 <FaArrowCircleUp className="text-2xl text-neutral-400 hover:text-neutral-500" />
