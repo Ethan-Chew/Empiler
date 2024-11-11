@@ -24,7 +24,7 @@ export default function StaffChats() {
 
     // Setter Functions
     const joinChat = async (customerSessionIdentifier) => {    
-        if (connectedChats.length >= 7) {
+        if (connectedChats.length >= 5) {
             return false; // Exit early if max chat limit is reached
         }
     

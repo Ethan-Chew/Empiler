@@ -125,7 +125,7 @@ function CustomerRequestContainer({ index, request, joinChat }) {
         if (addRequest) {
             setButtonText("Joined!");
         } else {
-            alert("You cannot join more than 7 chats at a time.");
+            alert("You cannot join more than 5 chats at a time.");
         }
 
     }
