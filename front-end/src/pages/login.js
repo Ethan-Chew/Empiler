@@ -32,6 +32,7 @@ export default function Login() {
                     email: data.email,
                     role: data.role,
                 }));
+                sessionStorage.setItem('jwt', data.token);
 
                 // Check the role of the logged-in user
                 if (data.role === "staff") {
