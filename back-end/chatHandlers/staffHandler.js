@@ -86,4 +86,16 @@ export default function (io, db, socket) {
             io.to(socket.id).emit('staff:active-chats', activeChats);
         }
     })
+
+    // Remove customer from waiting list on disconnect (somehow makes it so that customer can refresh initialisechat without disconnecting)
+    socket.on("disconnect", async () => {
+        const waitingCustomers = await retrieveWaitingCustomers(db);
+        for (const customer of waitingCustomers) {
+            if (customer.socketIDs.includes(socket.id)) {
+                await removeWaitingCustomer(db, customer.customerSessionIdentifier);
+                await notifyForWaitingCustomers(db, io);
+                break;
+            }
+        }
+    });
 }
