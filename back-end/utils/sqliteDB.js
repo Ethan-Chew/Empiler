@@ -114,7 +114,7 @@ export const startActiveChat = async (db, activeChat) => {
         activeChat.caseID, activeChat.customer.customerSessionIdentifier, activeChat.customer.socketIDs, activeChat.customer.faqSection, activeChat.customer.faqQuestion, activeChat.customer.userID, activeChat.customer.timeConnected, activeChat.staff.staffID);
 };
 
-export const endActiveChat = async (db, caseID) => {
+export const endActiveChat = async (db, caseID, isCustomerDisconnect) => {
     // Save the Chat to the Chat History DB (Supabase)
     const chat = await db.get('SELECT * FROM activeChats WHERE caseID = ?', caseID);
     const chatMessages = await retrieveChatMessages(db, caseID);
@@ -126,7 +126,8 @@ export const endActiveChat = async (db, caseID) => {
 
     // DEV: Commented to prevent spam to Databse when testing.
     try {
-        await chatHistory.createChatHistory(chat.caseID, chat.userID, chat.staffID, formattedChatMessages);
+        const status = isCustomerDisconnect ? "userdisconnect" : null;
+        await chatHistory.createChatHistory(chat.caseID, chat.userID, chat.staffID, formattedChatMessages, status);
     } catch (err) {
         console.error(err);
     }

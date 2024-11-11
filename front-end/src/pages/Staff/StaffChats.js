@@ -73,7 +73,7 @@ export default function StaffChats() {
 
     const handleEndChat = () => {        
         // Remove from backend
-        socket.emit("utils:end-chat", selectedChatId);
+        socket.emit("utils:end-chat", selectedChatId, false);
 
         // If the chat is the selected chat, remove the selected chat
         setSelectedChatId(null);
