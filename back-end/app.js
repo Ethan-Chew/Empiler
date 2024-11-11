@@ -5,7 +5,6 @@ import dotenv from "dotenv";
 import cookieParser from 'cookie-parser';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import supabase from './utils/supabase.js';
 import cors from 'cors';
 import { initialiseDB } from './utils/sqliteDB.js';
 
@@ -14,6 +13,7 @@ import user from './routes/user.route.js';
 import chatHistory from './routes/chatHistory.route.js';
 import faq from './routes/faq.route.js';
 import auth from './routes/auth.route.js';
+import translate from './routes/translate.route.js';
 import appointment from './routes/appointment.route.js';
 import branches from './controllers/branches.controller.js';
 
@@ -51,6 +51,7 @@ app.post("/api/branches", branches.getOCBCBranches);
 app.get("/api/branch", branches.getSpecificOCBCBranch);
 app.use("/api/appointments", appointment);
 app.use("/api/chat/upload", chatAttachments);
+app.use("/api/translate", translate);
 
 // Handle Socket.IO Connection
 const server = createServer(app);
@@ -64,11 +65,6 @@ const io = new Server(server, {
         skipMiddlewares: false,
     }
 });
-
-//Default routes
-// app.get('/', (req, res) => {
-//     res.send("Hello I am working my friend Supabase <3");
-// });
 
 server.listen(8080, () => {
     console.log(`> Ready on http://localhost:8080`);
