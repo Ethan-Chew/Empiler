@@ -259,7 +259,7 @@ export default function DetailedAppointmentBooking() {
     return (
         <div className="font-inter overflow-hidden min-h-screen">
             <div className="bg-[#677A84] h-[10vh] w-full"></div>
-            <div className="bg-white m-auto w-[98%] border-b-2 border-gray-300 w-full p-5 text-left mb-3 flex flex-col items-center align-center">
+            <div className="bg-white m-auto w-[98%] border-b-2 border-gray-300 p-5 text-left mb-3 flex flex-col items-center align-center">
                 {branchDetails ? (
                     <>
                         <h1 className="text-4xl font-semibold mb-1">Appointment Booking</h1>

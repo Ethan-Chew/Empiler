@@ -70,24 +70,25 @@ export default function AppointmentBooking() {
     }, [index]);
 
     return (
+        <div className="min-h-screen">
         <>
             <NavigationBar />
             <div className="flex flex-col items-center font-inter overflow-x-hidden w-full">
                 {/* Header and Title */}
-                <div className="w-full bg-gray-200 text-left py-5">
+                <div className="bg-white m-auto w-[98%] border-b-2 border-gray-300 p-5 text-left flex flex-col items-center align-center">
                     <h1 className="text-4xl font-semibold text-black mb-2 px-5">Schedule an Appointment</h1>
                     <p className="text-2xl font-light text-gray-900 px-5">Schedule an appointment at an OCBC Branch near you.</p>
                 </div>
 
                 {/* Main Content */}
-                <div className="flex w-full mt-5 px-5">
+                <div className="border-3 border-gray-300 rounded-xl flex w-[95%] m-5 p-5">
                     <div className="w-1/2 pr-5">
                         <p className="text-xl font-semibold text-black mb-2">Select a Branch</p>
                         <p className="text-base font-light text-black mb-2">
                             Showing OCBC Branches near <span className="text-[#DA291C]">{userLocation || "your location"}</span>
                         </p>
 
-                        <div className="mt-3 h-[40vh] overflow-y-scroll pr-2">
+                        <div className="mt-3 h-[50vh] overflow-y-scroll pr-2">
                             {branches.map((branch, index) => (
                                 <BranchItem branch={branch} key={index} userLatitude={userLatitude} userLongitude={userLongitude} />
                             ))}
@@ -115,6 +116,7 @@ export default function AppointmentBooking() {
                 </div>
             </div>
         </>
+        </div>
     );
 }
 
@@ -137,7 +139,7 @@ function BranchItem({ branch, userLatitude, userLongitude }) {
     const distance = calculateDistance(userLatitude, userLongitude, branch.latitude, branch.longitude);
 
     return (
-        <div className="px-3 py-2 border-2 border-neutral-500 rounded-xl" onClick={() => navigate("/appointments/timeslots", {
+        <div className="m-4 px-3 py-2 border-2 border-neutral-500 rounded-xl" onClick={() => navigate("/appointments/timeslots", {
             state: {
                 branch: branch
             }
