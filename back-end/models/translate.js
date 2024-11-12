@@ -1,6 +1,6 @@
 import { v2 } from "@google-cloud/translate";
 import ISO6391 from 'iso-639-1';
-import { dotenv } from "dotenv";
+import dotenv from "dotenv";
 dotenv.config();
 
 // Configure Credentials

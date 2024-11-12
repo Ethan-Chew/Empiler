@@ -1,5 +1,5 @@
 import express from "express";
-import translateController from "../controllers/translate.controller";
+import translateController from "../controllers/translate.controller.js";
 
 const router = express.Router()
 
