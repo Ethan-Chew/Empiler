@@ -21,8 +21,7 @@ const getMediaStream = () => {
 export default function MessageTextField({ setSentMessage, sentMessage, sendMessage, onUploadClick, socket }) {
     const [isRecording, setIsRecording] = useState(false);
     const [recorder, setRecorder] = useState();
-    const [currentRecognition, setCurrentRecognition] = useState(null);
-    const [recognitionHistory, setRecognitionHistory] = useState(null);
+    const [recognitionHistory, setRecognitionHistory] = useState([]);
     const processorRef = useRef();
     const audioContextRef = useRef();
     const audioInputRef = useRef();
@@ -47,9 +46,15 @@ export default function MessageTextField({ setSentMessage, sentMessage, sendMess
         const handleReceiveTranscript = (data) => {
             console.log(data)
             if (data.isFinal) {
-                setCurrentRecognition("...");
-                setRecognitionHistory((old) => [data.text, ...old]);
-            } else setCurrentRecognition(data.text + "...");
+                setRecognitionHistory((old) => {
+                    const temp = [data.text, ...old];
+                    if (temp.length !== 0) {
+                        setSentMessage(temp.join(" "))
+                    }
+                    return temp;
+                });
+
+            }
         }
 
         socket.on("stt:receive-text", (data) => {
@@ -111,7 +116,7 @@ export default function MessageTextField({ setSentMessage, sentMessage, sendMess
                 <input 
                     className="outline-none w-full"
                     placeholder="Enter a Message.."
-                    value={recognitionHistory === null ? sentMessage : recognitionHistory.join(" ")}
+                    value={sentMessage}
                     onChange={(e) => setSentMessage(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && sendMessage(null)}
                 />
