@@ -1,5 +1,5 @@
 import NavigationBar from "../../components/Navbar";
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -67,7 +67,7 @@ export default function AppointmentBooking() {
         } else {
             console.log("Geolocation not supported");
         }
-    }, []);
+    }, [index]);
 
     return (
         <>
@@ -89,7 +89,7 @@ export default function AppointmentBooking() {
 
                         <div className="mt-3 h-[40vh] overflow-y-scroll pr-2">
                             {branches.map((branch, index) => (
-                                <BranchItem branch={branch} key={index} />
+                                <BranchItem branch={branch} key={index} userLatitude={userLatitude} userLongitude={userLongitude} />
                             ))}
                         </div>
                     </div>
@@ -118,34 +118,23 @@ export default function AppointmentBooking() {
     );
 }
 
-const getEarliestAvailableTime = (openingHours) => {
-    const today = new Date();
-    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    const todayName = dayNames[today.getDay()];
-    if (todayName === "Sun") return "Closed";
-
-    // Updated regex to handle variations in spaces and separators
-    const regex = new RegExp(`(?:${todayName}|${dayNames.join('|')})(?:\\s*-\\s*${dayNames.join('|')})?:\\s*(\\d{1,2}\\.\\d{2}[ap]m)\\s*[-to]{1,2}\\s*(\\d{1,2}\\.\\d{2}[ap]m)`, 'i');
-    const match = openingHours.match(regex);
-
-    if (match) {
-        const openingTime = match[1];
-        return formatTo24Hour(openingTime);
-    }
-    return null;
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    if (!lat1 || !lon1 || !lat2 || !lon2) return "Distance unavailable"; // Handle undefined values
+    
+    const R = 6371; // Earth's radius in km
+    const dLat = (lat2 - lat1) * (Math.PI / 180);
+    const dLon = (lon2 - lon1) * (Math.PI / 180);
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+              Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c; // Distance in km
+    return distance.toFixed(2); // Round to 2 decimal places
 };
 
-const formatTo24Hour = (time) => {
-    const [timePart, period] = time.toLowerCase().split(/[ap]m/);
-    let [hours, minutes] = timePart.split('.').map(Number);
-    if (period === 'p' && hours !== 12) hours += 12;
-    if (period === 'a' && hours === 12) hours = 0;
-    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-};
-
-function BranchItem({ branch }) {
+function BranchItem({ branch, userLatitude, userLongitude }) {
     const navigate = useNavigate();
-    const earliestTime = getEarliestAvailableTime(branch.openingHours);
+    const distance = calculateDistance(userLatitude, userLongitude, branch.latitude, branch.longitude);
 
     return (
         <div className="px-3 py-2 border-2 border-neutral-500 rounded-xl" onClick={() => navigate("/appointments/timeslots", {
@@ -154,13 +143,10 @@ function BranchItem({ branch }) {
             }
         })}>
             <div className="mb-2">
-                <p className="text-lg font-semibold">{ branch.landmark }</p>
-                <p className="text-neutral-500 text-sm">{ branch.address }</p>
-                <p className={`text-${earliestTime === "Closed" ? "red-500" : "green-700"}`}>
-                    {earliestTime === "Closed" ? "Closed today" : `Available today at ${earliestTime}`}
-                </p>
+                <p className="text-lg font-semibold">{branch.landmark}</p>
+                <p className="text-neutral-500 text-sm">{branch.address}</p>
+                <p className="text-sm text-neutral-500">{distance} km away</p>
             </div>
-            <p></p>
         </div>
-    )
+    );
 }
