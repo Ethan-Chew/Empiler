@@ -4,10 +4,9 @@ import handleFileUpload from "../../utils/handleFileUpload";
 import { socket } from "../../utils/chatSocket";
 
 import { useSearchParams } from "react-router-dom";
-import { FaArrowCircleUp } from "react-icons/fa";
-import { AiFillPlusCircle } from "react-icons/ai";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
+import MessageTextField from "../../components/Chat/MessageTextField";
 
 export default function CustomerChat() {
     const navigate = useNavigate();
@@ -198,28 +197,14 @@ export default function CustomerChat() {
                         {/* Messages Area */}
                         <div id="chat-messages" className=" my-4 min-h-0 flex-grow overflow-y-scroll max-h-[calc(100vh-30rem)]">
                             {messages.map((msg) => (
-                                <MessageContainer key={msg.timestamp} isSender={msg.sender === "customer"} message={msg.message || null} fileUrl={msg.fileUrl || null} timestamp={msg.timestamp} />
+                                <MessageContainer key={msg.timestamp} isSender={msg.sender === "customer"} message={msg.message || null} fileUrl={msg.fileUrl || null} timestamp={msg.timestamp} socket={socket} />
                             ))}
                         </div>
                     </div>
 
                     {/* Message Field */}
                     {!chatEnded ? (
-                        <div className="px-10 py-6 md:py-4 w-full rounded-b-xl flex flex-row justify-between">
-                            <button className="border-2 rounded-xl px-4 hover:border-neutral-500 duration-200" onClick={onUploadClick}>
-                                <AiFillPlusCircle className="text-3xl text-neutral-400 hover:text-neutral-500" />
-                            </button>
-                            <input 
-                                className="p-3 border-2 w-full rounded-xl outline-none mx-5"
-                                placeholder="Enter a Message.."
-                                value={sentMessage}
-                                onChange={(e) => setSentMessage(e.target.value)}
-                                onKeyPress={(e) => e.key === "Enter" && sendMessage(null)}
-                            />
-                            <button className="border-2 rounded-xl px-4 hover:border-neutral-500 duration-200" onClick={() => sendMessage(null)}>
-                                <FaArrowCircleUp className="text-2xl text-neutral-400 hover:text-neutral-500" />
-                            </button>
-                        </div>
+                        <MessageTextField setSentMessage={setSentMessage} sentMessage={sentMessage} sendMessage={sendMessage} onUploadClick={onUploadClick} socket={socket} />
                     ) : (
                         <div className="px-10 py-6 md:py-4 w-full rounded-b-xl flex flex-col items-center border-t-2">
                             <p className="font-semibold text-lg mb-3">The Customer Support Representative has ended the Live Chat. We hope your problem was resolved!</p>

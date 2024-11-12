@@ -16,6 +16,11 @@ export default function ChatRating() {
     const [redirectCountdown, setRedirectCountdown] = useState(5);
     const [blockSending, setBlockSending] = useState(false);
 
+    const navigateHome = () => {
+        sessionStorage.removeItem("customerSessionIdentifier");
+        navigate("/");
+    }
+ 
     useEffect(() => {
         const verifyAuthentication = async () => {
             const verifyRequest = await fetch('http://localhost:8080/api/auth/verify', {
@@ -31,7 +36,7 @@ export default function ChatRating() {
             setCaseID(location.state.caseID);
             setStaffName(location.state.staffName);
         } else {
-            navigate("/");
+            navigateHome();
         }
 
         verifyAuthentication();
@@ -45,9 +50,10 @@ export default function ChatRating() {
                     if (prevCountdown === 0) {
                         clearInterval(interval);
                         if (isAuthenticated) {
+                            sessionStorage.removeItem("customerSessionIdentifier");
                             navigate("/customer/home");
                         } else {
-                            navigate("/");
+                            navigateHome();
                         }
                     }
                     return prevCountdown - 1;
@@ -109,7 +115,7 @@ export default function ChatRating() {
                             {isUpdateSuccess === true ? "Continue" : "Submit Review"}
                         </button>
                         {isUpdateSuccess === true ? <p>Thank you! Redirecting you in {redirectCountdown} second{redirectCountdown === 1 ? "" : "s"}...</p> : (isUpdateSuccess === false ? <p>Failed to update your rating. Try again!</p> : <></>)}
-                        <button className="text-ocbcred hover:text-ocbcdarkred font-lg">
+                        <button className="text-ocbcred hover:text-ocbcdarkred font-lg" onClick={navigateHome}>
                             I&apos;ll skip
                         </button>
                     </div>
