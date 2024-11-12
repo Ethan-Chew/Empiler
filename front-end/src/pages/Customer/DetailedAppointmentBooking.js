@@ -288,7 +288,9 @@ export default function DetailedAppointmentBooking() {
                                 year: "numeric",   // Year (2025)
                             })}
                         </p>
-                        <p className="text-sm text-green-600">{bookingDetails?.timeSlot}</p>
+                        <p className="text-sm">
+                            {formatTimeslot(bookingDetails?.timeSlot)}
+                        </p>
 
                         <div className="flex flex-col justify-around mt-5">
                             <div>
