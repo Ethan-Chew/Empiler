@@ -6,12 +6,11 @@ import { useNavigate } from 'react-router-dom';
 
 
 // Components
-import { FaArrowCircleUp } from "react-icons/fa";
-import { AiFillPlusCircle } from "react-icons/ai";
 import AwaitChatContainer from "../../components/Chat/AwaitingChatContainer";
 import StaffNavigationBar from "../../components/StaffNavbar";
 import MessageContainer from "../../components/Chat/MessageContainer";
 import ToastMessage from "../../components/ToastMessage";
+import MessageTextField from "../../components/Chat/MessageTextField";
 
 export default function StaffChats() {
     const navigate = useNavigate();
@@ -47,10 +46,7 @@ export default function StaffChats() {
             };
     
             setConnectedChats((prev) => [...prev, formattedChat]);
-
-            if (selectedChatId === null) {
-                setSelectedChatId(formattedChat.caseID);
-            }
+            setSelectedChatId(formattedChat.caseID);
     
             return true;
     
@@ -80,8 +76,8 @@ export default function StaffChats() {
 
     const handleEndChat = () => {        
         // Remove from backend
-        socket.emit("utils:end-chat", selectedChatId);
-        
+        socket.emit("utils:end-chat", selectedChatId, false);
+
         // If the chat is the selected chat, remove the selected chat
         setSelectedChatId(null);
 
@@ -108,7 +104,7 @@ export default function StaffChats() {
     }
 
     useEffect(() => {  
-        const handleConnection = () => {
+        const handleConnection = (params) => {
             setIsConnected(true);
             socket.emit('staff:avail'); 
         }
@@ -138,9 +134,12 @@ export default function StaffChats() {
         }
 
         const handleChatEnded = (caseID) => {
-            if (selectedChatId === caseID) {
-                setSelectedChatId(null);
-            }
+            setSelectedChatId((prev) => {
+                if (prev === caseID) {
+                    return null;
+                }
+                return prev;
+            })
 
             setConnectedChats((prevChats) => {
                 setDisconnectedChats((prevDisconChats) => [...prevDisconChats, prevChats.filter((chat) => chat.caseID === caseID)[0]]);
@@ -163,6 +162,7 @@ export default function StaffChats() {
         socket.on("utils:receive-msg", handleReceiveMessage);
         socket.on("utils:chat-ended", handleChatEnded);
         socket.on("staff:active-chats", handleReconnectAddChats);
+        socket.on("error", (err) => console.error(err));
         
         return () => {
             // Clear Event Listeners on Deconstructor
@@ -176,8 +176,11 @@ export default function StaffChats() {
     }, []);
 
     useEffect(() => {
-        // Retrieve Active Chats, if exists, load it
-        socket.emit("staff:active-chats");
+        if (isConnected) {
+            socket.emit('staff:avail'); 
+            // Retrieve Active Chats, if exists, load it
+            socket.emit("staff:active-chats");
+        }
     }, [isConnected])
 
     async function onUploadClick() {
@@ -189,6 +192,9 @@ export default function StaffChats() {
             console.error('Error during file upload:', err);
         }
     }
+
+    // TODO: Improve Error 
+    if (!isConnected) return <p>Error: Socket connection not made</p>
 
     return (
         <div className="max-h-screen h-screen flex flex-col">
@@ -221,22 +227,21 @@ export default function StaffChats() {
 
                 {/* Chat Window */}
                 <div id="chat-window" className={`flex flex-col flex-grow ${connectedChats.length === 0 && "items-center justify-center"} overflow-hidden`}>
-                    <div id="chat-header" className={`${!selectedChatId ? "hidden" : ""} w-full bg-neutral-100 border-y border-gray-300 flex flex-row px-4 py-2`}>
-                        {selectedChatId && connectedChats.filter((chat) => chat.caseID === selectedChatId).map((selectedChat => (
-                            <>
-                                <div>
-                                    <p className="text-lg font-bold mb-0">{ selectedChat.customer?.faqQuestion }</p>
-                                    <p className="text-neutral-500 text-sm">Case ID: { selectedChat.caseID }{ selectedChat.customer?.userID && " | Logged In" }</p>
-                                </div>
+                    {selectedChatId && connectedChats.filter((chat) => chat.caseID === selectedChatId).map((selectedChat => (
+                        <div id="chat-header" className={`${selectedChatId ? "" : "hidden"} w-full bg-neutral-100 border-y border-gray-300 flex flex-row px-4 py-2`}>
+                            <div>
+                                <p className="text-lg font-bold mb-0">{ selectedChat.customer?.faqQuestion }</p>
+                                <p className="text-neutral-500 text-sm">FAQ Category: { selectedChat.customer?.faqSection }</p>
+                                <p className="text-neutral-500 text-sm">Case ID: { selectedChat.caseID }{ selectedChat.customer?.userID && " | Logged In" }</p>
+                            </div>
 
-                                <button className="ml-auto px-4 py-1 bg-ocbcred hover:bg-ocbcdarkred text-white rounded-lg" onClick={handleEndChat}>
-                                    End Chat
-                                </button>
-                            </>
-                        )))}
-                    </div>
+                            <button className="ml-auto px-4 py-1 bg-ocbcred hover:bg-ocbcdarkred text-white rounded-lg" onClick={handleEndChat}>
+                                End Chat
+                            </button>
+                        </div>
+                    )))}
 
-                    <div id="chat" className={`w-full flex-grow flex flex-col ${selectedChatId === null ? "hidden" : ""}`}>
+                    <div id="chat" className={`w-full flex-grow flex flex-col ${selectedChatId ? "" : "hidden"}`}>
                         <div id="chat-container" className="flex-grow p-4 overflow-y-auto max-h-[calc(100vh-18rem)]">
                             {selectedChatId && 
                             connectedChats
@@ -250,21 +255,7 @@ export default function StaffChats() {
                         </div>
 
                         {/* Message Field */}
-                        <div className="p-10 px-10 py-6 md:py-4 w-full rounded-b-xl flex flex-row justify-between">
-                            <button className="border-2 rounded-xl px-4 hover:border-neutral-500 duration-200" onClick={onUploadClick}>
-                                <AiFillPlusCircle className="text-3xl text-neutral-400 hover:text-neutral-500" />
-                            </button>
-                            <input 
-                                className="p-3 border-2 w-full rounded-xl outline-none mx-5"
-                                placeholder="Enter a Message.."
-                                value={sentMessage}
-                                onChange={(e) => setSentMessage(e.target.value)}
-                                onKeyDown={(e) => e.key === "Enter" && sendMessage(null)}
-                            />
-                            <button className="border-2 rounded-xl px-4 hover:border-neutral-500 duration-200" onClick={() => sendMessage(null)}>
-                                <FaArrowCircleUp className="text-2xl text-neutral-400 hover:text-neutral-500" />
-                            </button>
-                        </div>
+                        <MessageTextField setSentMessage={setSentMessage} sentMessage={sentMessage} sendMessage={sendMessage} onUploadClick={onUploadClick} />
                     </div>
                     
                     {/* Displayed when the Staff has not picked up any Live Chats */}

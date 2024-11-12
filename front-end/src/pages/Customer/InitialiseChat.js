@@ -69,8 +69,12 @@ export default function InitialiseChat() {
             setWaitingTime(time);
         })
 
-        socket.on('utils:joined-chat', (caseID) => {
-             navigate(`/chat?caseID=${caseID}`);
+        socket.on('utils:joined-chat', (caseID, staffName) => {
+             navigate(`/chat?caseID=${caseID}`, {
+                state: {
+                    staffName: staffName
+                }
+             });
         })
 
         return () => {

@@ -15,7 +15,7 @@ const Icons = {
 export default function SectionContainer({ icon, title, description }) {
     return (
         <div className="h-full flex flex-col border-2 border-neutral-600 p-5 rounded-xl bg-white group">
-            {Icons[icon] && React.createElement(Icons[icon], { className: "text-5xl mb-2" })}
+            {Icons[icon] && React.createElement(Icons[icon], { className: "text-5xl mb-2 stroke-1" })}
             <div className="flex-grow">
                 <p className="text-2xl font-bold">{ title }</p>
                 <p>{ description }</p>

@@ -10,8 +10,6 @@ import { useState, useEffect } from 'react';
 export default function App() {
   const [faqs, setFaqs] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
-  const [faqSection, setFaqSection] = useState('');
-  const [faqQuestion, setFaqQuestion] = useState('');
   const algoilaAdminKey = process.env.REACT_APP_ALGOILA_ADMIN_KEY;
 
   useEffect(() => {

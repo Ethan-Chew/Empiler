@@ -34,11 +34,11 @@ export default function AwaitChatContainer({ joinChat, hideAwaitCustomerList, wa
             }
         };
       
-        document.addEventListener('mousedown', handleClickOutside);
+        // document.addEventListener('mousedown', handleClickOutside);
         fetchFaqs();
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
+        // return () => {
+        //     document.removeEventListener('mousedown', handleClickOutside);
+        // };
     }, []);
 
     return (
@@ -53,11 +53,13 @@ export default function AwaitChatContainer({ joinChat, hideAwaitCustomerList, wa
                 <a className="text-neutral-600">Customers who have requested a live chat; Join and Manage up to 7 Live Chats simultaneously.</a>
 
                 <div className="flex flex-row justify-between mt-5 gap-3">
-                    <div id="search-bar" className="w-1/2 flex flex-row items-center gap-2 py-1 px-3 rounded-md border-2 border-neutral-400">
+                    <div id="search-bar" className="z-20 w-1/2 flex flex-row items-center gap-2 py-1 px-3 rounded-md border-2 border-neutral-400">
                         <FaMagnifyingGlass className="fill-neutral-400" />
                         <input
                             placeholder="Search for Questions..."
                             className="outline-none w-full"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
 
@@ -125,10 +127,6 @@ export default function AwaitChatContainer({ joinChat, hideAwaitCustomerList, wa
 }
 
 function FAQSectionCustomer({ section, requests, joinChat }) {
-    useState(() => {
-        console.log(section)
-        console.log(requests)
-    }, [])
     return (
         <div className="w-full">
             <h3 className="ml-10 mr-5 py-2 text-lg font-bold text-neutral-600">{ section }</h3>
