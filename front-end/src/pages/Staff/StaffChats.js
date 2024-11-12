@@ -2,6 +2,8 @@ import { socket } from "../../utils/chatSocket"
 import { useState, useEffect } from "react";
 import handleFileUpload from "../../utils/handleFileUpload";
 import { formatTimestamp } from "../../utils/formatTimestamp";
+import { useNavigate } from 'react-router-dom';
+
 
 // Components
 import AwaitChatContainer from "../../components/Chat/AwaitingChatContainer";
@@ -11,6 +13,8 @@ import ToastMessage from "../../components/ToastMessage";
 import MessageTextField from "../../components/Chat/MessageTextField";
 
 export default function StaffChats() {
+    const navigate = useNavigate();
+
     // Page Management
     const [displayAwaitCustomerList, setDisplayAwaitCustomerList] = useState(false);
 
@@ -77,11 +81,14 @@ export default function StaffChats() {
         // If the chat is the selected chat, remove the selected chat
         setSelectedChatId(null);
 
+        // Already handled in the backend as on "disconnect"
         // Remove the chat from session storage / state
-        setConnectedChats((prevChats) => {
-            const updatedChats = prevChats.filter((chat) => chat.caseID !== selectedChatId);
-            return updatedChats;
-        });
+        // setConnectedChats((prevChats) => {
+        //     const updatedChats = prevChats.filter((chat) => chat.caseID !== selectedChatId);
+        //     return updatedChats;
+        // });
+        
+        navigate("/staff/chats");
     }
 
     const handleHideToastMsg = (index) => {
