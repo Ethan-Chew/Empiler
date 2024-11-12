@@ -13,6 +13,9 @@ export default function DetailedAppointmentBooking() {
     const [loadingTimeslots, setLoadingTimeslots] = useState(false);
     const [showModal, setShowModal] = useState(false); // State to show the confirmation modal
     const [bookingDetails, setBookingDetails] = useState(null); // Store selected booking details
+    const [showDates, setShowDates] = useState(true); // State to toggle dates visibility
+
+    const toggleDates = () => setShowDates(!showDates); // Toggle function
 
     useEffect(() => {
         if (!location.state.branch) {
@@ -29,7 +32,6 @@ export default function DetailedAppointmentBooking() {
         const today = new Date();
         const availableDates = [];
     
-        // Loop through the next 5 days (including Saturdays)
         for (let i = 1; availableDates.length < 7; i++) {
             const nextDate = new Date(today);
             nextDate.setDate(today.getDate() + i); // Increment date by i days
@@ -255,13 +257,13 @@ export default function DetailedAppointmentBooking() {
     };
 
     return (
-        <div className="font-inter overflow-hidden h-screen">
-            <div className="bg-[#677A84] h-[15vh] w-full"></div>
-            <div className="bg-[#D9D9D9] w-full p-5 text-left mb-3">
+        <div className="font-inter overflow-hidden min-h-screen">
+            <div className="bg-[#677A84] h-[10vh] w-full"></div>
+            <div className="bg-white m-auto w-[98%] border-b-2 border-gray-300 w-full p-5 text-left mb-3 flex flex-col items-center align-center">
                 {branchDetails ? (
                     <>
-                        <h1 className="text-2xl font-semibold mb-1">{branchDetails.landmark}</h1>
-                        <p className="text-lg text-[#060313]">Schedule an Appointment</p>
+                        <h1 className="text-4xl font-semibold mb-1">Appointment Booking</h1>
+                        <h1 className="text-xl mb-1 text-gray-500">{branchDetails.landmark}</h1>
                     </>
                 ) : (
                     <p>Loading branch details...</p>
@@ -298,8 +300,8 @@ export default function DetailedAppointmentBooking() {
             <div className="flex h-[calc(70vh-20px)] p-5">
                 <div className="flex-2 flex flex-col gap-2 overflow-hidden mr-3">
                     {/* Date Selection */}
-                    <div className="w-[70vw] bg-white rounded-lg shadow-md p-3">
-                        <div className="flex items-center mb-3">
+                    <div className="w-[70vw] bg-white border-gray-200 border-3 rounded-xl shadow-md p-3">
+                        <div className="flex items-center mb-3 border-b border-gray-300 pb-2">
                             <p className="text-lg font-medium mx-auto">
                                 {selectedDate
                                     ? new Date(selectedDate).toLocaleDateString('en-US', {
@@ -309,36 +311,42 @@ export default function DetailedAppointmentBooking() {
                                     })
                                     : 'Select a Date'}
                             </p>
-                            <button className="text-lg">&#9660;</button> 
+                            <button className="text-lg" onClick={toggleDates}>
+                                {showDates ? '▲' : '▼'}
+                            </button>
                         </div>
                         <div className="flex justify-evenly mb-3">
-                            {availableDates.map((date, idx) => (
-                                <button
-                                    key={idx}
-                                    className={`w-16 h-20 mr-2 rounded-lg flex flex-col items-center justify-center text-lg cursor-pointer ${
-                                        selectedDate === date.formattedDate
-                                            ? 'border-[#DA291C] text-[#DA291C]'
-                                            : date.isClosed
-                                            ? 'text-gray-300 cursor-not-allowed' // Make closed days unclickable
-                                            : 'text-gray-500'
-                                    }`}
-                                    onClick={() => !date.isClosed && handleDateSelect(date.formattedDate)} // Only allow click on non-closed dates
-                                    disabled={date.isClosed} // Prevent action on closed days
-                                >
-                                    <p className="w-12 h-12 mb-1 flex items-center justify-center rounded-full border-2 border-inherit text-2xl font-semibold">
-                                        {new Date(date.formattedDate).getDate()}
-                                    </p>
-                                    <p className="text-lg">{date.day}</p>
-                                    {date.isClosed && (
-                                        <span className="text-xs text-red-500">Closed</span> // Display "Closed" on closed days
-                                    )}
-                                </button>
-                            ))}
+                            {showDates && (
+                                <div className="w-[100%] flex justify-evenly mt-3">
+                                    {availableDates.map((date, idx) => (
+                                        <button
+                                            key={idx}
+                                            className={`w-16 h-20 mr-2 rounded-lg flex flex-col items-center justify-center text-lg cursor-pointer ${
+                                                selectedDate === date.formattedDate
+                                                    ? 'border-[#DA291C] text-[#DA291C]'
+                                                    : date.isClosed
+                                                    ? 'text-gray-300 cursor-not-allowed' // Make closed days unclickable
+                                                    : 'text-gray-500'
+                                            }`}
+                                            onClick={() => !date.isClosed && handleDateSelect(date.formattedDate)} // Only allow click on non-closed dates
+                                            disabled={date.isClosed} // Prevent action on closed days
+                                        >
+                                            <p className="w-12 h-12 mb-1 flex items-center justify-center rounded-full border-2 border-inherit text-2xl font-semibold">
+                                                {new Date(date.formattedDate).getDate()}
+                                            </p>
+                                            <p className="text-lg">{date.day}</p>
+                                            {date.isClosed && (
+                                                <span className="text-xs text-red-500">Closed</span> // Display "Closed" on closed days
+                                            )}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
 
                     {/* Appointment Time Selection */}
-                    <div className="bg-white rounded-lg shadow-md p-3 overflow-y-scroll max-h-[355px]">
+                    <div className="bg-white mt-5 border-gray-200 border-3 rounded-lg shadow-md p-3 overflow-y-scroll max-h-[355px]">
                         {loadingTimeslots ? (
                             <p>Loading timeslots...</p>
                         ) : (
@@ -380,15 +388,15 @@ export default function DetailedAppointmentBooking() {
 
                 {/* Location Info and Actions */}
                 <div className="flex-1 flex flex-col gap-2">
-                    <div className="bg-white rounded-lg shadow-md p-3">
-                        <h2 className="text-xl font-semibold">Location</h2>
-                        <p className="text-base font-medium">{branchDetails ? branchDetails.landmark : 'Loading...'}</p>
-                        <p className="text-sm text-gray-500">{branchDetails ? branchDetails.address : 'Loading address...'}</p>
-                        <div className="mt-2 p-2 bg-[#DFB0EF] text-[#803A97] font-semibold rounded-md text-center">Premier Centre</div>
-                    </div>
+                    <div className="h-[100%] bg-white border-gray-200 border-3 rounded-lg shadow-md p-3 flex flex-col justify-between">
+                        <div>
+                            <h2 className="text-xl font-semibold">Location</h2>
+                            <p className="text-base font-medium">{branchDetails ? branchDetails.landmark : 'Loading...'}</p>
+                            <p className="text-sm text-gray-500">{branchDetails ? branchDetails.address : 'Loading address...'}</p>
+                            <div className="mt-2 p-2 bg-[#DFB0EF] text-[#803A97] font-semibold rounded-md text-center">Premier Centre</div>
+                        </div>
 
-                    <div className="bg-white rounded-lg shadow-md p-3">
-                        <h2 className="text-xl font-semibold">Opening Hours</h2>
+                        <h2 className="pt-4 text-xl font-semibold">Opening Hours</h2>
                         <p className="text-sm text-[#060313]">
                             {branchDetails?.openingHours ? (
                                 branchDetails.openingHours
@@ -403,21 +411,22 @@ export default function DetailedAppointmentBooking() {
                                 <span>Opening hours not available</span>
                             )}
                         </p>
+                        <div className="pt-10 flex flex-col gap-2">
+                            <button
+                                onClick={handleConfirmBooking}
+                                className="bg-[#DA291C] text-white text-sm py-2 rounded-lg"
+                            >
+                                Confirm Appointment
+                            </button>
+                            <button
+                                onClick={handleCancel} // Trigger handleCancel when the button is clicked
+                                className="bg-[#DA291C] text-white text-sm py-2 rounded-lg transition-colors duration-300 hover:bg-red-600"
+                            >
+                                Cancel
+                            </button>                    
+                        </div>
                     </div>
 
-                    <div className="flex flex-col gap-2">
-                        <button
-                            onClick={handleConfirmBooking}
-                            className="bg-[#DA291C] text-white text-sm py-2 rounded-lg"
-                        >
-                            Confirm Appointment
-                        </button>
-                        <button
-                            onClick={handleCancel} // Trigger handleCancel when the button is clicked
-                            className="bg-[#DA291C] text-white text-sm py-2 rounded-lg transition-colors duration-300 hover:bg-red-600"
-                        >
-                            Cancel
-                        </button>                    </div>
                 </div>
             </div>
         </div>
