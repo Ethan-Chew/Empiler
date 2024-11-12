@@ -51,12 +51,10 @@ export default function InitialiseChat() {
         socket.emit('customer:leave');
     };
 
-    // const handleDisconnectionButton = () => {
-    //     setIsConnected(false);
-    //     sessionStorage.removeItem('customerSessionIdentifier');
-    //     socket.emit('customer:leave');
-    //     navigate('/');
-    // };
+    const handleDisconnectionButton = () => {
+        socket.disconnect();
+        navigate('/');
+    };
 
     useEffect(() => {
         if (!(sessionStorage.getItem('faqQuestion') || sessionStorage.getItem('faqSection'))) {
@@ -122,7 +120,7 @@ export default function InitialiseChat() {
                 <p>Estimated Waiting Time: <span className="font-bold">{connectionErr ? "Loading queue information..." : `${waitingTime} minutes`}</span></p>
                 <button
                   className="mt-4 px-4 py-2 bg-ocbcred text-white rounded hover:bg-ocbcdarkred focus:outline-none"
-                  onClick={handleDisconnection}
+                  onClick={handleDisconnectionButton}
                 >
                   Cancel Chat
                 </button>
