@@ -7,6 +7,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
 import { initialiseDB } from './utils/sqliteDB.js';
+import startAutoNotifJob from './utils/appointmentNotif.js';
 
 // Routes
 import user from './routes/user.route.js';
@@ -69,6 +70,9 @@ const io = new Server(server, {
 server.listen(8080, () => {
     console.log(`> Ready on http://localhost:8080`);
 });
+
+// Start Auto Notification Job
+startAutoNotifJob();
 
 authoriseSocket(io);
 io.on("connection", (socket) => {
