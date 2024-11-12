@@ -16,6 +16,7 @@ export default function AppointmentBooking() {
     // User Location
     const [userLatitude, setUserLatitude] = useState(null);
     const [userLongitude, setUserLongitude] = useState(null);
+    const [userLocation, setUserLocation] = useState("");
 
     useEffect(() => {
         const fetchBranches = async (lat, lon) => {
@@ -36,10 +37,22 @@ export default function AppointmentBooking() {
                 console.error(error);
             }
         }
+
+        const fetchUserLocation = async (lat, lon) => {
+            try {
+                const response = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
+                const data = await response.json();
+                const placeName = data.display_name.split(',')[0];
+                setUserLocation(placeName);
+            } catch (error) {
+                console.error(error);
+            }
+        }
         
         const locationSuccess = async (position) => {
             const { latitude, longitude } = position.coords;
             fetchBranches(latitude, longitude);
+            fetchUserLocation(latitude, longitude);
 
             setUserLatitude(latitude);
             setUserLongitude(longitude);
@@ -71,7 +84,7 @@ export default function AppointmentBooking() {
                     <div className="w-1/2 pr-5">
                         <p className="text-xl font-semibold text-black mb-2">Select a Branch</p>
                         <p className="text-base font-light text-black mb-2">
-                            Showing OCBC Branches near <span className="text-[#DA291C]">Ngee Ann Polytechnic, Singapore.</span>
+                            Showing OCBC Branches near <span className="text-[#DA291C]">{userLocation || "your location"}</span>
                         </p>
 
                         <div className="mt-3 h-[40vh] overflow-y-scroll pr-2">

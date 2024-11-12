@@ -22,7 +22,6 @@ export default function DetailedAppointmentBooking() {
         // TODO: Retrieve branch details from backend
         const branch = location.state.branch; // Retrieve the branch data
         setBranchDetails(branch); // Set the branch data
-        console.log(getEarliestAvailableTime(branch.openingHours));
         generateAvailableDates();
     }, [location.state, navigate]);
 
@@ -31,31 +30,33 @@ export default function DetailedAppointmentBooking() {
         const availableDates = [];
     
         // Loop through the next 5 days (including Saturdays)
-        for (let i = 1; availableDates.length < 5; i++) {
+        for (let i = 1; availableDates.length < 7; i++) {
             const nextDate = new Date(today);
             nextDate.setDate(today.getDate() + i); // Increment date by i days
     
-            // Check if the date falls on Sunday (0 - Sunday)
-            if (nextDate.getDay() !== 0) {
-                // Format the date to YYYY-MM-DD
-                const formattedDate = nextDate.toISOString().split('T')[0]; // YYYY-MM-DD format
-                availableDates.push({
-                    day: nextDate.toLocaleString('en-US', { weekday: 'short' }), // e.g., Mon, Tue
-                    formattedDate,
-                });
-            }
+            // Format the date to YYYY-MM-DD
+            const formattedDate = nextDate.toISOString().split('T')[0]; // YYYY-MM-DD format
+
+            availableDates.push({
+                day: nextDate.toLocaleString('en-US', { weekday: 'short' }), // e.g., Mon, Tue
+                formattedDate,
+                isClosed: isDayClosed(nextDate), // Add the 'closed' check
+            });
         }
     
         setAvailableDates(availableDates);
+    };
+
+    const isDayClosed = (date) => {
+        const closedDays = ['Sun']; // List days you consider closed (e.g., Sunday)
+        const dayOfWeek = date.toLocaleString('en-US', { weekday: 'short' }); // Get day like Mon, Tue
+        return closedDays.includes(dayOfWeek); // Return true if the day is closed
     };
 
     const getEarliestAvailableTime = (openingHours) => {
         const today = new Date();
         const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
         const todayName = dayNames[today.getDay()];
-    
-        console.log(todayName);  // This will show the day name today.
-        console.log(openingHours);  // This will show the full opening hours string.
     
         // First, check if Sundays are explicitly marked as "Closed"
         if (openingHours.toLowerCase().includes('sundays and public holidays: closed')) {
@@ -77,11 +78,39 @@ export default function DetailedAppointmentBooking() {
     };
     
     const formatTo24Hour = (time) => {
-        const [timePart, period] = time.toLowerCase().split(/[ap]m/);
-        let [hours, minutes] = timePart.split('.').map(Number);
-        if (period === 'p' && hours !== 12) hours += 12;
-        if (period === 'a' && hours === 12) hours = 0;
+        time = time.trim().toLowerCase();
+        if (time.indexOf('.') > -1) {
+            time = time.replace('.', ':');
+        }
+
+        const match = time.match(/^(\d{1,2}):(\d{2})([ap]m)$/);
+    
+        if (!match) {
+            console.error("Invalid time format:", time);
+            return null;
+        }
+
+        const [, hourStr, minuteStr, period] = match;  // Destructure the match into components
+        let hours = Number(hourStr); // Convert hours to a number
+        let minutes = Number(minuteStr); // Convert minutes to a number
+        if (period === 'pm' && hours !== 12) {
+            hours += 12; // Convert PM hours to 24-hour format
+        } else if (period === 'am' && hours === 12) {
+            hours = 0; // Midnight case: 12am should be 00:00
+        }
         return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+    };
+
+    const formatTo12Hour = (time) => {
+        const [hours, minutes] = time.split(':').map(Number);
+        const period = hours >= 12? 'PM' : 'AM';
+        const formattedHours = hours % 12 || 12;
+        return `${String(formattedHours).padStart(2, '0')}.${String(minutes).padStart(2, '0')}${period}`;
+    };
+    
+    const formatTimeslot = (timeslot) => {
+        const [startTime, endTime] = timeslot.split('-');
+        return `${formatTo12Hour(startTime)} - ${formatTo12Hour(endTime)}`;
     };
 
     // Fetch available timeslots from the backend
@@ -98,6 +127,37 @@ export default function DetailedAppointmentBooking() {
             }
             
             const data = await response.json();
+
+            const operatingHours = getEarliestAvailableTime(branchDetails.openingHours);
+
+            if (operatingHours === "Closed" || !operatingHours) {
+                alert('The selected branch is closed on this date.');
+                return;
+            }
+            
+            const [start, end] = operatingHours.split('-')
+            const [startHour, startMinute] = start.split(':').map(Number);
+            const [endHour, endMinute] = end.split(':').map(Number);
+
+            data.forEach((timeslot) => {
+                // Check timeslot within working hours
+                const [startTime, endTime] = timeslot.timeslot.split('-');
+                const [slotStartHour, slotStartMinute] = startTime.split(':').map(Number);
+                const [slotEndHour, slotEndMinute] = endTime.split(':').map(Number);
+                
+                if (
+                    slotStartHour >= startHour &&
+                    slotStartMinute >= startMinute &&
+                    slotEndHour <= endHour &&
+                    slotEndMinute <= endMinute
+                    ) {
+                    timeslot.isAvailable = true;
+                } else {
+                    timeslot.isAvailable = false;
+                }
+            });
+
+
             setTimeslots(data);
         } catch (error) {
             console.error('Error fetching timeslots:', error);
@@ -208,7 +268,7 @@ export default function DetailedAppointmentBooking() {
                 )}
             </div>
 
-            {/* Appointment details modal */}
+            {/* Appointment details */}
             {showModal && (
                 <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center">
                     <div className="bg-white p-5 rounded-lg w-1/3">
@@ -235,13 +295,19 @@ export default function DetailedAppointmentBooking() {
                 </div>
             )}
 
-            <div className="flex h-[calc(85vh-20px)] p-5">
+            <div className="flex h-[calc(70vh-20px)] p-5">
                 <div className="flex-2 flex flex-col gap-2 overflow-hidden mr-3">
                     {/* Date Selection */}
-                    <div className="bg-white rounded-lg shadow-md p-3">
-                        <div className="flex justify-between items-center mb-3">
-                            <p className="text-lg font-medium">
-                                {selectedDate ? selectedDate : 'Select a Date'}
+                    <div className="w-[70vw] bg-white rounded-lg shadow-md p-3">
+                        <div className="flex items-center mb-3">
+                            <p className="text-lg font-medium mx-auto">
+                                {selectedDate
+                                    ? new Date(selectedDate).toLocaleDateString('en-US', {
+                                        day: '2-digit',
+                                        month: 'long',
+                                        year: 'numeric',
+                                    })
+                                    : 'Select a Date'}
                             </p>
                             <button className="text-lg">&#9660;</button> 
                         </div>
@@ -249,11 +315,23 @@ export default function DetailedAppointmentBooking() {
                             {availableDates.map((date, idx) => (
                                 <button
                                     key={idx}
-                                    className={`w-12 h-16 mr-2 rounded-lg flex flex-col items-center justify-center cursor-pointer ${selectedDate === date.formattedDate ? 'bg-[#DA291C]' : 'bg-[#F5F5F5]'}`}
-                                    onClick={() => handleDateSelect(date.formattedDate)}
+                                    className={`w-16 h-20 mr-2 rounded-lg flex flex-col items-center justify-center text-lg cursor-pointer ${
+                                        selectedDate === date.formattedDate
+                                            ? 'border-[#DA291C] text-[#DA291C]'
+                                            : date.isClosed
+                                            ? 'text-gray-300 cursor-not-allowed' // Make closed days unclickable
+                                            : 'text-gray-500'
+                                    }`}
+                                    onClick={() => !date.isClosed && handleDateSelect(date.formattedDate)} // Only allow click on non-closed dates
+                                    disabled={date.isClosed} // Prevent action on closed days
                                 >
-                                    <p className="text-sm font-semibold">{new Date(date.formattedDate).getDate()}</p> 
-                                    <p className="text-xs">{date.day}</p> {/* e.g., Mon, Tue */}
+                                    <p className="w-12 h-12 mb-1 flex items-center justify-center rounded-full border-2 border-inherit text-2xl font-semibold">
+                                        {new Date(date.formattedDate).getDate()}
+                                    </p>
+                                    <p className="text-lg">{date.day}</p>
+                                    {date.isClosed && (
+                                        <span className="text-xs text-red-500">Closed</span> // Display "Closed" on closed days
+                                    )}
                                 </button>
                             ))}
                         </div>
@@ -265,8 +343,8 @@ export default function DetailedAppointmentBooking() {
                             <p>Loading timeslots...</p>
                         ) : (
                             <>
-                                {timeslots.length > 0 ? (
-                                    timeslots.map((timeslot, idx) => (
+                                {timeslots.filter(timeslot => timeslot.isAvailable).length > 0 ? (
+                                    timeslots.filter(timeslot => timeslot.isAvailable).map((timeslot, idx) => (
                                         <div
                                             key={timeslot.id}
                                             className={`flex justify-between items-center p-2 mb-2 rounded-lg cursor-pointer border-2 ${
@@ -283,7 +361,7 @@ export default function DetailedAppointmentBooking() {
                                         >
                                             <div>
                                                 <p className="text-sm font-semibold">{branchDetails?.landmark || 'Branch'}</p>
-                                                <p className="text-sm text-green-700">{timeslot.timeslot}</p>
+                                                <p className="text-sm text-green-700">{formatTimeslot(timeslot.timeslot)}</p>
                                             </div>
                                             <div
                                                 className={`w-5 h-5 rounded-full border-2 ${
@@ -312,14 +390,18 @@ export default function DetailedAppointmentBooking() {
                     <div className="bg-white rounded-lg shadow-md p-3">
                         <h2 className="text-xl font-semibold">Opening Hours</h2>
                         <p className="text-sm text-[#060313]">
-                            {branchDetails.openingHours
-                                .split(',') // Split by comma to separate day groups
-                                .map((item, index) => (
-                                    <span key={index}>
-                                        {item.trim()}
-                                        <br />
-                                    </span>
-                                ))}
+                            {branchDetails?.openingHours ? (
+                                branchDetails.openingHours
+                                    .split(',')
+                                    .map((item, index) => (
+                                        <span key={index}>
+                                            {item.trim()}
+                                            <br />
+                                        </span>
+                                    ))
+                            ) : (
+                                <span>Opening hours not available</span>
+                            )}
                         </p>
                     </div>
 
