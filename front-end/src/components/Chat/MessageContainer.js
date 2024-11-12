@@ -8,6 +8,7 @@ import { formatTimestamp } from "../../utils/formatTimestamp";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion"
 import ISO6391 from 'iso-639-1';
+import AppointmentRecommendation from "./RecommendAppointment";
 
 export default function MessageContainer({ isSender, message, fileUrl, timestamp }) {
     const locale = (navigator.language).split("-")[0];
@@ -40,6 +41,19 @@ export default function MessageContainer({ isSender, message, fileUrl, timestamp
         // verifyLocalisation();
     }, []);
 
+    const isAppointmentMessage = message && message.includes('appointment');
+    function HandleAppointmentRender(isSender) {
+        return (
+        <div className={`message ${isSender ? 'sent' : 'received'}`}>
+            {msg && (
+                <div
+                    dangerouslySetInnerHTML={{ __html: msg }}
+                />
+            )}
+        </div>
+            )
+    }
+
     const handleMessageTranslation = async () => {
         if (translated) {
             setTranslatedMsg(msg);
@@ -71,7 +85,7 @@ export default function MessageContainer({ isSender, message, fileUrl, timestamp
         <div className={`${isSender && "ml-auto"} flex flex-col max-w-sm md:max-w-xl`}>
             <div className="flex flex-col gap-1">
                 <div className={`${isSender ? "bg-chatred" : "bg-gray-500"} ${msg ? "p-2" : "p-5"} rounded-lg`}>
-                    {msg ? <p className="text-white">{msg}</p> : <ImageViewer fileUrl={fileUrl} />}
+                    {fileUrl ? (<ImageViewer fileUrl={fileUrl} />) : isAppointmentMessage ? (<AppointmentRecommendation />) : <p className="text-white">{msg}</p>}
                 </div>
             </div>
             <div className="flex flex-row">
