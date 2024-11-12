@@ -23,7 +23,7 @@ import staffHandler from './chatHandlers/staffHandler.js';
 import customerHandler from './chatHandlers/customerHandler.js';
 import utilsHandler from './chatHandlers/utilsHandler.js';
 import authoriseSocket from './middleware/authoriseSocket.js';
-
+import sttHandler from './chatHandlers/sttHandler.js';
 
 dotenv.config();
 
@@ -74,6 +74,7 @@ authoriseSocket(io);
 io.on("connection", (socket) => {
     console.log(`Socket ${socket.id} connected from origin: ${socket.handshake.headers.origin}`);
 
+    sttHandler(io, db, socket);
     utilsHandler(io, db, socket);
     customerHandler(io, db, socket);
     if (socket.user && socket.user.role === "staff") {

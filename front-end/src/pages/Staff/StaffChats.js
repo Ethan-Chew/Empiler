@@ -255,7 +255,7 @@ export default function StaffChats() {
                         </div>
 
                         {/* Message Field */}
-                        <MessageTextField setSentMessage={setSentMessage} sentMessage={sentMessage} sendMessage={sendMessage} onUploadClick={onUploadClick} />
+                        <MessageTextField setSentMessage={setSentMessage} sentMessage={sentMessage} sendMessage={sendMessage} onUploadClick={onUploadClick} socket={socket} />
                     </div>
                     
                     {/* Displayed when the Staff has not picked up any Live Chats */}
