@@ -32,7 +32,7 @@ export default function DetailedAppointmentBooking() {
         const today = new Date();
         const availableDates = [];
     
-        for (let i = 1; availableDates.length < 7; i++) {
+        for (let i = 0; availableDates.length < 7; i++) {
             const nextDate = new Date(today);
             nextDate.setDate(today.getDate() + i); // Increment date by i days
     
@@ -40,7 +40,7 @@ export default function DetailedAppointmentBooking() {
             const formattedDate = nextDate.toISOString().split('T')[0]; // YYYY-MM-DD format
 
             availableDates.push({
-                day: nextDate.toLocaleString('en-US', { weekday: 'short' }), // e.g., Mon, Tue
+                day: nextDate.toLocaleString('en-US', { weekday: 'long' }), // e.g., Mon, Tue
                 formattedDate,
                 isClosed: isDayClosed(nextDate), // Add the 'closed' check
             });
@@ -272,26 +272,41 @@ export default function DetailedAppointmentBooking() {
 
             {/* Appointment details */}
             {showModal && (
-                <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center">
-                    <div className="bg-white p-5 rounded-lg w-1/3">
-                        <h3 className="text-xl font-semibold mb-4">Confirm Your Appointment</h3>
-                        <p><strong>Branch:</strong> {bookingDetails.branch}</p>
-                        <p><strong>Date:</strong> {bookingDetails.date}</p>
-                        <p><strong>Timeslot:</strong> {bookingDetails.timeSlot}</p>
+                <div className="fixed inset-0 bg-gray-400 bg-opacity-50 flex justify-center items-center">
+                    <div className="bg-white p-5 rounded-lg w-1/3 flex flex-col justify-center items-center">
+                        <h3 className="text-2xl font-semibold mb-4">Booking Confirmation</h3>
+                        <p className="text-xl mb-2">You have selected an appointment for:</p>
 
-                        <div className="flex justify-around mt-5">
-                            <button
-                                onClick={handleFinalBooking}
-                                className="bg-[#DA291C] text-white py-2 px-4 rounded-lg"
-                            >
-                                Confirm
-                            </button>
-                            <button
-                                onClick={() => setShowModal(false)}
-                                className="bg-gray-300 text-black py-2 px-4 rounded-lg"
-                            >
-                                Cancel
-                            </button>
+                        <p className="font-medium">{branchDetails?.landmark}</p>
+                        <p className="text-sm text-gray-500">{branchDetails?.address}</p>
+
+                        <p className="mt-2 text-base text-green-600">
+                            {new Date(bookingDetails?.date).toLocaleDateString("en-GB", {
+                                weekday: "long",   // Day of the week (Friday)
+                                day: "numeric",    // Day of the month (13)
+                                month: "long",     // Month (June)
+                                year: "numeric",   // Year (2025)
+                            })}
+                        </p>
+                        <p className="text-sm text-green-600">{bookingDetails?.timeSlot}</p>
+
+                        <div className="flex flex-col justify-around mt-5">
+                            <div>
+                                <button
+                                    onClick={handleFinalBooking}
+                                    className="bg-[#DA291C] text-white py-4 px-12 mb-4 rounded-3xl text-xl font-semibold"
+                                >
+                                    Confirm Booking
+                                </button>
+                            </div>
+                            <div className="flex justify-center">
+                                <button
+                                    onClick={() => setShowModal(false)}
+                                    className="bg-gray-600 text-white py-2 px-6 rounded-3xl"
+                                >
+                                    Cancel Selection
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -321,7 +336,7 @@ export default function DetailedAppointmentBooking() {
                                     {availableDates.map((date, idx) => (
                                         <button
                                             key={idx}
-                                            className={`w-16 h-20 mr-2 rounded-lg flex flex-col items-center justify-center text-lg cursor-pointer ${
+                                            className={`w-16 h-22 mr-2 rounded-lg flex flex-col items-center justify-center text-lg cursor-pointer ${
                                                 selectedDate === date.formattedDate
                                                     ? 'border-[#DA291C] text-[#DA291C]'
                                                     : date.isClosed
