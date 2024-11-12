@@ -81,7 +81,7 @@ export default function AppointmentBooking() {
                 </div>
 
                 {/* Main Content */}
-                <div className="border-3 border-gray-300 rounded-xl flex w-[95%] m-5 p-5">
+                <div className="border-3 border-gray-300 rounded-xl flex w-[98%] m-5 p-5">
                     <div className="w-1/2 pr-5">
                         <p className="text-xl font-semibold text-black mb-2">Select a Branch</p>
                         <p className="text-base font-light text-black mb-2">
