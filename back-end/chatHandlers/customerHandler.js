@@ -29,7 +29,8 @@ export default function (io, db, socket) {
 
     socket.on("customer:leave", async () => {
         // Remove customer from Waiting Customer List
-        await removeWaitingCustomer(db, socket.id);
+        await removeWaitingCustomer(db, socket.user.id);
+        await notifyForWaitingCustomers(db, io);
     });
 
     socket.on("customer:end-chat", async (caseID) => {

@@ -80,7 +80,7 @@ export default function (io, db, socket) {
         });
     });
 
-    // Remove customer from waiting list on disconnect (somehow makes it so that customer can refresh initialisechat without disconnecting)
+    // Remove customer from waiting list on disconnect
     socket.on("disconnect", async () => {
         const waitingCustomers = await retrieveWaitingCustomers(db);
         for (const customer of waitingCustomers) {
