@@ -83,10 +83,10 @@ export default function StaffChats() {
 
         // Already handled in the backend as on "disconnect"
         // Remove the chat from session storage / state
-        // setConnectedChats((prevChats) => {
-        //     const updatedChats = prevChats.filter((chat) => chat.caseID !== selectedChatId);
-        //     return updatedChats;
-        // });
+        setConnectedChats((prevChats) => {
+            const updatedChats = prevChats.filter((chat) => chat.caseID !== selectedChatId);
+            return updatedChats;
+        });
         
         navigate("/staff/chats");
     }

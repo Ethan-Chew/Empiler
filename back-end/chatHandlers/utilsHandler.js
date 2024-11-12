@@ -55,6 +55,8 @@ export default function (io, db, socket) {
         if (searchActiveChat) {
             const chatHistory = await retrieveChatMessages(db, searchActiveChat.caseID);
             const staffInformation = await searchForAvailStaff(db, searchActiveChat.staffID);
+
+            io.to(customerSessionIdentifier).emit("utils:waiting-time", Math.floor(Math.random() * 5) + 1); // TODO: Random Number lolxd
             callback({
                 exist: true,
                 caseID: searchActiveChat.caseID,

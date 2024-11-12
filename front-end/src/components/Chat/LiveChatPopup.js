@@ -5,6 +5,7 @@ import { IoMdClose } from "react-icons/io";
 function LiveChatPopup({ section, question, isOpen, setIsOpen }) {
   const [faqSection, setFaqSection] = useState('');
   const [faqQuestion, setFaqQuestion] = useState('');
+  const [msg, setMsg] = useState(null);
 
   const initChat = () => {
     sessionStorage.setItem('faqSection', faqSection);
@@ -15,6 +16,12 @@ function LiveChatPopup({ section, question, isOpen, setIsOpen }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    if (faqSection === '' || faqQuestion === '') {
+      setMsg('Both Category and Question are required.');
+      return;
+    }
+
     initChat();
   };
 
@@ -91,6 +98,7 @@ function LiveChatPopup({ section, question, isOpen, setIsOpen }) {
               >
                 Request
               </button>
+              <p className='text-red-800 pt-1'>{ msg }</p>
             </form>
           </motion.div>
         </motion.div>
