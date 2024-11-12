@@ -139,7 +139,7 @@ function BranchItem({ branch, userLatitude, userLongitude }) {
     const distance = calculateDistance(userLatitude, userLongitude, branch.latitude, branch.longitude);
 
     return (
-        <div className="m-4 px-3 py-2 border-2 border-neutral-500 rounded-xl" onClick={() => navigate("/appointments/timeslots", {
+        <div className="mb-3 px-3 py-2 border-2 border-neutral-500 rounded-xl" onClick={() => navigate("/appointments/timeslots", {
             state: {
                 branch: branch
             }
