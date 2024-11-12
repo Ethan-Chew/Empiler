@@ -372,8 +372,8 @@ export default function DetailedAppointmentBooking() {
                                                 <p className="text-sm text-green-700">{formatTimeslot(timeslot.timeslot)}</p>
                                             </div>
                                             <div
-                                                className={`w-5 h-5 rounded-full border-2 ${
-                                                    selectedAppointment?.id === timeslot.id ? 'bg-[#DA291C]' : 'bg-transparent'
+                                                className={`w-4 h-4 rounded-full border-2 mr-2 ${
+                                                    selectedAppointment?.id === timeslot.id ? 'bg-[#DA291C] ring-2 ring-offset-[6px] ring-red-500' : 'bg-transparent'
                                                 }`}
                                             ></div>
                                         </div>
