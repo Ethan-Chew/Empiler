@@ -1,25 +1,45 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+
+import NavigationBar from '../components/Navbar';
+import Footer from '../components/Footer';
+import { useState, useEffect } from 'react';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
+import FaqCatItem from '../components/FAQ/FaqCatItem';
+import LiveChatPopup from '../components/Chat/LiveChatPopup';
+import { FaChevronLeft } from 'react-icons/fa6';
 
 const FAQListPage = () => {
+    const navigate = useNavigate();
+    const [faqItems, setFaqItems] = useState([]);
+    const [isOpen, setIsOpen] = useState(false);
+    const [searchParams, setSearchParams] = useSearchParams();
+    const title = searchParams.get('title');
+
+    useEffect(() => {
+        if (!title) {
+            navigate('/');
+        }
+    }, [])
+
+    useEffect(() => {
+        const fetchFaqItems = async () => {
+            try {
+                const response = await fetch(`http://localhost:8080/api/faq/section/${title}`);
+                const data = await response.json();
+                setFaqItems(data.faqs);
+            } catch (error) {
+                console.error('Error fetching faq items:', error);
+            }
+        };
+
+        if (title) {
+            fetchFaqItems();
+        }
+    }, [title]);
+
     return (
         <div className="font-inter">
             {/* Navbar */}
-            <nav className="flex items-center justify-between h-[90px] px-4 lg:px-12 bg-white shadow-md">
-                <div className="flex items-center mx-auto justify-between w-full">
-                    <div className="flex items-center">
-                        <img src="/ocbc-logo.png" alt="OCBC Logo" className="h-6 mr-6" />
-                    </div>
-                    <div className="flex space-x-16 justify-center w-full text-[18px]">
-                        <a href="/" className="text-[#010101] hover:text-[#C30C31]">HOME</a>
-                        <a href="/" className="text-[#D00E35] hover:text-[#C30C31]">FAQ</a>
-                        <a href="/" className="text-[#010101] hover:text-[#C30C31]">APPOINTMENTS</a>
-                        <a href="/" className="text-[#010101] hover:text-[#C30C31]">LIVE CHAT</a>
-                        <a href="/" className="text-[#010101] hover:text-[#C30C31]">ABOUT US</a>
-                    </div>
-                </div>
-                <button className="bg-[#D00E35] text-white px-7 py-2 rounded hover:bg-[#C30C31] text-[14px]">LOGIN</button>
-            </nav>
+            <NavigationBar />
 
             {/* Gray Line */}
             <hr className="border-t-[2px] border-[#DCD6D6]" />
@@ -28,11 +48,10 @@ const FAQListPage = () => {
             <div className="px-8 mt-6 flex items-center justify-center">
                 <div className="flex w-full justify-between items-center">
                     <Link to="/landingpage" className="text-[#000000] text-[20px] hover:text-[#D00E35]">
-                        &lt;
+                        <FaChevronLeft />
                     </Link>
                     <div className="text-center flex-grow">
-                        <h1 className="text-[30px] text-[#343434]">General Information</h1>
-                        <p className="text-[16px] text-[#999999]">Payments and Transactions</p>
+                        <h1 className="text-[30px] text-[#343434]">{ title }</h1>
                     </div>
                 </div>
             </div>
@@ -42,21 +61,13 @@ const FAQListPage = () => {
             {/* FAQ List */}
             <div className="overflow-y-scroll max-h-[calc(100vh-250px)] mt-6 px-8 pb-8">
                 <div className="space-y-6">
-                    {[...Array(10)].map((_, index) => (
-                        <a key={index} href="/" className="flex bg-white shadow rounded-lg w-full hover:shadow-lg transition-shadow duration-200">
-                            {/* Left Colored Tab */}
-                            <div className="w-2 bg-[#D00E35] rounded-l-lg"></div>
-                            {/* Content of the Rectangle */}
-                            <div className="flex items-center w-full p-4">
-                                {/* Title */}
-                                <h3 className="font-semibold text-lg pr-32 text-black">Title Text</h3>
-                                {/* Divider */}
-                                <div className="h-12 border-l border-gray-300 mx-6"></div>
-                                {/* Description */}
-                                <p className="text-gray-600 text-sm">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed eget quam enim.</p>
-                            </div>
-                        </a>
-                    ))}
+                    {faqItems && faqItems.length > 0 ? (
+                        faqItems.map(item => (
+                            <FaqCatItem key={item.id} title={item.title} description={item.description} href={`/faq-article?title=${item.title}&section=${title}`} />
+                        ))
+                    ) : (
+                        <p>No FAQ items found.</p>
+                    )}
                 </div>
             </div>
 
