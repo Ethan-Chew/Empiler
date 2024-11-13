@@ -107,7 +107,22 @@ const authVerifyToken = async (req, res) => {
     }
 }
 
+const authLogoutUser = async (req, res) => {
+    try {
+        res.clearCookie('jwt'); // Clear the HttpOnly cookie
+        res.sendStatus(200);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({
+            status: "Error",
+            message: "Internal Server Error",
+            error: err
+        });
+    }
+}
+
 export default {
     authLoginUser,
-    authVerifyToken
+    authVerifyToken,
+    authLogoutUser
 }

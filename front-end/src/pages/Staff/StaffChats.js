@@ -2,15 +2,19 @@ import { socket } from "../../utils/chatSocket"
 import { useState, useEffect } from "react";
 import handleFileUpload from "../../utils/handleFileUpload";
 import { formatTimestamp } from "../../utils/formatTimestamp";
+import { useNavigate } from 'react-router-dom';
+
 
 // Components
-import { FaArrowCircleUp } from "react-icons/fa";
-import { AiFillPlusCircle } from "react-icons/ai";
 import AwaitChatContainer from "../../components/Chat/AwaitingChatContainer";
 import StaffNavigationBar from "../../components/StaffNavbar";
 import MessageContainer from "../../components/Chat/MessageContainer";
+import ToastMessage from "../../components/ToastMessage";
+import MessageTextField from "../../components/Chat/MessageTextField";
 
 export default function StaffChats() {
+    const navigate = useNavigate();
+
     // Page Management
     const [displayAwaitCustomerList, setDisplayAwaitCustomerList] = useState(false);
 
@@ -20,11 +24,12 @@ export default function StaffChats() {
     const [connectedChats, setConnectedChats] = useState([]);
     const [selectedChatId, setSelectedChatId] = useState(null);
     const [sentMessage, setSentMessage] = useState("");
-    // const [disconnectedChats, setDisconnectedChats] = useState([]);
+    const [disconnectedChats, setDisconnectedChats] = useState([]);
+    const [toastVisiblities, setToastVisibilities] = useState([]);
 
     // Setter Functions
     const joinChat = async (customerSessionIdentifier) => {    
-        if (connectedChats.length >= 7) {
+        if (connectedChats.length >= 5) {
             return false; // Exit early if max chat limit is reached
         }
     
@@ -41,10 +46,7 @@ export default function StaffChats() {
             };
     
             setConnectedChats((prev) => [...prev, formattedChat]);
-
-            if (selectedChatId === null) {
-                setSelectedChatId(formattedChat.caseID);
-            }
+            setSelectedChatId(formattedChat.caseID);
     
             return true;
     
@@ -74,20 +76,35 @@ export default function StaffChats() {
 
     const handleEndChat = () => {        
         // Remove from backend
-        socket.emit("utils:end-chat", selectedChatId);
+        socket.emit("utils:end-chat", selectedChatId, false);
 
         // If the chat is the selected chat, remove the selected chat
         setSelectedChatId(null);
 
+        // Already handled in the backend as on "disconnect"
         // Remove the chat from session storage / state
-        setConnectedChats((prevChats) => {
-            const updatedChats = prevChats.filter((chat) => chat.caseID !== selectedChatId);
-            return updatedChats;
+        // setConnectedChats((prevChats) => {
+        //     const updatedChats = prevChats.filter((chat) => chat.caseID !== selectedChatId);
+        //     return updatedChats;
+        // });
+        
+        navigate("/staff/chats");
+    }
+
+    const handleHideToastMsg = (index) => {
+        setToastVisibilities((prev) => {
+            const updated = prev.map((toast, i) => {
+                if (i === index) {
+                    return false;
+                }
+                return toast;
+            });
+            return updated;
         });
     }
 
     useEffect(() => {  
-        const handleConnection = () => {
+        const handleConnection = (params) => {
             setIsConnected(true);
             socket.emit('staff:avail'); 
         }
@@ -117,11 +134,20 @@ export default function StaffChats() {
         }
 
         const handleChatEnded = (caseID) => {
-            if (selectedChatId === caseID) {
-                setSelectedChatId(null);
-            }
+            setSelectedChatId((prev) => {
+                if (prev === caseID) {
+                    return null;
+                }
+                return prev;
+            })
 
-            setConnectedChats((prevChats) => prevChats.filter((chat) => chat.caseID !== caseID));
+            setConnectedChats((prevChats) => {
+                setDisconnectedChats((prevDisconChats) => [...prevDisconChats, prevChats.filter((chat) => chat.caseID === caseID)[0]]);
+                setToastVisibilities((prev) => [...prev, true]);
+
+                const updatedChats = prevChats.filter((chat) => chat.caseID !== caseID);
+                return updatedChats;
+            });
         }
 
         const handleReconnectAddChats = (chats) => {
@@ -136,6 +162,7 @@ export default function StaffChats() {
         socket.on("utils:receive-msg", handleReceiveMessage);
         socket.on("utils:chat-ended", handleChatEnded);
         socket.on("staff:active-chats", handleReconnectAddChats);
+        socket.on("error", (err) => console.error(err));
         
         return () => {
             // Clear Event Listeners on Deconstructor
@@ -149,8 +176,11 @@ export default function StaffChats() {
     }, []);
 
     useEffect(() => {
-        // Retrieve Active Chats, if exists, load it
-        socket.emit("staff:active-chats");
+        if (isConnected) {
+            socket.emit('staff:avail'); 
+            // Retrieve Active Chats, if exists, load it
+            socket.emit("staff:active-chats");
+        }
     }, [isConnected])
 
     async function onUploadClick() {
@@ -163,6 +193,9 @@ export default function StaffChats() {
         }
     }
 
+    // TODO: Improve Error 
+    if (!isConnected) return <p>Error: Socket connection not made</p>
+
     return (
         <div className="max-h-screen h-screen flex flex-col">
             <StaffNavigationBar />
@@ -172,11 +205,11 @@ export default function StaffChats() {
 
             <div className="flex flex-row flex-1">
                 {/* Active Chat List */}
-                <div id="chat-list" className="w-1/3 md:w-1/4 bg-neutral-100 border-r-2 border-neutral-600 overflow-y-auto">
+                <div id="chat-list" className="w-1/3 md:w-1/4 bg-neutral-100 border-r border-gray-300 overflow-y-auto">
                     <div>
 
                     </div>
-                    <div className="text-center py-4 border-y border-black cursor-pointer" onClick={() => showAwaitCustomerList()}>
+                    <div className="text-center py-4 border-y border-gray-300 cursor-pointer" onClick={() => showAwaitCustomerList()}>
                         <p className="font-semibold">Find and Start Live Chat</p>
                     </div>
 
@@ -193,24 +226,23 @@ export default function StaffChats() {
                 </div>
 
                 {/* Chat Window */}
-                <div id="chat-window" className={`flex flex-col flex-grow ${connectedChats.length === 0 && "items-center justify-center"} overflow-y-auto`}>
-                    <div id="chat-header" className={`w-full bg-neutral-100 border-y-2 border-neutral-600 flex flex-row px-4 py-2 ${selectedChatId == null ? "hidden" : ""}`}>
-                        {selectedChatId && connectedChats.filter((chat) => chat.caseID === selectedChatId).map((selectedChat => (
-                            <>
-                                <div>
-                                    <p className="text-lg font-bold mb-0">{ selectedChat.customer?.faqQuestion }</p>
-                                    <p className="text-neutral-500 text-sm">Case ID: { selectedChat.caseID }{ selectedChat.customer?.userID && " | Logged In" }</p>
-                                </div>
+                <div id="chat-window" className={`flex flex-col flex-grow ${connectedChats.length === 0 && "items-center justify-center"} overflow-hidden`}>
+                    {selectedChatId && connectedChats.filter((chat) => chat.caseID === selectedChatId).map((selectedChat => (
+                        <div id="chat-header" className={`${selectedChatId ? "" : "hidden"} w-full bg-neutral-100 border-y border-gray-300 flex flex-row px-4 py-2`}>
+                            <div>
+                                <p className="text-lg font-bold mb-0">{ selectedChat.customer?.faqQuestion }</p>
+                                <p className="text-neutral-500 text-sm">FAQ Category: { selectedChat.customer?.faqSection }</p>
+                                <p className="text-neutral-500 text-sm">Case ID: { selectedChat.caseID }{ selectedChat.customer?.userID && " | Logged In" }</p>
+                            </div>
 
-                                <button className="ml-auto px-4 py-1 bg-ocbcred hover:bg-ocbcdarkred text-white rounded-lg" onClick={handleEndChat}>
-                                    End Chat
-                                </button>
-                            </>
-                        )))}
-                    </div>
+                            <button className="ml-auto px-4 py-1 bg-ocbcred hover:bg-ocbcdarkred text-white rounded-lg" onClick={handleEndChat}>
+                                End Chat
+                            </button>
+                        </div>
+                    )))}
 
-                    <div id="chat" className={`w-full flex-grow flex flex-col ${selectedChatId === null ? "hidden" : ""}`}>
-                        <div id="chat-container" className="flex-grow p-10">
+                    <div id="chat" className={`w-full flex-grow flex flex-col ${selectedChatId ? "" : "hidden"}`}>
+                        <div id="chat-container" className="flex-grow p-4 overflow-y-auto max-h-[calc(100vh-18rem)]">
                             {selectedChatId && 
                             connectedChats
                                 .filter((chat) => chat.caseID === selectedChatId)
@@ -223,20 +255,7 @@ export default function StaffChats() {
                         </div>
 
                         {/* Message Field */}
-                        <div className="p-10 px-10 py-6 md:py-4 w-full rounded-b-xl flex flex-row justify-between">
-                            <button className="border-2 rounded-xl px-4 hover:border-neutral-500 duration-200" onClick={onUploadClick}>
-                                <AiFillPlusCircle className="text-3xl text-neutral-400 hover:text-neutral-500" />
-                            </button>
-                            <input 
-                                className="p-3 border-2 w-full rounded-xl outline-none mx-5"
-                                placeholder="Enter a Message.."
-                                value={sentMessage}
-                                onChange={(e) => setSentMessage(e.target.value) }
-                            />
-                            <button className="border-2 rounded-xl px-4 hover:border-neutral-500 duration-200" onClick={() => sendMessage(null)}>
-                                <FaArrowCircleUp className="text-2xl text-neutral-400 hover:text-neutral-500" />
-                            </button>
-                        </div>
+                        <MessageTextField setSentMessage={setSentMessage} sentMessage={sentMessage} sendMessage={sendMessage} onUploadClick={onUploadClick} socket={socket} />
                     </div>
                     
                     {/* Displayed when the Staff has not picked up any Live Chats */}
@@ -252,10 +271,6 @@ export default function StaffChats() {
                 </div>
             </div>
 
-            {/* <div className="fixed bottom-10 left-10 px-3 py-2 bg-ocbcred text-white">
-                <a>HELLO</a>
-            </div> */}
-
             {displayAwaitCustomerList && (
                 <div
                     className="fixed top-0 left-0 h-screen w-screen bg-neutral-900/20 backdrop-blur-sm flex items-center justify-center duration-200 z-10"
@@ -267,6 +282,13 @@ export default function StaffChats() {
                     />
                 </div>
             )}
+
+            {/* Handle Disconnect Messages */}
+            <div className="fixed bottom-5 left-5">
+                {disconnectedChats.map((chat, index) => (
+                    toastVisiblities[index] && <ToastMessage key={index} index={index} message={`Customer with Case ID: ${chat.caseID} has left the chat`} isShown={toastVisiblities[index]} hideToast={handleHideToastMsg} />
+                ))}
+            </div>
         </div>
     )
 }
@@ -292,12 +314,18 @@ function ChatListItem({ chat, selectedChatId, setSelectedChatId }) {
     if (!chat.customer) return <></>
 
     return (
-        <div className={`border-y-2 border-neutral-600 px-5 py-2 flex flex-row gap-5 max-w-full hover:bg-neutral-200 ${(selectedChatId === chat.caseID && (selectedChatId !== undefined && selectedChatId !== null)) && "bg-chatred/20"}`} onClick={handleOnClick}>
+        <div
+            className={`border-y border-gray-300 px-5 py-2 flex flex-row gap-5 max-w-full hover:bg-neutral-200 ${(selectedChatId === chat.caseID && (selectedChatId !== undefined && selectedChatId !== null)) && "bg-chatred/20"}`}
+            onClick={handleOnClick}
+        >
+            {selectedChatId === chat.caseID && (
+                <div className="w-2 bg-gray-400 -ml-5 -my-2"></div>
+            )}
             <div className="min-w-0 flex-grow">
-                <p className="truncate font-semibold">{ chat.customer.faqQuestion }</p>
-                <p className="truncate">{ getLastSentText(chat.messages).message }</p>
+                <p className="truncate font-semibold">{chat.customer.faqQuestion}</p>
+                <p className="truncate">{getLastSentText(chat.messages).message}</p>
             </div>
-            <a className="flex-shrink-0">{ formatTimestamp(getLastSentText(chat.messages).timestamp) }</a>
+            {getLastSentText(chat.messages).timestamp ? <a className="flex-shrink-0">{formatTimestamp(getLastSentText(chat.messages).timestamp)}</a> : null}
         </div>
     )
 }

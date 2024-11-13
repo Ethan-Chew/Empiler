@@ -139,10 +139,9 @@ export default class faq {
     }
 
     static async getAllSections() {
-        console.log('here');
         const { data, error } = await supabase
             .from('freq_asked_section')
-            .select('title, description');
+            .select('title, description, icon');
 
         if (error) {
             console.log(error);

@@ -21,4 +21,28 @@ export default class User {
     
         return queryRequest.data[0]; 
     }
+
+    static async getStaffStatistics(staffID) {
+        const queryRequest = await supabase
+        .from("chat_history")
+        .select(`
+            count(caseId) as numOfTotalChats, 
+            avg(rating) as averageRating
+          `)
+        .eq("staff_id", staffID)
+        .single();
+
+        if (queryRequest.error) {
+            return null;
+        }
+
+        if (!queryRequest.data || queryRequest.data.numOfTotalChats === 0) {
+            return {
+                numOfTotalChats: 0,
+                averageRating: null
+            };
+        }
+    
+        return queryRequest.data;
+    }
 }

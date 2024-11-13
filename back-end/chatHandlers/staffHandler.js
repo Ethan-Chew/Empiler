@@ -1,4 +1,4 @@
-import { endActiveChat, retrieveWaitingCustomers, addAvailStaff, searchForWaitingCustomer, searchForAvailStaff, removeWaitingCustomer, startActiveChat, getActiveChatsForStaff } from "../utils/sqliteDB.js";
+import { retrieveWaitingCustomers, addAvailStaff, searchForWaitingCustomer, searchForAvailStaff, removeWaitingCustomer, startActiveChat, getActiveChatsForStaff } from "../utils/sqliteDB.js";
 import crypto from "crypto";
 
 export async function notifyForWaitingCustomers(db, io) {
@@ -28,6 +28,7 @@ export default function (io, db, socket) {
             socketIDs: [socket.id],
             name: socket.user.name,
         };
+
         socket.join(staffData.staffID);
         await addAvailStaff(db, staffData);
         await notifyForWaitingCustomers(db, io);
@@ -58,6 +59,7 @@ export default function (io, db, socket) {
 
         // Add the Chat to the list of Active Chats
         const staff = await searchForAvailStaff(db, socket.user.id);
+
         const newChat = {
             caseID: caseID,
             customer: customer,
@@ -69,7 +71,7 @@ export default function (io, db, socket) {
         await removeWaitingCustomer(db, customerSessionIdentifier);
 
         // Broadcast caseID to Customer (notify that connection has been made successfully)
-        io.to(customerSessionIdentifier).emit('utils:joined-chat', caseID);
+        io.to(customerSessionIdentifier).emit('utils:joined-chat', caseID, staff.name);
 
         // Send a Callback to the Staff (notify successfully started Live Chat)
         callback({
@@ -80,10 +82,15 @@ export default function (io, db, socket) {
         });
     });
 
-    socket.on("staff:active-chats", async () => {
-        const activeChats = await getActiveChatsForStaff(db, socket.user.id);
-        if (activeChats && activeChats.length !== 0) {
-            io.to(socket.id).emit('staff:active-chats', activeChats);
+    // Remove customer from waiting list on disconnect
+    socket.on("disconnect", async () => {
+        const waitingCustomers = await retrieveWaitingCustomers(db);
+        for (const customer of waitingCustomers) {
+            if (customer.socketIDs.includes(socket.id)) {
+                await removeWaitingCustomer(db, customer.customerSessionIdentifier);
+                await notifyForWaitingCustomers(db, io);
+                break;
+            }
         }
-    })
+    });
 }

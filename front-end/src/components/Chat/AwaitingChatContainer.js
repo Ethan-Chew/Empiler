@@ -6,6 +6,7 @@ import { IoChevronDown, IoChevronUp } from "react-icons/io5";
 // Component acts as a popup that displays when a user is waiting for a chat to be accepted by a staff member
 export default function AwaitChatContainer({ joinChat, hideAwaitCustomerList, waitingCustomers }) {
     const [searchTerm, setSearchTerm] = useState('');
+    const [faqSections, setFaqSections] = useState([]);
     const [searchCategory, setSearchCategory] = useState('All');
     const [searchCategoryDropdown, setSearchCategoryDropdown] = useState(false);
     const boxRef = useRef(null);
@@ -22,11 +23,22 @@ export default function AwaitChatContainer({ joinChat, hideAwaitCustomerList, wa
                 hideAwaitCustomerList();
             }
         }
-
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
+        const fetchFaqs = async () => {
+            try {
+              const response = await fetch('http://localhost:8080/api/faq/section');
+              const data = await response.json();
+              const sections = data.sections.map((section) => section.title);
+              setFaqSections(['All', ...sections, 'Others']);
+            } catch (error) {
+              console.error('Error fetching faq sections:', error);
+            }
         };
+      
+        // document.addEventListener('mousedown', handleClickOutside);
+        fetchFaqs();
+        // return () => {
+        //     document.removeEventListener('mousedown', handleClickOutside);
+        // };
     }, []);
 
     return (
@@ -40,19 +52,21 @@ export default function AwaitChatContainer({ joinChat, hideAwaitCustomerList, wa
                 </div>
                 <a className="text-neutral-600">Customers who have requested a live chat; Join and Manage up to 7 Live Chats simultaneously.</a>
 
-                <div className="flex flex-row justify-between mt-5">
-                    <div id="search-bar" className="w-1/2 flex flex-row items-center gap-2 py-1 px-3 rounded-md border-2 border-neutral-400">
+                <div className="flex flex-row justify-between mt-5 gap-3">
+                    <div id="search-bar" className="z-20 w-1/2 flex flex-row items-center gap-2 py-1 px-3 rounded-md border-2 border-neutral-400">
                         <FaMagnifyingGlass className="fill-neutral-400" />
                         <input
                             placeholder="Search for Questions..."
                             className="outline-none w-full"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
 
                     <div className="relative inline-block">
-                        <div className="flex items-center border-2 border-neutral-400 rounded-md overflow-hidden">
+                        <div className="flex items-center h-full border-2 border-neutral-400 rounded-md overflow-hidden">
                             {/* Category Label */}
-                            <div className="px-4 py-2 bg-gray-100 text-gray-700 font-medium">
+                            <div className="px-4 py-2 h-full bg-gray-100 text-gray-700 font-medium">
                                 Category
                             </div>
                             
@@ -73,18 +87,11 @@ export default function AwaitChatContainer({ joinChat, hideAwaitCustomerList, wa
                         {/* Dropdown Menu */}
                         <div id="dropdownMenu" className={`${ searchCategoryDropdown ? "absolute" : "hidden" } mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg`}>
                             <ul>
-                                <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer" onClick={() => selectOption("All")}>
-                                    All
-                                </li>
-                                <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer" onClick={() => selectOption("Option 1")}>
-                                    Option 1
-                                </li>
-                                <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer" onClick={() => selectOption("Option 2")}>
-                                    Option 2
-                                </li>
-                                <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer" onClick={() => selectOption("Option 3")}>
-                                    Option 3
-                                </li>
+                                {faqSections.map((section) => (
+                                    <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer" key={section} onClick={() => selectOption(section)}>
+                                        { section }
+                                    </li>
+                                ))}
                             </ul>
                         </div>
                     </div>
@@ -97,9 +104,23 @@ export default function AwaitChatContainer({ joinChat, hideAwaitCustomerList, wa
                         <p>There are no waiting customers.</p>
                     </div>
                 )}
-                {Object.keys(waitingCustomers).length > 0 && Object.keys(waitingCustomers).map((section) => (
-                    <FAQSectionCustomer key={section} section={section} requests={waitingCustomers[section]} joinChat={joinChat} />
-                ))}
+                {Object.keys(waitingCustomers).length > 0 && Object.keys(waitingCustomers).map((section) => {
+                    const filteredRequests = waitingCustomers[section].filter((request) => {
+                        const matchesSearchTerm = request.faqQuestion.toLowerCase().includes(searchTerm.toLowerCase());
+                        const matchesCategory = searchCategory === "All" || request.faqSection === searchCategory;
+                        return matchesSearchTerm && matchesCategory;
+                    });
+
+                    // Only render the section if there are any filtered requests
+                    return filteredRequests.length > 0 ? (
+                        <FAQSectionCustomer 
+                            key={section} 
+                            section={section} 
+                            requests={filteredRequests}  // Fixing the prop to pass the filtered requests
+                            joinChat={joinChat} 
+                        />
+                    ) : null;
+                })}
             </div>
         </div>
     )
@@ -125,7 +146,7 @@ function CustomerRequestContainer({ index, request, joinChat }) {
         if (addRequest) {
             setButtonText("Joined!");
         } else {
-            alert("You cannot join more than 7 chats at a time.");
+            alert("You cannot join more than 5 chats at a time.");
         }
 
     }

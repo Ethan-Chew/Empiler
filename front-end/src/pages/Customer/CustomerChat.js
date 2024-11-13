@@ -4,24 +4,22 @@ import handleFileUpload from "../../utils/handleFileUpload";
 import { socket } from "../../utils/chatSocket";
 
 import { useSearchParams } from "react-router-dom";
-import { FaArrowCircleUp } from "react-icons/fa";
-import { AiFillPlusCircle } from "react-icons/ai";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
+import MessageTextField from "../../components/Chat/MessageTextField";
 
 export default function CustomerChat() {
     const navigate = useNavigate();
-    
+    const location = useLocation();
+
     const [isConnected, setIsConnected] = useState(false);
-    const [isDisconnected, setIsDisconnected] = useState(false);
-    const [searchParams, setSearchParams] = useSearchParams();
+    const [searchParams] = useSearchParams();
     const caseID = searchParams.get("caseID");
 
     const [messages, setMessages] = useState([]);
     const [chatEnded, setChatEnded] = useState(false);
     const [sentMessage, setSentMessage] = useState("");
     const [staffName, setStaffName] = useState("[insert name]");
-    const [error, setError] = useState('');
 
     // User Inactivity States
     const [inactivityTimer, setInactivityTimer] = useState(0);
@@ -53,7 +51,7 @@ export default function CustomerChat() {
 
             if (inactivityTimer >= disconnectLimit) {
                 setUserDisconnect(true);
-                socket.emit("utils:end-chat", caseID);
+                socket.emit("utils:end-chat", caseID, true);
             }
         }, 60000);
 
@@ -80,6 +78,11 @@ export default function CustomerChat() {
             navigateHome();
         }
 
+        // Retrieve the Staff Name from the Location State
+        if (location.state && "staffName" in location.state) {
+            setStaffName(location.state.staffName);
+        }
+
         // Socket.IO Event Handlers
         const handleConnection = () => {
             setIsConnected(true);
@@ -90,7 +93,6 @@ export default function CustomerChat() {
             }
 
             socket.emit("utils:verify-activechat", customerSessionIdentifier, (chatExistanceReq) => {
-                console.log(chatExistanceReq)
                 setStaffName(chatExistanceReq.staffName);
                 if (chatExistanceReq.exist && chatExistanceReq.caseID === caseID) {
                     socket.emit("utils:add-socket", customerSessionIdentifier, "customer");
@@ -153,8 +155,8 @@ export default function CustomerChat() {
     }
 
     function handleEndChat() {
-        socket.emit("utils:end-chat", caseID);
-        setIsDisconnected(true);
+        socket.emit("utils:end-chat", caseID, false);
+        navigateRating();
     }
 
     function navigateHome() {
@@ -162,9 +164,17 @@ export default function CustomerChat() {
         sessionStorage.removeItem("customerSessionIdentifier");
     }
 
+    function navigateRating() {
+        navigate("/chat/rating", { state: { caseID: caseID, staffName: staffName } });
+        sessionStorage.removeItem("customerSessionIdentifier");
+    }
+
     return (
         <div className="flex flex-col min-h-screen max-h-screen">
             <NavigationBar />
+            <div className="w-full bg-ocbcred text-white py-3 px-5">
+                <h1 className="text-2xl font-semibold">OCBC Support  |  Live Chat</h1>
+            </div>
 
             <div className="flex-grow flex flex-col p-0 md:p-10">
                 {/* Live Chat Info Window */}
@@ -174,7 +184,7 @@ export default function CustomerChat() {
                         <a className="text-sm text-neutral-400">Case ID: {caseID}</a>
                     </div>
 
-                    <button className="ml-auto px-4 py-1 bg-ocbcred hover:bg-ocbcdarkred text-white rounded-lg" onClick={handleEndChat}>
+                    <button className={`ml-auto px-4 py-1 bg-ocbcred hover:bg-ocbcdarkred text-white rounded-lg ${chatEnded && "cursor-not-allowed"}`} disabled={chatEnded} onClick={handleEndChat}>
                         End Chat
                     </button>
                 </div>
@@ -185,34 +195,21 @@ export default function CustomerChat() {
                         { staffName !== "[insert name]" ? <a>You are now chatting with {staffName}.</a> : <></>}
                         
                         {/* Messages Area */}
-                        <div id="chat-messages" className="overflow-y-scroll my-4 min-h-0">
+                        <div id="chat-messages" className=" my-4 min-h-0 flex-grow overflow-y-scroll max-h-[calc(100vh-30rem)]">
                             {messages.map((msg) => (
-                                <MessageContainer key={msg.timestamp} isSender={msg.sender === "customer"} message={msg.message || null} fileUrl={msg.fileUrl || null} timestamp={msg.timestamp} />
+                                <MessageContainer key={msg.timestamp} isSender={msg.sender === "customer"} message={msg.message || null} fileUrl={msg.fileUrl || null} timestamp={msg.timestamp} socket={socket} />
                             ))}
                         </div>
                     </div>
 
                     {/* Message Field */}
                     {!chatEnded ? (
-                        <div className="px-10 py-6 md:py-4 w-full rounded-b-xl flex flex-row justify-between">
-                            <button className="border-2 rounded-xl px-4 hover:border-neutral-500 duration-200" onClick={onUploadClick}>
-                                <AiFillPlusCircle className="text-3xl text-neutral-400 hover:text-neutral-500" />
-                            </button>
-                            <input 
-                                className="p-3 border-2 w-full rounded-xl outline-none mx-5"
-                                placeholder="Enter a Message.."
-                                value={sentMessage} // Bind input to `sentMessage`
-                                onChange={(e) => setSentMessage(e.target.value)}
-                            />
-                            <button className="border-2 rounded-xl px-4 hover:border-neutral-500 duration-200" onClick={() => sendMessage(null)}>
-                                <FaArrowCircleUp className="text-2xl text-neutral-400 hover:text-neutral-500" />
-                            </button>
-                        </div>
+                        <MessageTextField setSentMessage={setSentMessage} sentMessage={sentMessage} sendMessage={sendMessage} onUploadClick={onUploadClick} socket={socket} />
                     ) : (
                         <div className="px-10 py-6 md:py-4 w-full rounded-b-xl flex flex-col items-center border-t-2">
                             <p className="font-semibold text-lg mb-3">The Customer Support Representative has ended the Live Chat. We hope your problem was resolved!</p>
-                            <button className="px-4 py-2 bg-ocbcred hover:bg-ocbcdarkred rounded-lg text-white" onClick={navigateHome}>
-                                Back to Home
+                            <button className="px-4 py-2 bg-ocbcred hover:bg-ocbcdarkred rounded-lg text-white" onClick={navigateRating}>
+                                Continue
                             </button>
                         </div>
                     )}
@@ -223,14 +220,8 @@ export default function CustomerChat() {
                 <div className="p-5 bg-white flex flex-col items-center justify-center">
                     <h2 className="font-semibold text-2xl mb-2">Looks like you've been inactive for awhile.</h2>
                     <p className="text-lg">{ userDisconnected ? "You have been disconnected from the Live Chat." : "Please interact with the window to continue." }</p>
-                </div>
-            </div>
-
-            <div id="disconnected-popup" className={`${isDisconnected ? "" : "hidden"} fixed top-0 left-0 h-screen w-screen bg-neutral-900/20 backdrop-blur-sm flex items-center justify-center duration-200 z-10`}>
-                <div className="p-5 bg-white flex flex-col items-center justify-center">
-                    <h2 className="font-semibold text-2xl mb-2">You have disconnected from the chat.</h2>
-                    <button className="px-4 py-2 bg-ocbcred hover:bg-ocbcdarkred rounded-lg text-white" onClick={navigateHome}>
-                        Back to Home
+                    <button className="mt-3 px-4 py-2 bg-ocbcred hover:bg-ocbcdarkred rounded-lg text-white" onClick={navigateRating}>
+                        Continue
                     </button>
                 </div>
             </div>

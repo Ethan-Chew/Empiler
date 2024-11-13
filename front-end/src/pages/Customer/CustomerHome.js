@@ -1,4 +1,4 @@
-export default function CustomerMenuPage() {
+export default function CustomerHome() {
     return (
         <div className="h-screen overflow-hidden font-sans">
             <div className="w-full h-16 bg-[#677A84]"></div>

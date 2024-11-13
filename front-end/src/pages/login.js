@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import NavigationBar from "../components/Navbar";
 
 export default function Login() {
@@ -7,7 +7,8 @@ export default function Login() {
     const [password, setPassword] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
     const navigate = useNavigate();
-
+    const { callback } = useLocation();
+    
     const handleLogin = async (e) => {
         e.preventDefault();
 
@@ -36,9 +37,9 @@ export default function Login() {
 
                 // Check the role of the logged-in user
                 if (data.role === "staff") {
-                    navigate("/staff/home");
+                    navigate(callback ? callback : "/staff/home");
                 } else if (data.role === "customer") {
-                    navigate("/awaitchat");
+                    navigate(callback ? callback : "/customer/home");
                 } else {
                     console.error("Unknown user role:", data.role);
                     // Optionally, redirect to a default page or show an error

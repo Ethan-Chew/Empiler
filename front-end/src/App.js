@@ -6,11 +6,10 @@ import LiveChatPopup from './components/Chat/LiveChatPopup';
 import { searchClient } from '@algolia/client-search';
 import { useState, useEffect } from 'react';
 
+
 export default function App() {
   const [faqs, setFaqs] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
-  const [faqSection, setFaqSection] = useState('');
-  const [faqQuestion, setFaqQuestion] = useState('');
   const algoilaAdminKey = process.env.REACT_APP_ALGOILA_ADMIN_KEY;
 
   useEffect(() => {
@@ -60,7 +59,7 @@ export default function App() {
       <section className="p-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10">
         {faqs.map(faq => (
           <a key={faq.id} href={`/faq?title=${faq.title}`}>
-            <SectionContainer title={faq.title} description={faq.description} />
+            <SectionContainer icon={faq.icon} title={faq.title} description={faq.description} />
           </a>
         ))}
       </section>
