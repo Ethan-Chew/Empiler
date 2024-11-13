@@ -1,0 +1,16 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\docs",
+    "\\front-end",
+    "\\front-end\\public",
+    "\\front-end\\src",
+    "\\front-end\\src\\components",
+    "\\front-end\\src\\pages",
+    "\\front-end\\src\\pages\\Customer",
+    "\\front-end\\src\\pages\\Staff",
+    "\\front-end\\src\\utils"
+  ],
+  "SelectedNode": "\\front-end\\public\\facebook.svg",
+  "PreviewInSolutionExplorer": false
+}

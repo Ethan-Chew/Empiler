@@ -14,6 +14,12 @@ import FAQDetail from './pages/FAQDetail';
 import ViewDetailedAppointments from './pages/ViewDetailedAppointments';
 import ChatRating from './pages/Customer/ChatRating';
 import ViewUpcomingAppointments from './pages/ViewUpcomingAppointments';
+{/* Updated frontend Routes */}
+import ViewDetailedUpcomingAppointments from './pages/ViewDetailedUpcomingAppointments';
+import LandingPage from './pages/LandingPage';
+import CustomerLandingPage from './pages/CustomerLandingPage';
+import FAQListPage from './pages/FAQListPage';
+import IndividualFAQPage from './pages/IndividualFAQPage';
 
 // Staff Routes
 import StaffLandingPage from './pages/Staff/StaffLandingPage';
@@ -31,6 +37,13 @@ root.render(
     <Routes>
       <Route exact path="/" element={<App />} />
       <Route path="/login" element={<Login />} />
+
+      {/* Updated frontend Routes */}
+      <Route path="/view-detailed-upcoming-appointments" element={<ViewDetailedUpcomingAppointments />} />
+      <Route path="/landingpage" element={<LandingPage />} />
+      <Route path="/customerlandingpage" element={<CustomerLandingPage />} />
+      <Route path="/faqlistpage" element={<FAQListPage />} />
+      <Route path="/individualfaqpage" element={<IndividualFAQPage />} />
 
       {/* FAQ Routes */}
       <Route path="/faq-article" element={<FAQDetail />} />
