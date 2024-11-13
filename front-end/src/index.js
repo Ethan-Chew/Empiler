@@ -55,8 +55,6 @@ root.render(
       <Route path="/chat/rating" element={<ChatRating />} />
       <Route path="/view-branch-appointments" element={<ViewBranchAppointments />} />
       <Route path="/view-detailed-appointments" element={<ViewDetailedAppointments />} />
-      {/* <Route path="/view-outstanding-chat-customers" element={<ViewOutstandingChatCustomers />} />
-      <Route path="/admin-support-log" element={<AdminSupportLog />} /> */}
       <Route path="/view-upcoming-appointments" element={<ViewUpcomingAppointments />} />
 
 

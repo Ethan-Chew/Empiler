@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {motion, useScroll, useMotionValueEvent} from 'framer-motion';
 
-export default function NavigationBar() {
+export default function NavigationBar({ selectedPage }) {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [hidden, setHidden] = useState(false);
     const { scrollY } = useScroll();
@@ -61,12 +61,12 @@ export default function NavigationBar() {
                 <div className="flex items-center">
                     <img src="/ocbc-logo.png" alt="OCBC Logo" className="h-6 mr-6" />
                 </div>
-                <div className="flex space-x-16 justify-center w-full text-[18px]">
-                    <a href="/" className="text-[#D00E35] hover:text-[#C30C31]">HOME</a>
-                    <a href="/" className="text-[#010101] hover:text-[#C30C31]">FAQ</a>
-                    <a href="/" className="text-[#010101] hover:text-[#C30C31]">APPOINTMENTS</a>
-                    <a href="/" className="text-[#010101] hover:text-[#C30C31]">LIVE CHAT</a>
-                    <a href="/" className="text-[#010101] hover:text-[#C30C31]">ABOUT US</a>
+                <div className="flex space-x-16 justify-center w-full text-lg">
+                    <a href="/" className={`${selectedPage == "HOME" ? "text-ocbc-red" : "text-black"} hover:text-ocbcdarkred`}>HOME</a>
+                    <a href="/" className={`${selectedPage == "FAQ" ? "text-ocbc-red" : "text-black"} hover:text-ocbcdarkred`}>FAQ</a>
+                    <a href="/" className={`${selectedPage == "APPOINTMENTS" ? "text-ocbc-red" : "text-black"} hover:text-ocbcdarkred`}>APPOINTMENTS</a>
+                    <a href="/" className={`${selectedPage == "LIVECHAT" ? "text-ocbc-red" : "text-black"} hover:text-ocbcdarkred`}>LIVE CHAT</a>
+                    <a href="/" className={`${selectedPage == "" ? "text-ocbc-red" : "text-black"} hover:text-ocbcdarkred`}>ABOUT US</a>
                 </div>
             </div>
             { isLoggedIn ? 
