@@ -1,3 +1,4 @@
+import NavigationBar from "../../components/Navbar";
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -137,9 +138,9 @@ export default function ViewBookings() {
 
 
     return (
-        <div className="min-h-screen bg-gray-100">
-            {/* Navbar */}
-            <div className="bg-[#677A84] w-full h-16"></div>
+        <div className="min-h-screen">
+        <>
+            <NavigationBar />
 
             {/* Main Content */}
             <div className="flex justify-center items-center mt-8">
@@ -178,6 +179,7 @@ export default function ViewBookings() {
                     </div>
                 </div>
             </div>
+        </>
         </div>
     );
 }
