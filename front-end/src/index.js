@@ -14,7 +14,7 @@ import FAQDetail from './pages/FAQDetail';
 import ViewDetailedAppointments from './pages/ViewDetailedAppointments';
 import ChatRating from './pages/Customer/ChatRating';
 import ViewUpcomingAppointments from './pages/ViewUpcomingAppointments';
-{/* Updated frontend Routes */}
+// Updated frontend Routes
 import ViewDetailedUpcomingAppointments from './pages/ViewDetailedUpcomingAppointments';
 import LandingPage from './pages/LandingPage';
 import CustomerLandingPage from './pages/CustomerLandingPage';

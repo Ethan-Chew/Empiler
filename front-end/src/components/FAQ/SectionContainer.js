@@ -14,11 +14,11 @@ const Icons = {
 
 export default function SectionContainer({ icon, title, description }) {
     return (
-        <div className="h-full flex flex-col border-2 border-neutral-600 p-5 rounded-xl bg-white group">
-            {Icons[icon] && React.createElement(Icons[icon], { className: "text-5xl mb-2 stroke-1" })}
-            <div className="flex-grow">
-                <p className="text-2xl font-bold">{ title }</p>
-                <p>{ description }</p>
+        <div className="h-full flex flex-col border border-gray-200 p-5 shadow-md rounded-xl bg-white group hover:shadow-lg transition-shadow duration-300">
+            {Icons[icon] && React.createElement(Icons[icon], { className: "text-5xl mb-2 stroke-1 stroke-ocbcred" })}
+            <div className="flex-grow text-left">
+                <p className="text-2xl font-semibold mt-2">{ title }</p>
+                <p className="text-lg font-light text-gray-500 mt-2">{ description }</p>
             </div>
 
             <div className="mt-3 flex flex-row gap-2 items-center">
