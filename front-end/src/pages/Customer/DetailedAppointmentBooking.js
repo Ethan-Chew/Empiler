@@ -1,10 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { FaCalendarAlt, FaLocationArrow } from "react-icons/fa";
-import { format } from 'crypto-js';
 
-
-// TODO: Migrate to use <Suspense />
 export default function DetailedAppointmentBooking() {
     const navigate = useNavigate();
     const location = useLocation();
@@ -17,6 +13,9 @@ export default function DetailedAppointmentBooking() {
     const [loadingTimeslots, setLoadingTimeslots] = useState(false);
     const [showModal, setShowModal] = useState(false); // State to show the confirmation modal
     const [bookingDetails, setBookingDetails] = useState(null); // Store selected booking details
+    const [showDates, setShowDates] = useState(true); // State to toggle dates visibility
+
+    const toggleDates = () => setShowDates(!showDates); // Toggle function
 
     useEffect(() => {
         if (!location.state.branch) {
@@ -26,7 +25,6 @@ export default function DetailedAppointmentBooking() {
         // TODO: Retrieve branch details from backend
         const branch = location.state.branch; // Retrieve the branch data
         setBranchDetails(branch); // Set the branch data
-
         generateAvailableDates();
     }, [location.state, navigate]);
 
@@ -34,23 +32,87 @@ export default function DetailedAppointmentBooking() {
         const today = new Date();
         const availableDates = [];
     
-        // Loop through the next 5 days (including Saturdays)
         for (let i = 0; availableDates.length < 7; i++) {
             const nextDate = new Date(today);
             nextDate.setDate(today.getDate() + i); // Increment date by i days
     
-            // Check if the date falls on Sunday (0 - Sunday)
-            if (nextDate.getDay() !== 0) {
-                // Format the date to YYYY-MM-DD
-                const formattedDate = nextDate.toISOString().split('T')[0]; // YYYY-MM-DD format
-                availableDates.push({
-                    day: nextDate.toLocaleString('en-US', { weekday: 'long' }), // e.g., Mon, Tue
-                    formattedDate,
-                });
-            }
+            // Format the date to YYYY-MM-DD
+            const formattedDate = nextDate.toISOString().split('T')[0]; // YYYY-MM-DD format
+
+            availableDates.push({
+                day: nextDate.toLocaleString('en-US', { weekday: 'long' }), // e.g., Mon, Tue
+                formattedDate,
+                isClosed: isDayClosed(nextDate), // Add the 'closed' check
+            });
         }
     
         setAvailableDates(availableDates);
+    };
+
+    const isDayClosed = (date) => {
+        const closedDays = ['Sun']; // List days you consider closed (e.g., Sunday)
+        const dayOfWeek = date.toLocaleString('en-US', { weekday: 'short' }); // Get day like Mon, Tue
+        return closedDays.includes(dayOfWeek); // Return true if the day is closed
+    };
+
+    const getEarliestAvailableTime = (openingHours) => {
+        const today = new Date();
+        const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        const todayName = dayNames[today.getDay()];
+    
+        // First, check if Sundays are explicitly marked as "Closed"
+        if (openingHours.toLowerCase().includes('sundays and public holidays: closed')) {
+            if (todayName === 'Sun') {
+                return "Closed";
+            }
+        }
+    
+        // Updated regex to handle specific days and ranges of times (mon-fri, etc.)
+        const regex = new RegExp(`(?:${todayName}|${dayNames.join('|')})(?:\\s*-\\s*${dayNames.join('|')})?:\\s*(\\d{1,2}\\.\\d{2}[ap]m)\\s*[-to]{1,2}\\s*(\\d{1,2}\\.\\d{2}[ap]m)`, 'i');
+        const match = openingHours.match(regex);
+    
+        if (match) {
+            const openingTime = match[1];
+            const closingTime = match[2];
+            return `${formatTo24Hour(openingTime)} - ${formatTo24Hour(closingTime)}`;
+        }
+        return null;
+    };
+    
+    const formatTo24Hour = (time) => {
+        time = time.trim().toLowerCase();
+        if (time.indexOf('.') > -1) {
+            time = time.replace('.', ':');
+        }
+
+        const match = time.match(/^(\d{1,2}):(\d{2})([ap]m)$/);
+    
+        if (!match) {
+            console.error("Invalid time format:", time);
+            return null;
+        }
+
+        const [, hourStr, minuteStr, period] = match;  // Destructure the match into components
+        let hours = Number(hourStr); // Convert hours to a number
+        let minutes = Number(minuteStr); // Convert minutes to a number
+        if (period === 'pm' && hours !== 12) {
+            hours += 12; // Convert PM hours to 24-hour format
+        } else if (period === 'am' && hours === 12) {
+            hours = 0; // Midnight case: 12am should be 00:00
+        }
+        return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+    };
+
+    const formatTo12Hour = (time) => {
+        const [hours, minutes] = time.split(':').map(Number);
+        const period = hours >= 12? 'PM' : 'AM';
+        const formattedHours = hours % 12 || 12;
+        return `${String(formattedHours).padStart(2, '0')}.${String(minutes).padStart(2, '0')}${period}`;
+    };
+    
+    const formatTimeslot = (timeslot) => {
+        const [startTime, endTime] = timeslot.split('-');
+        return `${formatTo12Hour(startTime)} - ${formatTo12Hour(endTime)}`;
     };
 
     // Fetch available timeslots from the backend
@@ -67,6 +129,37 @@ export default function DetailedAppointmentBooking() {
             }
             
             const data = await response.json();
+
+            const operatingHours = getEarliestAvailableTime(branchDetails.openingHours);
+
+            if (operatingHours === "Closed" || !operatingHours) {
+                alert('The selected branch is closed on this date.');
+                return;
+            }
+            
+            const [start, end] = operatingHours.split('-')
+            const [startHour, startMinute] = start.split(':').map(Number);
+            const [endHour, endMinute] = end.split(':').map(Number);
+
+            data.forEach((timeslot) => {
+                // Check timeslot within working hours
+                const [startTime, endTime] = timeslot.timeslot.split('-');
+                const [slotStartHour, slotStartMinute] = startTime.split(':').map(Number);
+                const [slotEndHour, slotEndMinute] = endTime.split(':').map(Number);
+                
+                if (
+                    slotStartHour >= startHour &&
+                    slotStartMinute >= startMinute &&
+                    slotEndHour <= endHour &&
+                    slotEndMinute <= endMinute
+                    ) {
+                    timeslot.isAvailable = true;
+                } else {
+                    timeslot.isAvailable = false;
+                }
+            });
+
+
             setTimeslots(data);
         } catch (error) {
             console.error('Error fetching timeslots:', error);
@@ -74,6 +167,8 @@ export default function DetailedAppointmentBooking() {
             setLoadingTimeslots(false);
         }
     };
+
+    
 
     // Confirm booking function
     const handleConfirmBooking = async () => {
@@ -162,103 +257,142 @@ export default function DetailedAppointmentBooking() {
     };
 
     return (
-        <div className="font-inter h-screen flex flex-col">
-            <div className="bg-[#677A84] h-[15vh] w-full"></div>
-            <div className="bg-[#D9D9D9] w-full p-5 text-left mb-3">
+        <div className="font-inter overflow-hidden min-h-screen">
+            <div className="bg-[#677A84] h-[10vh] w-full"></div>
+            <div className="bg-white m-auto w-[98%] border-b-2 border-gray-300 p-5 text-left mb-3 flex flex-col items-center align-center">
                 {branchDetails ? (
                     <>
-                        <h1 className="text-2xl font-semibold mb-1">{branchDetails.landmark}</h1>
-                        <p className="text-lg text-[#060313]">Schedule an Appointment</p>
+                        <h1 className="text-4xl font-semibold mb-1">Appointment Booking</h1>
+                        <h1 className="text-xl mb-1 text-gray-500">{branchDetails.landmark}</h1>
                     </>
                 ) : (
                     <p>Loading branch details...</p>
                 )}
             </div>
 
-            {/* Appointment details modal */}
+            {/* Appointment details */}
             {showModal && (
-                <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center">
-                    <div className="bg-white p-5 rounded-lg w-1/3">
-                        <h3 className="text-xl font-semibold mb-4">Confirm Your Appointment</h3>
-                        <p><strong>Branch:</strong> {bookingDetails.branch}</p>
-                        <p><strong>Date:</strong> {bookingDetails.date}</p>
-                        <p><strong>Timeslot:</strong> {bookingDetails.timeSlot}</p>
+                <div className="fixed inset-0 bg-gray-400 bg-opacity-50 flex justify-center items-center">
+                    <div className="bg-white p-5 rounded-lg w-1/3 flex flex-col justify-center items-center">
+                        <h3 className="text-2xl font-semibold mb-4">Booking Confirmation</h3>
+                        <p className="text-xl mb-2">You have selected an appointment for:</p>
 
-                        <div className="flex justify-around mt-5">
-                            <button
-                                onClick={handleFinalBooking}
-                                className="bg-[#DA291C] text-white py-2 px-4 rounded-lg"
-                            >
-                                Confirm
-                            </button>
-                            <button
-                                onClick={() => setShowModal(false)}
-                                className="bg-gray-300 text-black py-2 px-4 rounded-lg"
-                            >
-                                Cancel
-                            </button>
+                        <p className="font-medium">{branchDetails?.landmark}</p>
+                        <p className="text-sm text-gray-500">{branchDetails?.address}</p>
+
+                        <p className="mt-2 text-base text-green-600">
+                            {new Date(bookingDetails?.date).toLocaleDateString("en-GB", {
+                                weekday: "long",   // Day of the week (Friday)
+                                day: "numeric",    // Day of the month (13)
+                                month: "long",     // Month (June)
+                                year: "numeric",   // Year (2025)
+                            })}
+                        </p>
+                        <p className="text-sm">
+                            {formatTimeslot(bookingDetails?.timeSlot)}
+                        </p>
+
+                        <div className="flex flex-col justify-around mt-5">
+                            <div>
+                                <button
+                                    onClick={handleFinalBooking}
+                                    className="bg-[#DA291C] text-white py-4 px-12 mb-4 rounded-3xl text-xl font-semibold"
+                                >
+                                    Confirm Booking
+                                </button>
+                            </div>
+                            <div className="flex justify-center">
+                                <button
+                                    onClick={() => setShowModal(false)}
+                                    className="bg-gray-600 text-white py-2 px-6 rounded-3xl"
+                                >
+                                    Cancel Selection
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
             )}
 
-            <div className="flex-grow flex p-5 h-full">
-                <div className="flex-grow basis-3/4 flex flex-col gap-2 overflow-hidden mr-3">
-                    <div className='w-full flex flex-col border-3 border-neutral-200 rounded-xl p-3 gap-4'>
-                        <div className='pb-2 border-b-2 border-neutral-200 text-center'>
-                            <a className='text-lg font-semibold'>November 2024</a>
+            <div className="flex h-[calc(70vh-20px)] p-5">
+                <div className="flex-2 flex flex-col gap-2 overflow-hidden mr-3">
+                    {/* Date Selection */}
+                    <div className="w-[70vw] bg-white border-gray-200 border-3 rounded-xl shadow-md p-3">
+                        <div className="flex items-center mb-3 border-b border-gray-300 pb-2">
+                            <p className="text-lg font-medium mx-auto">
+                                {selectedDate
+                                    ? new Date(selectedDate).toLocaleDateString('en-US', {
+                                        day: '2-digit',
+                                        month: 'long',
+                                        year: 'numeric',
+                                    })
+                                    : 'Select a Date'}
+                            </p>
+                            <button className="text-lg" onClick={toggleDates}>
+                                {showDates ? '▲' : '▼'}
+                            </button>
                         </div>
-
-                        {/* Date Selector */}
-                        <div className='flex flex-row items-center justify-center gap-10'>
-                            {availableDates.map((date, index) => (
-                                <button 
-                                    key={index}
-                                    onClick={() => handleDateSelect(date.formattedDate)}
-                                >
-                                    <div className='flex flex-col justify-center items-center gap-1'>
-                                        <p className={`p-2 border-3 ${selectedDate === date.formattedDate ? 'border-ocbcred text-ocbcred' : 'border-neutral-300 text-neutral-500'} rounded-full text-xl font-semibold w-12 h-12 flex items-center justify-center`}>
-                                            {new Date(date.formattedDate).getDate()}
-                                        </p>
-                                        <p className={`text-sm ${selectedDate === date.formattedDate ? 'text-ocbcred' : 'text-neutral-500'}`}>
-                                            {date.day}
-                                        </p>
-                                    </div>
-                                </button>
-                            ))}
+                        <div className="flex justify-evenly mb-3">
+                            {showDates && (
+                                <div className="w-[100%] flex justify-evenly mt-3">
+                                    {availableDates.map((date, idx) => (
+                                        <button
+                                            key={idx}
+                                            className={`w-16 h-22 mr-2 rounded-lg flex flex-col items-center justify-center text-lg cursor-pointer ${
+                                                selectedDate === date.formattedDate
+                                                    ? 'border-[#DA291C] text-[#DA291C]'
+                                                    : date.isClosed
+                                                    ? 'text-gray-300 cursor-not-allowed' // Make closed days unclickable
+                                                    : 'text-gray-500'
+                                            }`}
+                                            onClick={() => !date.isClosed && handleDateSelect(date.formattedDate)} // Only allow click on non-closed dates
+                                            disabled={date.isClosed} // Prevent action on closed days
+                                        >
+                                            <p className="w-12 h-12 mb-1 flex items-center justify-center rounded-full border-2 border-inherit text-2xl font-semibold">
+                                                {new Date(date.formattedDate).getDate()}
+                                            </p>
+                                            <p className="text-lg">{date.day}</p>
+                                            {date.isClosed && (
+                                                <span className="text-xs text-red-500">Closed</span> // Display "Closed" on closed days
+                                            )}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
                         </div>
-
                     </div>
 
-                    {/* Slot Selector */}
-                    <div className='w-full border-3 border-neutral-200 rounded-xl p-3 flex flex-col gap-2'>
+                    {/* Appointment Time Selection */}
+                    <div className="bg-white mt-5 border-gray-200 border-3 rounded-lg shadow-md p-3 overflow-y-scroll max-h-[355px]">
                         {loadingTimeslots ? (
                             <p>Loading timeslots...</p>
                         ) : (
                             <>
-                                {timeslots.length > 0 ? (
-                                    timeslots.map((timeslot, idx) => (
-                                        
+                                {timeslots.filter(timeslot => timeslot.isAvailable).length > 0 ? (
+                                    timeslots.filter(timeslot => timeslot.isAvailable).map((timeslot, idx) => (
                                         <div
                                             key={timeslot.id}
-                                            className={`flex flex-row py-2 px-4 border-2 rounded-xl items-center ${selectedAppointment?.id === timeslot.id ? "border-ocbcred" : "border-neutral-300"}`}
+                                            className={`flex justify-between items-center p-2 mb-2 rounded-lg cursor-pointer border-2 ${
+                                                selectedAppointment?.id === timeslot.id ? 'border-[#DA291C]' : 'border-[#C7C7C7]'
+                                            }`}
                                             onClick={() => handleAppointmentSelect(timeslot)}
                                             role="button"
                                             tabIndex={0}
-                                            onKeyUp={(e) => {
+                                            onKeyPress={(e) => {
                                                 if (e.key === 'Enter' || e.key === ' ') {
                                                     handleAppointmentSelect(timeslot);
                                                 }
                                             }}
                                         >
                                             <div>
-                                                <p className="text-lg font-semibold">{branchDetails.landmark}</p>
-                                                <p className="text-green-700">{timeslot.timeslot}</p>
+                                                <p className="text-sm font-semibold">{branchDetails?.landmark || 'Branch'}</p>
+                                                <p className="text-sm text-green-700">{formatTimeslot(timeslot.timeslot)}</p>
                                             </div>
-
-                                            <button className={`ml-auto w-10 h-10 flex items-center justify-center rounded-full border-2 ${selectedAppointment?.id === timeslot.id ? "border-ocbcred" : "border-neutral-300"}`}>
-                                                <div className={`w-4 h-4 bg-ocbcred rounded-full ${selectedAppointment?.id === timeslot.id ? "block" : "hidden"}`}></div>
-                                            </button>
+                                            <div
+                                                className={`w-4 h-4 rounded-full border-2 mr-2 ${
+                                                    selectedAppointment?.id === timeslot.id ? 'bg-[#DA291C] ring-2 ring-offset-[6px] ring-red-500' : 'bg-transparent'
+                                                }`}
+                                            ></div>
                                         </div>
                                     ))
                                 ) : (
@@ -270,43 +404,46 @@ export default function DetailedAppointmentBooking() {
                 </div>
 
                 {/* Location Info and Actions */}
-                <div className='flex-grow basis-1/3 md:basis-1/4 flex flex-col gap-3 border-3 border-neutral-200 rounded-xl px-4 py-2'>
-                    <div>
-                        <h2 className="text-2xl font-bold">Location</h2>
-                        <p className="text-lg font-medium">{branchDetails ? branchDetails.landmark : 'Loading...'}</p>
-                        <p className="text-sm text-gray-500">{branchDetails ? branchDetails.address : 'Loading address...'}</p>
-                        <div className="mt-2 w-fit px-5 py-1 bg-[#DFB0EF] text-[#803A97] font-semibold rounded-full text-center text-sm">
-                            { branchDetails ? branchDetails.category : "Loading..." }
+                <div className="flex-1 flex flex-col gap-2">
+                    <div className="h-[100%] bg-white border-gray-200 border-3 rounded-lg shadow-md p-3 flex flex-col justify-between">
+                        <div>
+                            <h2 className="text-xl font-semibold">Location</h2>
+                            <p className="text-base font-medium">{branchDetails ? branchDetails.landmark : 'Loading...'}</p>
+                            <p className="text-sm text-gray-500">{branchDetails ? branchDetails.address : 'Loading address...'}</p>
+                            <div className="mt-2 p-2 bg-[#DFB0EF] text-[#803A97] font-semibold rounded-md text-center">Premier Centre</div>
+                        </div>
+
+                        <h2 className="pt-4 text-xl font-semibold">Opening Hours</h2>
+                        <p className="text-sm text-[#060313]">
+                            {branchDetails?.openingHours ? (
+                                branchDetails.openingHours
+                                    .split(',')
+                                    .map((item, index) => (
+                                        <span key={index}>
+                                            {item.trim()}
+                                            <br />
+                                        </span>
+                                    ))
+                            ) : (
+                                <span>Opening hours not available</span>
+                            )}
+                        </p>
+                        <div className="pt-10 flex flex-col gap-2">
+                            <button
+                                onClick={handleConfirmBooking}
+                                className="bg-[#DA291C] text-white text-sm py-2 rounded-lg"
+                            >
+                                Confirm Appointment
+                            </button>
+                            <button
+                                onClick={handleCancel} // Trigger handleCancel when the button is clicked
+                                className="bg-[#DA291C] text-white text-sm py-2 rounded-lg transition-colors duration-300 hover:bg-red-600"
+                            >
+                                Cancel
+                            </button>                    
                         </div>
                     </div>
 
-                    <div>
-                        <h2 className="text-2xl font-bold">Opening Hours</h2>
-                        { branchDetails && branchDetails.openingHours.split(", ").map((text, index) => (
-                            <p key={index}>{ text }</p>
-                        ))}
-                    </div>
-
-                    <div className='mt-auto w-full space-y-3'>
-                        <button
-                            onClick={handleConfirmBooking}
-                            className="bg-[#DA291C] text-white font-medium text-lg py-2 px-5 rounded-lg w-full"
-                        >
-                            <div className='flex gap-3 items-center'>
-                                <FaCalendarAlt />
-                                Book Appointment
-                            </div>
-                        </button>
-                        <button
-                            onClick={handleConfirmBooking}
-                            className="bg-[#DA291C] text-white font-medium text-lg py-2 px-5 rounded-lg w-full"
-                        >
-                            <div className='flex gap-3 items-center'>
-                                <FaLocationArrow />
-                                Directions
-                            </div>
-                        </button>
-                    </div>
                 </div>
             </div>
         </div>
