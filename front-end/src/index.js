@@ -14,6 +14,8 @@ import FAQDetail from './pages/FAQDetail';
 import ViewDetailedAppointments from './pages/ViewDetailedAppointments';
 import ChatRating from './pages/Customer/ChatRating';
 import ViewUpcomingAppointments from './pages/ViewUpcomingAppointments';
+import viewCustomerBookings from './pages/Customer/ViewBookings';
+import BookingDetails from './pages/Customer/BookingDetails';
 
 // Staff Routes
 import StaffLandingPage from './pages/Staff/StaffLandingPage';
@@ -59,6 +61,8 @@ root.render(
       <Route path="/appointments/branches" element={<ProtectedRoute Component={AppointmentBooking} role="customer" />} />
       <Route path="/appointments/branches" element={<ProtectedRoute Component={AppointmentBooking} role="customer" />} />
       <Route path="/appointments/timeslots" element={<ProtectedRoute Component={DetailedAppointmentBooking} role="customer" />} />
+      <Route path="/appointments/viewBooking" element={<ProtectedRoute Component={viewCustomerBookings} role="customer" />} />
+      <Route path="/appointments/booking/details" element={<ProtectedRoute Component={BookingDetails} role="customer" />} />
     </Routes>
   </BrowserRouter>
 );
