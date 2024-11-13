@@ -63,7 +63,7 @@ const FAQListPage = () => {
                 <div className="space-y-6">
                     {faqItems && faqItems.length > 0 ? (
                         faqItems.map(item => (
-                            <FaqCatItem key={item.id} title={item.title} description={item.description} href={`/faq-article?title=${item.title}&section=${title}`} />
+                            <FaqCatItem key={item.id} title={item.title} description={item.description} href={`/individualfaqpage?title=${item.title}&section=${title}`} />
                         ))
                     ) : (
                         <p>No FAQ items found.</p>
@@ -77,47 +77,10 @@ const FAQListPage = () => {
             {/* Margin below the gray line */}
             <div className="mb-8" />
 
+            <div className="w-full h-[3px] bg-[#DCD6D6]" />
+
             {/* Footer */}
-            <footer className="py-12 bg-gray-50">
-                <div className="flex justify-between items-start px-8 lg:px-16">
-                    <div>
-                        <img src="/ocbc-logo.png" alt="OCBC Logo" className="w-[280px] h-[76px]" />
-                        <h3 className="text-[50px] mt-4">Group</h3>
-                    </div>
-                    {/* Container for the 2 columns */}
-                    <div className="flex space-x-12 ml-96">
-                        <div className="space-y-4">
-                            <h4 className="text-[20px]">Useful Links</h4>
-                            <p className="text-[16px]">Investor Information</p>
-                            <p className="text-[16px]">International Network</p>
-                            <p className="text-[16px]">Careers</p>
-                            <p className="text-[16px]">Research</p>
-                        </div>
-                        <div className="space-y-4">
-                            <h4 className="text-[20px]">Contact Us</h4>
-                            <p className="text-[16px]">Personal Banking</p>
-                            <p className="text-[16px]">Premier Banking</p>
-                            <p className="text-[16px]">FRANK by OCBC</p>
-                            <p className="text-[16px]">Business Banking</p>
-                        </div>
-                    </div>
-                    {/* Social Media Icons */}
-                    <div className="flex flex-col space-y-6">
-                        <div className="w-[50px] h-[50px] bg-[#2D3D45] rounded-full flex justify-center items-center hover:scale-105 transition-transform">
-                            <img src="/facebook.svg" alt="Facebook" className="w-2/5 h-2/5 object-contain" />
-                        </div>
-                        <div className="w-[50px] h-[50px] bg-[#2D3D45] rounded-full flex justify-center items-center hover:scale-105 transition-transform">
-                            <img src="/youtube.svg" alt="Youtube" className="w-2/5 h-2/5 object-contain" />
-                        </div>
-                        <div className="w-[50px] h-[50px] bg-[#2D3D45] rounded-full flex justify-center items-center hover:scale-105 transition-transform">
-                            <img src="/twitter.svg" alt="Twitter" className="w-2/5 h-2/5 object-contain" />
-                        </div>
-                        <div className="w-[50px] h-[50px] bg-[#2D3D45] rounded-full flex justify-center items-center hover:scale-105 transition-transform">
-                            <img src="/linkedin.svg" alt="Linkedin" className="w-2/5 h-2/5 object-contain" />
-                        </div>
-                    </div>
-                </div>
-            </footer>
+            <Footer />
         </div>
     );
 };

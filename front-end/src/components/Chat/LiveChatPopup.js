@@ -19,7 +19,7 @@ function LiveChatPopup({ section, question, isOpen, setIsOpen }) {
   };
 
   useEffect(() => {
-    // If not null, set the FAQ Section and/or FAQ Question to it's variables
+    // If not null, set the FAQ Section and/or FAQ Question to its variables
     if (section) {
       setFaqSection(section);
     }
@@ -27,7 +27,7 @@ function LiveChatPopup({ section, question, isOpen, setIsOpen }) {
     if (question) {
       setFaqQuestion(question);
     }
-  }, []);
+  }, [section, question]);
 
   return (
     <AnimatePresence>
@@ -40,7 +40,7 @@ function LiveChatPopup({ section, question, isOpen, setIsOpen }) {
           transition={{ duration: 0.3 }}
         >
           <motion.div
-            className="bg-white w-2/3 md:w-1/2 p-6 rounded-lg shadow-lg relative"
+            className="bg-white w-2/3 md:w-1/2 p-6 rounded-lg shadow-lg relative text-left"
             initial={{ scale: 0.95 }}
             animate={{ scale: 1 }}
             exit={{ scale: 0.95 }}

@@ -11,7 +11,7 @@ export default function LiveChatFooter({setIsOpen}) {
         </div>
 
         {/* Text and Button Section */}
-        <div className="flex flex-col justify-between w-[calc(67%)] text-left">
+        <div className="flex flex-col justify-between w-[calc(67%)]">
             <h2 className="text-[36px]">Still can't find what you're looking for?</h2>
             <div className="flex space-x-6 mt-4">
                 {/* Button 1: Live Chat */}
