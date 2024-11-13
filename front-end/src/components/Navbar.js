@@ -71,6 +71,14 @@ export default function NavigationBar({ selectedPage }) {
             </div>
             { isLoggedIn ? 
                 <button
+                    className="px-3 py-2 bg-ocbcred hover:bg-ocbcdarkred text-white rounded-lg ml-4"
+                    onClick={() => handleLogout()}
+                >
+                    LOGOUT
+                </button>
+            
+            : 
+                <button
                     className="bg-[#D00E35] text-white px-7 py-2 rounded hover:bg-[#C30C31] text-[14px]"
                     onClick={() => navigate("/login", {
                         state: {
@@ -79,14 +87,6 @@ export default function NavigationBar({ selectedPage }) {
                     })}
                 >
                     LOGIN
-                </button>
-            
-            : 
-                <button
-                    className="px-3 py-2 bg-ocbcred hover:bg-ocbcdarkred text-white rounded-lg ml-4"
-                    onClick={() => handleLogout()}
-                >
-                    LOGOUT
                 </button>
             }
         </motion.nav>
