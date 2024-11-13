@@ -9,14 +9,12 @@ import App from './App';
 import Login from './pages/login';
 import InitisaliseChat from './pages/Customer/InitialiseChat';
 import CustomerChat from './pages/Customer/CustomerChat';
-import FAQSection from './pages/FAQSection';
-import FAQDetail from './pages/FAQDetail';
+
 import ViewDetailedAppointments from './pages/ViewDetailedAppointments';
 import ChatRating from './pages/Customer/ChatRating';
 import ViewUpcomingAppointments from './pages/ViewUpcomingAppointments';
 // Updated frontend Routes
 import ViewDetailedUpcomingAppointments from './pages/ViewDetailedUpcomingAppointments';
-import LandingPage from './pages/LandingPage';
 import CustomerLandingPage from './pages/CustomerLandingPage';
 import FAQListPage from './pages/FAQListPage';
 import IndividualFAQPage from './pages/IndividualFAQPage';
@@ -40,14 +38,12 @@ root.render(
 
       {/* Updated frontend Routes */}
       <Route path="/view-detailed-upcoming-appointments" element={<ViewDetailedUpcomingAppointments />} />
-      <Route path="/landingpage" element={<LandingPage />} />
       <Route path="/customerlandingpage" element={<CustomerLandingPage />} />
       <Route path="/faqlistpage" element={<FAQListPage />} />
       <Route path="/individualfaqpage" element={<IndividualFAQPage />} />
 
       {/* FAQ Routes */}
-      <Route path="/faq-article" element={<FAQDetail />} />
-      <Route path="/faq" element={<FAQSection />} />
+
 
       {/* Chat Routes */}
       <Route path="/awaitchat" element={<InitisaliseChat />} />
