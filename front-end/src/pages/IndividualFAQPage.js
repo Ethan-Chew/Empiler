@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import Markdown from 'react-markdown'
 import { useSearchParams } from 'react-router-dom';
 import Footer from '../components/Footer';
+import Navbar from '../components/Navbar';
 
 
 const IndividualFAQPage = () => {
@@ -28,22 +29,7 @@ const IndividualFAQPage = () => {
 
     return (
         <><div className="font-inter">
-            {/* Navbar */}
-            <nav className="flex items-center justify-between h-[90px] px-4 lg:px-12 bg-white shadow-md">
-                <div className="flex items-center mx-auto justify-between w-full">
-                    <div className="flex items-center">
-                        <img src="/ocbc-logo.png" alt="OCBC Logo" className="h-6 mr-6" />
-                        <div className="flex space-x-16 justify-center w-full text-[18px]">
-                            <a href="/" className="text-[#010101] hover:text-[#C30C31]">HOME</a>
-                            <a href="/" className="text-[#D00E35] hover:text-[#C30C31]">FAQ</a>
-                            <a href="/" className="text-[#010101] hover:text-[#C30C31]">APPOINTMENTS</a>
-                            <a href="/" className="text-[#010101] hover:text-[#C30C31]">LIVE CHAT</a>
-                            <a href="/" className="text-[#010101] hover:text-[#C30C31]">ABOUT US</a>
-                        </div>
-                    </div>
-                    <button className="bg-[#D00E35] text-white px-7 py-2 rounded hover:bg-[#C30C31] text-[14px]">LOGIN</button>
-                </div>
-            </nav>
+            <Navbar />
 
             {/* Gray Line */}
             <hr className="border-t-[2px] border-[#DCD6D6]" />

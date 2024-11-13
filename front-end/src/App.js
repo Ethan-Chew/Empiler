@@ -6,7 +6,7 @@ import Footer from "./components/Footer";
 import NavigationBar from "./components/Navbar";
 import LiveChatPopup from './components/Chat/LiveChatPopup';
 import { searchClient } from '@algolia/client-search';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 
 
 export default function App() {

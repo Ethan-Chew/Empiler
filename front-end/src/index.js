@@ -38,7 +38,7 @@ root.render(
 
       {/* Updated frontend Routes */}
       <Route path="/view-detailed-upcoming-appointments" element={<ViewDetailedUpcomingAppointments />} />
-      <Route path="/customerlandingpage" element={<CustomerLandingPage />} />
+      <Route path="/customer/home" element={<CustomerLandingPage />} />
       <Route path="/faqlistpage" element={<FAQListPage />} />
       <Route path="/individualfaqpage" element={<IndividualFAQPage />} />
 
@@ -63,7 +63,6 @@ root.render(
 
       {/* Protected Routes (Customer) */}
       <Route path="/customer/home" element={<ProtectedRoute Component={CustomerHome} role="customer" />} />
-      <Route path="/appointments/branches" element={<ProtectedRoute Component={AppointmentBooking} role="customer" />} />
       <Route path="/appointments/branches" element={<ProtectedRoute Component={AppointmentBooking} role="customer" />} />
       <Route path="/appointments/timeslots" element={<ProtectedRoute Component={DetailedAppointmentBooking} role="customer" />} />
     </Routes>
