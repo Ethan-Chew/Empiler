@@ -25,31 +25,16 @@ export default function ViewBookings() {
     }, []);
 
     const fetchBookings = async () => {
-        const token = sessionStorage.getItem('jwt');
+        const user = JSON.parse(sessionStorage.getItem('userDetails'));
 
-        if (!token) {
+        if (!user) {
             alert('Please log in to confirm the booking.');
             navigate('/login');
             return;
         }
 
         try {
-            const verifyResponse = await fetch('http://localhost:8080/api/auth/verify', {
-                method: "GET",
-                headers: {
-                    "Authorization": `Bearer ${token}` // Send the JWT token for verification
-                },
-                credentials: "include", // Send cookies if required
-            });
-
-            if (!verifyResponse.ok) {
-                alert('Invalid token. Please log in to confirm the booking.');
-                navigate('/login');
-                return;
-            }
-    
-            const verifyData = await verifyResponse.json();
-            const name = verifyData.accountId; // Ensure 'name' is extracted after the token is verified
+            const name = user.id; // Ensure 'name' is extracted after the token is verified
 
             const response = await fetch('http://localhost:8080/api/appointments/viewbookings', {
                 method: 'POST',

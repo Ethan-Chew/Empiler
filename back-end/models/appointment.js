@@ -80,6 +80,7 @@ export default class Appointment {
 
     static async getAllAppointments(name) {
         try {
+            console.log(name);
             const { data, error } = await supabase
             .from("branch_appointments")
             .select("*")
