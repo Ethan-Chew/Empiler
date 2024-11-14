@@ -15,7 +15,7 @@ import ChatRating from './pages/Customer/ChatRating';
 import ViewUpcomingAppointments from './pages/ViewUpcomingAppointments';
 // Updated frontend Routes
 import ViewDetailedUpcomingAppointments from './pages/ViewDetailedUpcomingAppointments';
-import CustomerLandingPage from './pages/CustomerLandingPage';
+import CustomerLandingPage from './pages/Customer/CustomerLandingPage';
 import FAQListPage from './pages/FAQListPage';
 import IndividualFAQPage from './pages/IndividualFAQPage';
 
@@ -25,7 +25,6 @@ import StaffChats from './pages/Staff/StaffChats';
 import ViewBranchAppointments from './pages/Staff/ViewBranchAppointments';
 
 // Customer Routes
-import CustomerHome from './pages/Customer/CustomerHome';
 import AppointmentBooking from './pages/Customer/AppointmentBooking';
 import DetailedAppointmentBooking from './pages/Customer/DetailedAppointmentBooking';
 
@@ -38,7 +37,6 @@ root.render(
 
       {/* Updated frontend Routes */}
       <Route path="/view-detailed-upcoming-appointments" element={<ViewDetailedUpcomingAppointments />} />
-      <Route path="/customer/home" element={<CustomerLandingPage />} />
       <Route path="/faqlistpage" element={<FAQListPage />} />
       <Route path="/individualfaqpage" element={<IndividualFAQPage />} />
 
@@ -62,7 +60,7 @@ root.render(
       <Route path="/staff/branches" element={<ProtectedRoute Component={ViewBranchAppointments} role="staff" />} />
 
       {/* Protected Routes (Customer) */}
-      <Route path="/customer/home" element={<ProtectedRoute Component={CustomerHome} role="customer" />} />
+      <Route path="/customer/home" element={<ProtectedRoute Component={CustomerLandingPage} role="customer" />} />
       <Route path="/appointments/branches" element={<ProtectedRoute Component={AppointmentBooking} role="customer" />} />
       <Route path="/appointments/timeslots" element={<ProtectedRoute Component={DetailedAppointmentBooking} role="customer" />} />
     </Routes>

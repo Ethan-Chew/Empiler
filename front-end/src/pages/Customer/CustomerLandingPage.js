@@ -1,19 +1,13 @@
 import React from 'react';
+import NavBar from '../../components/Navbar';
 
-const StaffLandingPage = () => {
+const CustomerLandingPage = () => {
     return (
         <div className="bg-white font-inter">
-            <nav className="flex items-center justify-between h-[90px] px-4 lg:px-12 shadow-md" style={{ backgroundColor: '#D0D0D0' }}>
-                <div className="flex items-center mx-auto justify-between w-full">
-                    <div className="flex items-center">
-                        <img src="/ocbc-logo.png" alt="OCBC Logo" className="h-6 mr-6" />
-                    </div>
-                </div>
-                <button className="bg-[#D00E35] text-white px-7 py-2 rounded hover:bg-[#C30C31] text-[14px]">LOGOUT</button>
-            </nav>
+            <NavBar />
 
             <div className="text-left mt-6 px-4 lg:px-8">
-                <h1 className="text-[48px] text-[#343434]">Good Afternoon, CompanyPerson!</h1>
+                <h1 className="text-[48px] text-[#343434]">Good Afternoon, UserName!</h1>
                 <p className="text-[20px] text-[#999999] mt-2">What would you like to do today?</p>
                 <hr className="border-t-[2px] border-[#DCD6D6] mt-12" />
             </div>
@@ -22,7 +16,7 @@ const StaffLandingPage = () => {
             <div className="text-center mt-10">
                 <div className="flex justify-center items-center space-x-6 mt-4">
                     <div className="w-[200px] h-[8px] bg-[#D00E35]" />
-                    <h2 className="text-[40px]">Staff Menu</h2>
+                    <h2 className="text-[40px]">Quick Actions</h2>
                     <div className="w-[200px] h-[8px] bg-[#D00E35]" />
                 </div>
 
@@ -37,17 +31,17 @@ const StaffLandingPage = () => {
 
                     <div className="bg-white shadow-lg rounded-xl p-6 w-[400px] h-[250px] hover:shadow-2xl transition-shadow duration-300">
                         <div className="w-[46px] h-[46px] bg-gray-300 mb-4" />
-                        <h3 className="text-[24px] font-semibold text-left">Manage Appointments</h3>
+                        <h3 className="text-[24px] font-semibold text-left">Book an Appointment</h3>
                         <p className="text-[18px] font-light text-left text-gray-500 mt-2">
-                            Re-schedule your appointments
+                            Schedule an appointment for any queries you might have
                         </p>
                     </div>
 
                     <div className="bg-white shadow-lg rounded-xl p-6 w-[400px] h-[250px] hover:shadow-2xl transition-shadow duration-300">
                         <div className="w-[46px] h-[46px] bg-gray-300 mb-4" />
-                        <h3 className="text-[24px] font-semibold text-left">View Outstanding Chat Customers</h3>
+                        <h3 className="text-[24px] font-semibold text-left">View and Edit Appointments</h3>
                         <p className="text-[18px] font-light text-left text-gray-500 mt-2">
-                            View customers that you have to attend to
+                            Re-schedule an appointment to an alternative timeslot
                         </p>
                     </div>
                 </div>
@@ -63,17 +57,17 @@ const StaffLandingPage = () => {
 
                     <div className="bg-white shadow-lg rounded-xl p-6 w-[400px] h-[250px] hover:shadow-2xl transition-shadow duration-300">
                         <div className="w-[46px] h-[46px] bg-gray-300 mb-4" />
-                        <h3 className="text-[24px] font-semibold text-left">Staff Support Chat</h3>
+                        <h3 className="text-[24px] font-semibold text-left">Start a Live Chat</h3>
                         <p className="text-[18px] font-light text-left text-gray-500 mt-2">
-                            Manage your chat activity
+                            Start a live chat session for any queries you might have
                         </p>
                     </div>
 
                     <div className="bg-white shadow-lg rounded-xl p-6 w-[400px] h-[250px] hover:shadow-2xl transition-shadow duration-300">
                         <div className="w-[46px] h-[46px] bg-gray-300 mb-4" />
-                        <h3 className="text-[24px] font-semibold text-left">View Chat History</h3>
+                        <h3 className="text-[24px] font-semibold text-left">View Live Chat Logs</h3>
                         <p className="text-[18px] font-light text-left text-gray-500 mt-2">
-                            View the chats you have attended to before
+                            View the logs of all your past chats and conversations
                         </p>
                     </div>
                 </div>
@@ -81,13 +75,13 @@ const StaffLandingPage = () => {
             </div>
 
             {/* Footer */}
-            <footer className="py-12 bg-gray-50">
+            <footer className="py-12 bg-gray-50"> 
                 <div className="flex justify-between items-start px-8 lg:px-16">
                     <div>
                         <img src="/ocbc-logo.png" alt="OCBC Logo" className="w-[280px] h-[76px]" />
                         <h3 className="text-[50px] mt-4">Group</h3>
                     </div>
-                    <div className="flex space-x-12 ml-96">
+                    <div className="flex space-x-12 ml-96"> 
                         <div className="space-y-4">
                             <h4 className="text-[20px]">Useful Links</h4>
                             <p className="text-[16px]">Investor Information</p>
@@ -123,4 +117,4 @@ const StaffLandingPage = () => {
     );
 }
 
-export default StaffLandingPage;
+export default CustomerLandingPage;

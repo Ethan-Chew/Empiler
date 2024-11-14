@@ -28,7 +28,7 @@ export default function LiveChatFooter({setIsOpen}) {
                 </button>
 
                 {/* Button 2: Book an Appointment */}
-                <a className="border border-gray-200 group bg-white rounded-lg p-8 shadow-md hover:shadow-lg text-left w-[calc(50%-1rem)] h-[300px]" href="appointment/branches">
+                <a className="border border-gray-200 group bg-white rounded-lg p-8 shadow-md hover:shadow-lg text-left w-[calc(50%-1rem)] h-[300px]" href="appointments/branches">
                     <div className="w-16 h-16 mb-6">
                         <BsCalendarCheck className="w-full h-full object-contain fill-ocbcred" />
                     </div>

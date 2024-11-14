@@ -207,10 +207,15 @@ export default function CustomerChat() {
                         <MessageTextField setSentMessage={setSentMessage} sentMessage={sentMessage} sendMessage={sendMessage} onUploadClick={onUploadClick} socket={socket} />
                     ) : (
                         <div className="px-10 py-6 md:py-4 w-full rounded-b-xl flex flex-col items-center border-t-2">
-                            <p className="font-semibold text-lg mb-3">The Customer Support Representative has ended the Live Chat. We hope your problem was resolved!</p>
-                            <button className="px-4 py-2 bg-ocbcred hover:bg-ocbcdarkred rounded-lg text-white" onClick={navigateRating}>
-                                Continue
-                            </button>
+                            <p className="font-semibold text-lg mb-3">The Customer Support Representative has ended the Live Chat. Were we able to solve your problem?</p>
+                            <div className="space-x-4">
+                                <button className="bg-white text-red-500 border border-red-500 px-4 py-2 rounded-lg hover:bg-red-500 hover:text-white w-20" onClick={navigateRating}>
+                                    Yes
+                                </button>
+                                <button className="bg-white text-red-500 border border-red-500 px-4 py-2 rounded-lg hover:bg-red-500 hover:text-white w-20" onClick={navigateRating}>
+                                    No
+                                </button>
+                            </div>
                         </div>
                     )}
                 </div>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import Navbar from '../../components/Navbar';
 
 export default function DetailedAppointmentBooking() {
     const navigate = useNavigate();
@@ -258,7 +259,7 @@ export default function DetailedAppointmentBooking() {
 
     return (
         <div className="font-inter overflow-hidden min-h-screen">
-            <div className="bg-[#677A84] h-[10vh] w-full"></div>
+            <Navbar />
             <div className="bg-white m-auto w-[98%] border-b-2 border-gray-300 p-5 text-left mb-3 flex flex-col items-center align-center">
                 {branchDetails ? (
                     <>
