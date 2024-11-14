@@ -12,7 +12,7 @@ export default function LiveChatFooter({setIsOpen}) {
 
         {/* Text and Button Section */}
         <div className="flex flex-col justify-between w-[calc(67%)]">
-            <h2 className="text-[36px]">Still can't find what you're looking for?</h2>
+            <h2 className="text-[36px] mr-auto">Still can't find what you're looking for?</h2>
             <div className="flex space-x-6 mt-4">
                 {/* Button 1: Live Chat */}
                 <button onClick={() => setIsOpen(true)} className="border border-gray-200 bg-white rounded-lg p-8 shadow-md hover:shadow-lg text-left w-[calc(50%-1rem)] h-[300px] group">

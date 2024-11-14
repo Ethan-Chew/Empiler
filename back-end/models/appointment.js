@@ -77,4 +77,88 @@ export default class Appointment {
             return { error: "Error creating appointment" };
         }
     }
+
+    static async getAllAppointments(name) {
+        try {
+            console.log(name);
+            const { data, error } = await supabase
+            .from("branch_appointments")
+            .select("*")
+            .eq("name", name);
+
+            if (error) {
+                console.error(error);
+                return null;
+            }
+
+            // Find the timeslot time
+            const timeslot = await Appointment.getTimeslots();
+
+            data.forEach((appointment) => {
+                const timeslotData = timeslot.find((timeslot) => timeslot.id === appointment.timeslotId);
+                appointment.time = timeslotData.timeslot;
+            });
+
+            return data;
+        } catch (error) {
+            console.error(error);
+            return { error: "Error getting appointments" };
+        }
+    }
+
+    static async updateAppointments(name, date, timeslotId, branchName, newDate, newTimeslotId, newBranchName) {
+        try {
+            // Perform the update without returning updated data
+            const { count, error } = await supabase
+                .from("branch_appointments")
+                .update({ date: newDate, timeslotId: newTimeslotId, branchName: newBranchName })
+                .match({ name, date, timeslotId, branchName });
+    
+            // Check if there was an error
+            if (error) {
+                console.error(error);
+                return { error: "Error updating appointment" };
+            }
+    
+            // If no rows were updated, return an error
+            if (count === 0) {
+                return { error: "No matching record found to update" };
+            }
+    
+            // Return success if the update was successful
+            return { success: true };
+    
+        } catch (error) {
+            console.error(error);
+            return { error: "Error updating appointment" };
+        }
+    }
+
+    static async deleteAppointment(name, date, timeslotId, branchName) {
+        try {
+            const { count, error } = await supabase
+                .from("branch_appointments")
+                .delete()
+                .eq("name", name)
+                .eq("date", date)
+                .eq("timeslotId", timeslotId)
+                .eq("branchName", branchName)
+                .single();
+                
+            if (error) {
+                console.error(error);
+                return { error: "Error deleting appointment" };
+            }
+            // If no rows were updated, return an error
+            if (count === 0) {
+                return { error: "No matching record found to update" };
+            }
+
+            // Return success if the update was successful
+            return { success: true };
+        } catch (error) {
+            console.error(error);
+            return { error: "Error deleting appointment" };
+        }
+    }
 }

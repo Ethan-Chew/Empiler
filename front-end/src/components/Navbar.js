@@ -81,14 +81,14 @@ export default function NavigationBar({ selectedPage }) {
                 <div className="flex space-x-16 justify-center w-full text-lg">
                     <a
                         href={getHomeLink()}
-                        className={`${isCurrentPage("home") ? "text-ocbc-red cursor-default font-bold" : "text-black hover:text-ocbcdarkred"}`}
+                        className={`${isCurrentPage("home") ? "text-ocbcred hover:text-ocbcdarkred cursor-default font-bold" : "text-black hover:text-ocbcdarkred"}`}
                         onClick={(e) => isCurrentPage("home") && e.preventDefault()}
                     >
                         HOME
                     </a>
                     <a
                         href="/appointments/branches"
-                        className={`${isCurrentPage("appointments") ? "text-ocbc-red cursor-default font-bold" : "text-black hover:text-ocbcdarkred"}`}
+                        className={`${isCurrentPage("appointments") ? "text-ocbcred hover:text-ocbcdarkred cursor-default font-bold" : "text-black hover:text-ocbcdarkred"}`}
                         onClick={(e) => isCurrentPage("appointments") && e.preventDefault()}
                     >
                         APPOINTMENTS

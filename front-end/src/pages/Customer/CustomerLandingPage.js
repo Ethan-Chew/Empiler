@@ -4,6 +4,7 @@ import LiveChatPopup from '../../components/Chat/LiveChatPopup';
 import { useState } from 'react';
 import { PiChats } from "react-icons/pi";
 import { BsCalendarCheck } from "react-icons/bs";
+import { MdEditCalendar } from "react-icons/md";
 
 const CustomerLandingPage = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -23,6 +24,17 @@ const CustomerLandingPage = () => {
                     <div className="w-[200px] h-[8px] bg-[#D00E35]" />
                     <h2 className="text-[40px]">Quick Actions</h2>
                     <div className="w-[200px] h-[8px] bg-[#D00E35]" />
+                </div>
+                {/* onClick={() => navigate("/appointments/viewBooking")} */}
+
+                <div className="bg-white shadow-lg rounded-xl p-6 w-[400px] h-[250px] hover:shadow-2xl transition-shadow duration-300">
+                    <a href='/appointments/viewBooking'>
+                        <MdEditCalendar className="w-12 h-12 object-contain fill-ocbcred mb-4" />
+                        <h3 className="text-[24px] font-semibold text-left">View and Edit Appointments</h3>
+                        <p className="text-[18px] font-light text-left text-gray-500 mt-2">
+                            Re-schedule an appointment to an alternative timeslot
+                        </p>
+                    </a>
                 </div>
 
                 <div className="flex justify-between space-x-8 mt-8 mx-12">
