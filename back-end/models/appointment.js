@@ -105,23 +105,28 @@ export default class Appointment {
         }
     }
 
-    static async updaeAppointments(name, date, timeslotId, branchName, newDate, newTimeslotId, newBranchName) {
+    static async updateAppointments(name, date, timeslotId, branchName, newDate, newTimeslotId, newBranchName) {
         try {
-            const { data, error } = await supabase
+            // Perform the update without returning updated data
+            const { count, error } = await supabase
                 .from("branch_appointments")
                 .update({ date: newDate, timeslotId: newTimeslotId, branchName: newBranchName })
-                .eq("name", name)
-                .eq("date", date)
-                .eq("timeslotId", timeslotId)
-                .eq("branchName", branchName)
-                .single();
-
+                .match({ name, date, timeslotId, branchName });
+    
+            // Check if there was an error
             if (error) {
                 console.error(error);
                 return { error: "Error updating appointment" };
             }
-
-            return data;
+    
+            // If no rows were updated, return an error
+            if (count === 0) {
+                return { error: "No matching record found to update" };
+            }
+    
+            // Return success if the update was successful
+            return { success: true };
+    
         } catch (error) {
             console.error(error);
             return { error: "Error updating appointment" };
@@ -130,7 +135,7 @@ export default class Appointment {
 
     static async deleteAppointment(name, date, timeslotId, branchName) {
         try {
-            const { data, error } = await supabase
+            const { count, error } = await supabase
                 .from("branch_appointments")
                 .delete()
                 .eq("name", name)
@@ -143,8 +148,13 @@ export default class Appointment {
                 console.error(error);
                 return { error: "Error deleting appointment" };
             }
+            // If no rows were updated, return an error
+            if (count === 0) {
+                return { error: "No matching record found to update" };
+            }
 
-            return data;
+            // Return success if the update was successful
+            return { success: true };
         } catch (error) {
             console.error(error);
             return { error: "Error deleting appointment" };

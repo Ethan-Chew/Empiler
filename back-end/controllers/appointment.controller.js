@@ -53,16 +53,16 @@ const getAllAppointments = async (req, res) => {
 }
 
 const updateAppointment = async (req, res) => {
-    const { name, date, timeSlotId, branchName, newDate, newTimeSlotId, newBranchName } = req.body;
+    const { name, date, timeslotId, branchName, newDate, newTimeslotId, newBranchName } = req.body;
 
     try {
-        const appointment = await Appointment.updateAppointment(name, date, timeSlotId, branchName, newDate, newTimeSlotId, newBranchName);
+        const appointment = await Appointment.updateAppointments(name, date, timeslotId, branchName, newDate, newTimeslotId, newBranchName);
 
         if (appointment.error) {
             return res.status(400).json({ error: appointment.error });
         }
 
-        res.status(200).json(appointment);
+        return res.status(200).json({ message: 'Appointment updated successfully', data: appointment.data });
     } catch (error) {
         console.error("Error in updateAppointment:", error);
         res.status(500).json({ error: 'Internal Server Error' });
@@ -70,10 +70,12 @@ const updateAppointment = async (req, res) => {
 }
 
 const deleteAppointment = async (req, res) => {
-    const { name, date, timeSlotId, branchName } = req.body;
+    const { name, date, timeslotId, branchName } = req.body;
 
     try {
-        const appointment = await Appointment.deleteAppointment(name, date, timeSlotId, branchName);
+        const appointment = await Appointment.deleteAppointment(name, date, timeslotId, branchName);
+
+        console.log(appointment);
 
         if (appointment.error) {
             return res.status(400).json({ error: appointment.error });

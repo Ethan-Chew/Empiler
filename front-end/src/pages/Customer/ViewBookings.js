@@ -21,7 +21,6 @@ export default function ViewBookings() {
                 alert('Could not get your location.');
             });
         }
-
         fetchBookings();
     }, []);
 
@@ -113,7 +112,6 @@ export default function ViewBookings() {
 
     const handleBookingClick = (booking) => {
         // Navigate to a detailed booking page or perform any action
-        console.log(booking)
         navigate(`/appointments/booking/details`, {
             state: { booking } // Pass the data through state
         });
