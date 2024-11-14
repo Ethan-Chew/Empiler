@@ -28,6 +28,14 @@
 
     return (
       <div className="relative mt-12 mb-12 max-w-4xl mx-auto">
+        <style>
+        {`
+          input[type="search"]::-webkit-search-cancel-button {
+            -webkit-appearance: none;
+            appearance: none;
+          }
+        `}
+      </style>
         <InstantSearch searchClient={searchClient} indexName="title">
           <Configure hitsPerPage={5} />
 
