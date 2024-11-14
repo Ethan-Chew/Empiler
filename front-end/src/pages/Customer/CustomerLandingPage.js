@@ -12,7 +12,7 @@ const CustomerLandingPage = () => {
             <NavBar />
 
             <div className="text-left mt-6 px-4 lg:px-8">
-                <h1 className="text-[48px] text-[#343434]">Good Afternoon, UserName!</h1>
+                <h1 className="text-[48px] text-[#343434]">Good Afternoon, John Customer!</h1>
                 <p className="text-[20px] text-[#999999] mt-2">What would you like to do today?</p>
                 <hr className="border-t-[2px] border-[#DCD6D6] mt-12" />
             </div>
@@ -26,14 +26,6 @@ const CustomerLandingPage = () => {
                 </div>
 
                 <div className="flex justify-between space-x-8 mt-8 mx-12">
-                    <div className="bg-white shadow-lg rounded-xl p-6 w-[400px] h-[250px] hover:shadow-2xl transition-shadow duration-300">
-                        <div className="w-[46px] h-[46px] bg-gray-300 mb-4" />
-                        <h3 className="text-[24px] font-semibold text-left">View and Edit Profile</h3>
-                        <p className="text-[18px] font-light text-left text-gray-500 mt-2">
-                            Change your profile picture and description
-                        </p>
-                    </div>
-
                     <a className="bg-white shadow-lg rounded-xl p-6 w-[400px] h-[250px] hover:shadow-2xl transition-shadow duration-300" href="/appointments/branches">
                         <BsCalendarCheck className="w-12 h-12 object-contain fill-ocbcred mb-4" />
                         <h3 className="text-[24px] font-semibold text-left">Book an Appointment</h3>
@@ -41,25 +33,9 @@ const CustomerLandingPage = () => {
                             Schedule an appointment for any queries you might have
                         </p>
                     </a>
-
-                    <div className="bg-white shadow-lg rounded-xl p-6 w-[400px] h-[250px] hover:shadow-2xl transition-shadow duration-300">
-                        <div className="w-[46px] h-[46px] bg-gray-300 mb-4" />
-                        <h3 className="text-[24px] font-semibold text-left">View and Edit Appointments</h3>
-                        <p className="text-[18px] font-light text-left text-gray-500 mt-2">
-                            Re-schedule an appointment to an alternative timeslot
-                        </p>
-                    </div>
                 </div>
 
                 <div className="flex justify-between space-x-8 mt-8 mx-12">
-                    <div className="bg-white shadow-lg rounded-xl p-6 w-[400px] h-[250px] hover:shadow-2xl transition-shadow duration-300">
-                        <div className="w-[46px] h-[46px] bg-gray-300 mb-4" />
-                        <h3 className="text-[24px] font-semibold text-left">Account Settings</h3>
-                        <p className="text-[18px] font-light text-left text-gray-500 mt-2">
-                            Change personal details such as emails and passwords
-                        </p>
-                    </div>
-
                     <button onClick={() => setIsOpen(true)} className="bg-white shadow-lg rounded-xl p-6 w-[400px] h-[250px] hover:shadow-2xl transition-shadow duration-300">
                         <PiChats className="w-12 h-12 object-contain fill-ocbcred mb-4" />
                         <h3 className="text-[24px] font-semibold text-left">Start a Live Chat</h3>
@@ -67,14 +43,6 @@ const CustomerLandingPage = () => {
                             Start a live chat session for any queries you might have
                         </p>
                     </button>
-
-                    <div className="bg-white shadow-lg rounded-xl p-6 w-[400px] h-[250px] hover:shadow-2xl transition-shadow duration-300">
-                        <div className="w-[46px] h-[46px] bg-gray-300 mb-4" />
-                        <h3 className="text-[24px] font-semibold text-left">View Live Chat Logs</h3>
-                        <p className="text-[18px] font-light text-left text-gray-500 mt-2">
-                            View the logs of all your past chats and conversations
-                        </p>
-                    </div>
                 </div>
                 <hr className="border-t-[2px] border-[#DCD6D6] mt-16" />
             </div>
