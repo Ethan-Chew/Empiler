@@ -1,85 +1,99 @@
-import Navbar from "../../components/Navbar";
+import React from 'react';
+import Navbar from '../../components/Navbar';
+import { PiChats } from "react-icons/pi";
+import { BsCalendarCheck } from "react-icons/bs";
+import { RiSettings4Line } from "react-icons/ri";
+import { MdOutlinePersonOutline } from "react-icons/md";
+import { useState, useEffect } from 'react';
 
-export default function StaffLandingPage() {
+const StaffLandingPage = () => {
+    const [user, setUser] = useState();
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const response = await fetch(`http://localhost:8080/api/user/user`);
+                const data = await response.json();
+                setUser(data);
+            } catch (error) {
+                console.error('Error fetching user:', error);
+            }
+        };
+        fetchUser();
+    } , []
+    );
     return (
-        <div className="font-sans h-screen overflow-hidden">
+        <div className="bg-white font-inter">
             <Navbar />
 
-            {/* Header Image */}
-            <img 
-                src="/FAQHeader.png" 
-                alt="Hero" 
-                className="w-full h-24 sm:h-32 md:h-40 lg:h-48 object-cover object-center rounded-lg" 
-            />
-
-            <div className="flex justify-between items-center p-6">
-                <p className="text-2xl">
-                    <span className="font-semibold">Good Morning,</span> Admin!
-                </p>
-                <div className="flex gap-4">
-                    
-                    <div className="w-10 h-10 flex items-center justify-center rounded-full bg-white cursor-pointer hover:scale-110 transition-transform">
-                        <img src="/startLiveChat.svg" alt="Chat" className="w-8 h-8" />
-                    </div>
-                    
-                    <div className="w-10 h-10 flex items-center justify-center rounded-full bg-white cursor-pointer hover:scale-110 transition-transform">
-                        <img src="/notifications.svg" alt="Notifications" className="w-8 h-8" />
-                    </div>
-                </div>
+            <div className="text-left mt-6 px-4 lg:px-8">
+                <h1 className="text-[48px] text-[#343434]">Good Afternoon, John Admin!</h1>
+                <p className="text-[20px] text-[#999999] mt-2">What would you like to do today?</p>
+                <hr className="border-t-[2px] border-[#DCD6D6] mt-12" />
             </div>
 
             {/* Buttons */}
-            <div className="flex p-6 space-x-6">
-                <div className="w-3/4 flex flex-col gap-6">
-                    <div className="grid grid-cols-2 gap-6">
-                        
-                        <div className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:scale-105 transition-transform">
-                            <p className="text-lg font-semibold text-gray-800">Manage Accounts</p>
-                            <p className="text-sm text-gray-600">Manage your associated accounts</p>
-                        </div>
-                        
-                        <div className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:scale-105 transition-transform">
-                            <p className="text-lg font-semibold text-gray-800">Manage Schedules</p>
-                            <p className="text-sm text-gray-600">View and adjust schedules</p>
-                        </div>
-                        
-                        <a className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:scale-105 transition-transform" href="/staff/chats">
-                            <p className="text-lg font-semibold text-gray-800">View Chats</p>
-                            <p className="text-sm text-gray-600">View active live chats</p>
-                        </a>
-                        
-                        <div className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:scale-105 transition-transform">
-                            <p className="text-lg font-semibold text-gray-800">View Reports</p>
-                            <p className="text-sm text-gray-600">Analyze recent data</p>
-                        </div>
-                    </div>
-
-                    {/* Taskbar */}
-                    <div className="bg-white rounded-lg shadow-md p-4 mt-4 flex justify-between items-center">
-                        {[...Array(5)].map((_, idx) => (
-                            <div
-                                key={idx}
-                                className="w-12 h-12 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200 transition-colors"
-                            ></div>
-                        ))}
-                    </div>
+            <div className="text-center mt-10">
+                <div className="flex justify-center items-center space-x-6 mt-4">
+                    <div className="w-[200px] h-[8px] bg-[#D00E35]" />
+                    <h2 className="text-[40px]">Staff Menu</h2>
+                    <div className="w-[200px] h-[8px] bg-[#D00E35]" />
                 </div>
 
-                {/* To-Do List */}
-                <div className="w-1/4 bg-white rounded-lg shadow-md p-4">
-                    <p className="text-lg font-semibold text-gray-800 mb-4">Your To-Do List:</p>
-                    <div className="flex flex-col gap-3">
-                        {[...Array(4)].map((_, idx) => (
-                            <div
-                                key={idx}
-                                className="bg-red-500 text-white p-4 rounded-lg cursor-pointer hover:scale-105 transition-transform"
-                            >
-                                TaskName
-                            </div>
-                        ))}
-                    </div>
+                <div className="flex justify-between space-x-8 mt-8 mx-12">
+
+                    <a className="border border-gray-200 bg-white shadow-md rounded-xl p-6 w-[400px] h-[250px] hover:shadow-xl transition-shadow duration-300" href='chats'>
+                        <PiChats className="w-12 h-12 object-contain fill-ocbcred mb-4" />
+                        <h3 className="text-[24px] font-semibold text-left">Staff Support Chat</h3>
+                        <p className="text-[18px] font-light text-left text-gray-500 mt-2">
+                            Manage your chat activity
+                        </p>
+                    </a>
+
                 </div>
+                <hr className="border-t-[2px] border-[#DCD6D6] mt-16" />
             </div>
+
+            {/* Footer */}
+            <footer className="py-12 bg-gray-50">
+                <div className="flex justify-between items-start px-8 lg:px-16">
+                    <div>
+                        <img src="/ocbc-logo.png" alt="OCBC Logo" className="w-[280px] h-[76px]" />
+                        <h3 className="text-[50px] mt-4">Group</h3>
+                    </div>
+                    <div className="flex space-x-12 ml-96">
+                        <div className="space-y-4">
+                            <h4 className="text-[20px]">Useful Links</h4>
+                            <p className="text-[16px]">Investor Information</p>
+                            <p className="text-[16px]">International Network</p>
+                            <p className="text-[16px]">Careers</p>
+                            <p className="text-[16px]">Research</p>
+                        </div>
+                        <div className="space-y-4">
+                            <h4 className="text-[20px]">Contact Us</h4>
+                            <p className="text-[16px]">Personal Banking</p>
+                            <p className="text-[16px]">Premier Banking</p>
+                            <p className="text-[16px]">FRANK by OCBC</p>
+                            <p className="text-[16px]">Business Banking</p>
+                        </div>
+                    </div>
+                    <div className="flex flex-col space-y-6">
+                        <div className="w-[50px] h-[50px] bg-[#2D3D45] rounded-full flex justify-center items-center hover:scale-105 transition-transform">
+                            <img src="/facebook.svg" alt="Facebook" className="w-2/5 h-2/5 object-contain" />
+                        </div>
+                        <div className="w-[50px] h-[50px] bg-[#2D3D45] rounded-full flex justify-center items-center hover:scale-105 transition-transform">
+                            <img src="/youtube.svg" alt="Youtube" className="w-2/5 h-2/5 object-contain" />
+                        </div>
+                        <div className="w-[50px] h-[50px] bg-[#2D3D45] rounded-full flex justify-center items-center hover:scale-105 transition-transform">
+                            <img src="/twitter.svg" alt="Twitter" className="w-2/5 h-2/5 object-contain" />
+                        </div>
+                        <div className="w-[50px] h-[50px] bg-[#2D3D45] rounded-full flex justify-center items-center hover:scale-105 transition-transform">
+                            <img src="/linkedin.svg" alt="Linkedin" className="w-2/5 h-2/5 object-contain" />
+                        </div>
+                    </div>
+                </div>
+            </footer>
         </div>
     );
 }
+
+export default StaffLandingPage;

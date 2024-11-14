@@ -1,8 +1,10 @@
+import Navbar from '../components/Navbar';
+
 export default function ViewDetailedAppointments() {
     return (
         <div className="font-sans h-screen overflow-hidden">
             
-            <div className="bg-[#677A84] w-full h-24"></div> 
+            <Navbar />
 
             
             <div className="bg-[#D9D9D9] w-full py-6 px-8">

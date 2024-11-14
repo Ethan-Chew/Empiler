@@ -18,6 +18,7 @@ export default function CustomerChat() {
 
     const [messages, setMessages] = useState([]);
     const [chatEnded, setChatEnded] = useState(false);
+    const [staffEndedChat, setStaffEndedChat] = useState(false);
     const [sentMessage, setSentMessage] = useState("");
     const [staffName, setStaffName] = useState("[insert name]");
 
@@ -112,8 +113,10 @@ export default function CustomerChat() {
         }
 
         const handleChatClosure = () => {
+            setStaffEndedChat(true);
             setChatEnded(true);
             sessionStorage.removeItem("customerSessionIdentifier");
+            socket.disconnect();
         }
 
         socket.on("connect", handleConnection);
@@ -203,15 +206,15 @@ export default function CustomerChat() {
                     </div>
 
                     {/* Message Field */}
-                    {!chatEnded ? (
-                        <MessageTextField setSentMessage={setSentMessage} sentMessage={sentMessage} sendMessage={sendMessage} onUploadClick={onUploadClick} socket={socket} />
-                    ) : (
+                    {staffEndedChat ? (
                         <div className="px-10 py-6 md:py-4 w-full rounded-b-xl flex flex-col items-center border-t-2">
                             <p className="font-semibold text-lg mb-3">The Customer Support Representative has ended the Live Chat. We hope your problem was resolved!</p>
                             <button className="px-4 py-2 bg-ocbcred hover:bg-ocbcdarkred rounded-lg text-white" onClick={navigateRating}>
                                 Continue
                             </button>
                         </div>
+                    ) : (
+                        <MessageTextField setSentMessage={setSentMessage} sentMessage={sentMessage} sendMessage={sendMessage} onUploadClick={onUploadClick} socket={socket} />
                     )}
                 </div>
             </div>

@@ -320,6 +320,30 @@ const getAllFaqDetails = async (req, res) => {
     }
 }
 
+const getFaqByCategory = async (req, res) => {
+    try {
+        const sections = await FreqAskedQns.getFaqByCategory(req.params.category);
+
+        if (!sections) {
+            return res.status(404).json({
+                status: 'Error',
+                message: 'FAQs not found.'
+            });
+        }
+
+        res.status(200).json({
+            status: 'Success',
+            sections: sections
+        });
+    } catch {
+        res.status(500).json({
+            status: 'Error',
+            message: 'Internal Server Error',
+            error: error
+        });
+    }
+}
+
 export default {
     createFaq,
     getAllFaqs,
@@ -332,5 +356,6 @@ export default {
     deleteFaqSection,
     getAllSections,
     getDetailByTitle,
-    getAllFaqDetails
+    getAllFaqDetails,
+    getFaqByCategory
 }

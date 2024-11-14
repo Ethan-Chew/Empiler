@@ -9,6 +9,15 @@ router.route('/filter/:date/:branchName')
 router.route('/book')
     .post(AppointmentController.bookAppointment);
 
+router.route('/viewbookings')
+    .post(AppointmentController.getAllAppointments);
+
+router.route('/update')
+    .put(AppointmentController.updateAppointment);
+    
+router.route('/delete')
+    .delete(AppointmentController.deleteAppointment);
+
 router.route("/")
 
 export default router;
