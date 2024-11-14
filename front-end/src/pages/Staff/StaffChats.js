@@ -74,6 +74,17 @@ export default function StaffChats() {
         setSentMessage("");
     }
 
+    const sendAppointment = () => {
+        const formattedMsg = {
+            case: connectedChats.filter((chat) => chat.caseID === selectedChatId)[0].caseID,
+            message: "appointment",
+            timestamp: Date.now(),
+            sender: "staff",
+        };
+        socket.emit("utils:send-msg", formattedMsg);
+        setSentMessage("");
+    }
+
     const handleEndChat = () => {        
         // Remove from backend
         socket.emit("utils:end-chat", selectedChatId, false);
@@ -89,6 +100,14 @@ export default function StaffChats() {
         });
         
         navigate("/staff/chats");
+    }
+
+    async function handleAppointmentClick() {
+        try {
+            sendAppointment();
+        } catch (err) {
+            console.error('Error: ', err);
+        }
     }
 
     const handleHideToastMsg = (index) => {
@@ -237,6 +256,9 @@ export default function StaffChats() {
 
                             <button className="ml-auto px-4 py-1 bg-ocbcred hover:bg-ocbcdarkred text-white rounded-lg" onClick={handleEndChat}>
                                 End Chat
+                            </button>
+                            <button className="ml-2 px-4 py-1 bg-ocbcred hover:bg-ocbcdarkred text-white rounded-lg" onClick={handleAppointmentClick}>
+                                Recommend Appointment
                             </button>
                         </div>
                     )))}
