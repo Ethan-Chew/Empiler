@@ -51,7 +51,7 @@
               placeholder="Example: I'm having problems signing in to my account"
               onFocus={() => setIsFocused(true)}
               onBlur={() => setIsFocused(false)}
-              searchAsYouType={false} // put true when demoing
+              searchAsYouType={true}
             />
             <span className="absolute right-4 top-2/4 transform -translate-y-2/4 text-[#454040]">
               <FaMagnifyingGlass className="w-6 h-6" />

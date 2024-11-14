@@ -37,7 +37,7 @@ export default function MessageContainer({ isSender, message, fileUrl, timestamp
         }
 
         // DEV: pls comment this out else credits go byebye
-        // verifyLocalisation();
+        verifyLocalisation();
     }, []);
 
     const handleMessageTranslation = async () => {
