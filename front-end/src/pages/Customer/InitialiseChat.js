@@ -127,7 +127,7 @@ export default function InitialiseChat() {
 
                 {/* Suggest Appointment */}
                 <div className={`border-t-2 border-neutral-200 py-2 mt-5`}>
-                    <p className='font-semibold mb-3'>We're sorry for the wait. Consider making an appointment instead?</p>
+                    <p className='font-semibold mb-3'>Cannot wait? Consider making an appointment instead.</p>
                     <button
                         className='w-full py-2 px-4 flex flex-row rounded-xl bg-white drop-shadow-[0_0px_3px_rgba(0,0,0,.15)] items-center gap-3 text-ocbcred hover:text-ocbcdarkred'
                         onClick={() => navigate('/appointments/branches')}
