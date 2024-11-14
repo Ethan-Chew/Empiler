@@ -28,7 +28,7 @@ const CustomerLandingPage = () => {
                     </div>
 
                     <div className="flex flex-wrap justify-center space-x-8 mt-8 mx-12">
-                        <a className="bg-white shadow-lg rounded-xl p-6 w-[400px] h-[250px] hover:shadow-2xl transition-shadow duration-300 mb-8" href='/appointments/viewBooking'>
+                        <a className="border border-gray-200 bg-white shadow-md rounded-xl p-6 w-[400px] h-[250px] hover:shadow-lg transition-shadow duration-300 mb-8" href='/appointments/viewBooking'>
                             <MdEditCalendar className="w-12 h-12 object-contain fill-ocbcred mb-4" />
                             <h3 className="text-[24px] font-semibold text-left">View and Edit Appointments</h3>
                             <p className="text-[18px] font-light text-left text-gray-500 mt-2">
@@ -36,7 +36,7 @@ const CustomerLandingPage = () => {
                             </p>
                         </a>
 
-                        <a className="bg-white shadow-lg rounded-xl p-6 w-[400px] h-[250px] hover:shadow-2xl transition-shadow duration-300 mb-8" href="/appointments/branches">
+                        <a className="border border-gray-200 bg-white shadow-md rounded-xl p-6 w-[400px] h-[250px] hover:shadow-lg transition-shadow duration-300 mb-8" href="/appointments/branches">
                             <PiCalendarBlank className="w-12 h-12 object-contain fill-ocbcred mb-4" />
                             <h3 className="text-[24px] font-semibold text-left">Book an Appointment</h3>
                             <p className="text-[18px] font-light text-left text-gray-500 mt-2">
@@ -44,7 +44,7 @@ const CustomerLandingPage = () => {
                             </p>
                         </a>
 
-                        <div onClick={() => setIsOpen(true)} className="bg-white shadow-lg rounded-xl p-6 w-[400px] h-[250px] hover:shadow-2xl transition-shadow duration-300 mb-8 cursor-pointer">
+                        <div onClick={() => setIsOpen(true)} className="border border-gray-200 bg-white shadow-md rounded-xl p-6 w-[400px] h-[250px] hover:shadow-lg transition-shadow duration-300 mb-8 cursor-pointer">
                             <PiChats className="w-12 h-12 object-contain fill-ocbcred mb-4" />
                             <h3 className="text-[24px] font-semibold text-left">Start a Live Chat</h3>
                             <p className="text-[18px] font-light text-left text-gray-500 mt-2">

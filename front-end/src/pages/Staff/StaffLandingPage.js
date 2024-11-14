@@ -41,7 +41,7 @@ const StaffLandingPage = () => {
 
                 <div className="flex justify-between space-x-8 mt-8 mx-12">
 
-                    <a className="bg-white shadow-lg rounded-xl p-6 w-[400px] h-[250px] hover:shadow-2xl transition-shadow duration-300" href='chats'>
+                    <a className="border border-gray-200 bg-white shadow-md rounded-xl p-6 w-[400px] h-[250px] hover:shadow-xl transition-shadow duration-300" href='chats'>
                         <PiChats className="w-12 h-12 object-contain fill-ocbcred mb-4" />
                         <h3 className="text-[24px] font-semibold text-left">Staff Support Chat</h3>
                         <p className="text-[18px] font-light text-left text-gray-500 mt-2">
