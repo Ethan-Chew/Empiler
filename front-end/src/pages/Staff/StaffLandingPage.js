@@ -1,13 +1,36 @@
 import React from 'react';
 import Navbar from '../../components/Navbar';
+import { PiChats } from "react-icons/pi";
+import { BsCalendarCheck } from "react-icons/bs";
+import { RiSettings4Line } from "react-icons/ri";
+import { MdOutlinePersonOutline } from "react-icons/md";
+import { useState, useEffect } from 'react';
 
 const StaffLandingPage = () => {
+    const [user, setUser] = useState();
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const response = await fetch(`http://localhost:8080/api/user`);
+                const data = await response.json();
+                console.log(data);
+                setUser(data[0]);
+            } catch (error) {
+                console.error('Error fetching user detail:', error);
+            }
+        };
+
+        if (user) {
+            fetchUser();
+        }
+    }, [user]);
+
     return (
         <div className="bg-white font-inter">
             <Navbar />
 
             <div className="text-left mt-6 px-4 lg:px-8">
-                <h1 className="text-[48px] text-[#343434]">Good Afternoon, CompanyPerson!</h1>
+                <h1 className="text-[48px] text-[#343434]">Good Afternoon, {}!</h1>
                 <p className="text-[20px] text-[#999999] mt-2">What would you like to do today?</p>
                 <hr className="border-t-[2px] border-[#DCD6D6] mt-12" />
             </div>
@@ -22,7 +45,7 @@ const StaffLandingPage = () => {
 
                 <div className="flex justify-between space-x-8 mt-8 mx-12">
                     <div className="bg-white shadow-lg rounded-xl p-6 w-[400px] h-[250px] hover:shadow-2xl transition-shadow duration-300">
-                        <div className="w-[46px] h-[46px] bg-gray-300 mb-4" />
+                        <MdOutlinePersonOutline  className="w-12 h-12 object-contain fill-ocbcred mb-4" />
                         <h3 className="text-[24px] font-semibold text-left">View and Edit Profile</h3>
                         <p className="text-[18px] font-light text-left text-gray-500 mt-2">
                             Change your profile picture and description
@@ -30,7 +53,7 @@ const StaffLandingPage = () => {
                     </div>
 
                     <div className="bg-white shadow-lg rounded-xl p-6 w-[400px] h-[250px] hover:shadow-2xl transition-shadow duration-300">
-                        <div className="w-[46px] h-[46px] bg-gray-300 mb-4" />
+                        <BsCalendarCheck className="w-12 h-12 object-contain fill-ocbcred mb-4" />
                         <h3 className="text-[24px] font-semibold text-left">Manage Appointments</h3>
                         <p className="text-[18px] font-light text-left text-gray-500 mt-2">
                             Re-schedule your appointments
@@ -48,20 +71,20 @@ const StaffLandingPage = () => {
 
                 <div className="flex justify-between space-x-8 mt-8 mx-12">
                     <div className="bg-white shadow-lg rounded-xl p-6 w-[400px] h-[250px] hover:shadow-2xl transition-shadow duration-300">
-                        <div className="w-[46px] h-[46px] bg-gray-300 mb-4" />
+                        <RiSettings4Line className="w-12 h-12 object-contain fill-ocbcred mb-4" />
                         <h3 className="text-[24px] font-semibold text-left">Account Settings</h3>
                         <p className="text-[18px] font-light text-left text-gray-500 mt-2">
                             Change personal details such as emails and passwords
                         </p>
                     </div>
 
-                    <div className="bg-white shadow-lg rounded-xl p-6 w-[400px] h-[250px] hover:shadow-2xl transition-shadow duration-300">
-                        <div className="w-[46px] h-[46px] bg-gray-300 mb-4" />
+                    <a className="bg-white shadow-lg rounded-xl p-6 w-[400px] h-[250px] hover:shadow-2xl transition-shadow duration-300" href='chats'>
+                        <PiChats className="w-12 h-12 object-contain fill-ocbcred mb-4" />
                         <h3 className="text-[24px] font-semibold text-left">Staff Support Chat</h3>
                         <p className="text-[18px] font-light text-left text-gray-500 mt-2">
                             Manage your chat activity
                         </p>
-                    </div>
+                    </a>
 
                     <div className="bg-white shadow-lg rounded-xl p-6 w-[400px] h-[250px] hover:shadow-2xl transition-shadow duration-300">
                         <div className="w-[46px] h-[46px] bg-gray-300 mb-4" />

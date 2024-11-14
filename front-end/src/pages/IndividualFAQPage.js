@@ -4,12 +4,16 @@ import Markdown from 'react-markdown'
 import { useSearchParams } from 'react-router-dom';
 import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
+import { FaChevronLeft } from 'react-icons/fa6';
+import { useNavigate } from 'react-router-dom';
 
 
 const IndividualFAQPage = () => {
+    const navigate = useNavigate();
     const [faqDetail, setFaqDetail] = useState();
     const [searchParams, setSearchParams] = useSearchParams();
     const title = searchParams.get('title');
+    const section = searchParams.get('section');
 
     useEffect(() => {
         const fetchDetail = async () => {
@@ -38,13 +42,16 @@ const IndividualFAQPage = () => {
             <div className="px-8 mt-6 flex items-center justify-center">
                 <div className="flex w-full justify-between items-center">
                     {/* Back Button (on the far left) */}
-                    <Link to="/landingpage" className="text-[#000000] text-[20px] hover:text-[#D00E35]">
-                        &lt;
+                    <Link
+                        to="#"
+                        onClick={() => navigate(-1)}
+                        className="text-[#000000] text-[20px] hover:text-[#D00E35]"
+                    >
+                        <FaChevronLeft />
                     </Link>
                     {/* Title Text (Centered) */}
                     <div className="text-center flex-grow">
-                        <h1 className="text-[30px] text-[#343434]">General Information</h1>
-                        <p className="text-[16px] text-[#999999]">Payments and Transactions</p>
+                        <h1 className="text-[30px] text-[#343434]">{section}</h1>
                     </div>
                 </div>
             </div>

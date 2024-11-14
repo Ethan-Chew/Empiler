@@ -87,7 +87,7 @@ function LiveChatPopup({ section, question, isOpen, setIsOpen }) {
               </div>
               <button
                 type="submit"
-                className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600"
+                className="w-full bg-red-500 text-white py-2 rounded-lg hover:bg-red-600"
               >
                 Request
               </button>

@@ -47,7 +47,7 @@ const FAQListPage = () => {
             {/* Title Section */}
             <div className="px-8 mt-6 flex items-center justify-center">
                 <div className="flex w-full justify-between items-center">
-                    <Link to="/landingpage" className="text-[#000000] text-[20px] hover:text-[#D00E35]">
+                    <Link to="/" className="text-[#000000] text-[20px] hover:text-[#D00E35]">
                         <FaChevronLeft />
                     </Link>
                     <div className="text-center flex-grow">

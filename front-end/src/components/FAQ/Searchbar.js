@@ -7,7 +7,7 @@ import { InstantSearch, SearchBox, Hits, Configure, Highlight} from 'react-insta
 const searchClient = algoliasearch("AFO67MRW1I", "9874cb69b99b02792082929c772d84d2");
 
 const Hit = ({ hit }) => (
-  <a href={`/faq-article?title=${hit.title}`} className="block p-2 hover:bg-gray-100">
+  <a href={`/individualfaqpage?title=${hit.title}`} className="block p-2 hover:bg-gray-100">
     <div className="hit-title text-lg font-semibold">
       <Highlight attribute="title" hit={hit} />
     </div>
@@ -53,7 +53,7 @@ export default function Searchbar() {
             {/* Display search suggestions when focused */}
             {isFocused && (
                 <div className="absolute top-full left-0 w-full mt-2 p-3 bg-white z-10 shadow-lg rounded-lg text-black">
-                    <div className="flex flex-col gap-3">
+                    <div className="flex flex-col gap-3 text-left">
                         <Hits
                             hitComponent={(props) => (
                                 <div onMouseDown={handleMouseDown} onMouseUp={handleMouseUp}>

@@ -1,7 +1,12 @@
 import React from 'react';
 import NavBar from '../../components/Navbar';
+import LiveChatPopup from '../../components/Chat/LiveChatPopup';
+import { useState } from 'react';
+import { PiChats } from "react-icons/pi";
+import { BsCalendarCheck } from "react-icons/bs";
 
 const CustomerLandingPage = () => {
+    const [isOpen, setIsOpen] = useState(false);
     return (
         <div className="bg-white font-inter">
             <NavBar />
@@ -29,13 +34,13 @@ const CustomerLandingPage = () => {
                         </p>
                     </div>
 
-                    <div className="bg-white shadow-lg rounded-xl p-6 w-[400px] h-[250px] hover:shadow-2xl transition-shadow duration-300">
-                        <div className="w-[46px] h-[46px] bg-gray-300 mb-4" />
+                    <a className="bg-white shadow-lg rounded-xl p-6 w-[400px] h-[250px] hover:shadow-2xl transition-shadow duration-300" href="/appointments/branches">
+                        <BsCalendarCheck className="w-12 h-12 object-contain fill-ocbcred mb-4" />
                         <h3 className="text-[24px] font-semibold text-left">Book an Appointment</h3>
                         <p className="text-[18px] font-light text-left text-gray-500 mt-2">
                             Schedule an appointment for any queries you might have
                         </p>
-                    </div>
+                    </a>
 
                     <div className="bg-white shadow-lg rounded-xl p-6 w-[400px] h-[250px] hover:shadow-2xl transition-shadow duration-300">
                         <div className="w-[46px] h-[46px] bg-gray-300 mb-4" />
@@ -55,13 +60,13 @@ const CustomerLandingPage = () => {
                         </p>
                     </div>
 
-                    <div className="bg-white shadow-lg rounded-xl p-6 w-[400px] h-[250px] hover:shadow-2xl transition-shadow duration-300">
-                        <div className="w-[46px] h-[46px] bg-gray-300 mb-4" />
+                    <button onClick={() => setIsOpen(true)} className="bg-white shadow-lg rounded-xl p-6 w-[400px] h-[250px] hover:shadow-2xl transition-shadow duration-300">
+                        <PiChats className="w-12 h-12 object-contain fill-ocbcred mb-4" />
                         <h3 className="text-[24px] font-semibold text-left">Start a Live Chat</h3>
                         <p className="text-[18px] font-light text-left text-gray-500 mt-2">
                             Start a live chat session for any queries you might have
                         </p>
-                    </div>
+                    </button>
 
                     <div className="bg-white shadow-lg rounded-xl p-6 w-[400px] h-[250px] hover:shadow-2xl transition-shadow duration-300">
                         <div className="w-[46px] h-[46px] bg-gray-300 mb-4" />
@@ -73,6 +78,8 @@ const CustomerLandingPage = () => {
                 </div>
                 <hr className="border-t-[2px] border-[#DCD6D6] mt-16" />
             </div>
+
+            {isOpen && <LiveChatPopup isOpen={isOpen} setIsOpen={setIsOpen} />}
 
             {/* Footer */}
             <footer className="py-12 bg-gray-50"> 
