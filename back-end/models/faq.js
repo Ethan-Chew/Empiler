@@ -177,4 +177,18 @@ export default class faq {
 
         return data;
     }
+
+    static async getFaqByCategory(category) {
+        const { data, error } = await supabase
+            .from('freq_asked_section')
+            .select('*')
+            .eq('category', category);
+
+        if (error) {
+            console.log(error);
+            return null;
+        }
+
+        return data;
+    }
 }

@@ -22,6 +22,10 @@ router.route("/section/delete")
 router.route("/section/:section")
     .get(FreqAskedQnsController.getFaqBySection);
 
+// Route to get FAQ by category
+router.route("/sectionCat/:category")
+    .get(FreqAskedQnsController.getFaqByCategory);
+
 // Route to create a new FAQ
 router.route("/create")
     .post(FreqAskedQnsController.createFaq);

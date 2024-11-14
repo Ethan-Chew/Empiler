@@ -5,6 +5,7 @@ import { IoMdClose } from "react-icons/io";
 function LiveChatPopup({ section, question, isOpen, setIsOpen }) {
   const [faqSection, setFaqSection] = useState('');
   const [faqQuestion, setFaqQuestion] = useState('');
+  const [msg, setMsg] = useState(null);
 
   const initChat = () => {
     sessionStorage.setItem('faqSection', faqSection);
@@ -15,11 +16,17 @@ function LiveChatPopup({ section, question, isOpen, setIsOpen }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    if (faqSection === '' || faqQuestion === '') {
+      setMsg('Both Category and Question are required.');
+      return;
+    }
+
     initChat();
   };
 
   useEffect(() => {
-    // If not null, set the FAQ Section and/or FAQ Question to it's variables
+    // If not null, set the FAQ Section and/or FAQ Question to its variables
     if (section) {
       setFaqSection(section);
     }
@@ -27,7 +34,7 @@ function LiveChatPopup({ section, question, isOpen, setIsOpen }) {
     if (question) {
       setFaqQuestion(question);
     }
-  }, []);
+  }, [section, question]);
 
   return (
     <AnimatePresence>
@@ -40,7 +47,7 @@ function LiveChatPopup({ section, question, isOpen, setIsOpen }) {
           transition={{ duration: 0.3 }}
         >
           <motion.div
-            className="bg-white w-2/3 md:w-1/2 p-6 rounded-lg shadow-lg relative"
+            className="bg-white w-2/3 md:w-1/2 p-6 rounded-lg shadow-lg relative text-left"
             initial={{ scale: 0.95 }}
             animate={{ scale: 1 }}
             exit={{ scale: 0.95 }}
@@ -87,10 +94,11 @@ function LiveChatPopup({ section, question, isOpen, setIsOpen }) {
               </div>
               <button
                 type="submit"
-                className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600"
+                className="w-full bg-red-500 text-white py-2 rounded-lg hover:bg-red-600"
               >
                 Request
               </button>
+              <p className='text-red-800 pt-1'>{ msg }</p>
             </form>
           </motion.div>
         </motion.div>
