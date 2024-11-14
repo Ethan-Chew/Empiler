@@ -25,15 +25,15 @@ export default function Login() {
 
             const data = await response.json();
 
+            console.log(data);
+
             if (response.ok) {
                 // Store user details in sessionStorage
                 sessionStorage.setItem('userDetails', JSON.stringify({
-                    id: data.id,
-                    username: data.username,
+                    id: data.accountId,
                     email: data.email,
                     role: data.role,
                 }));
-                sessionStorage.setItem('jwt', data.token);
 
                 // Check the role of the logged-in user
                 if (data.role === "staff") {
