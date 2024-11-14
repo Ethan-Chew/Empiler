@@ -15,6 +15,8 @@ export default function DetailedAppointmentBooking() {
     const [showModal, setShowModal] = useState(false); // State to show the confirmation modal
     const [bookingDetails, setBookingDetails] = useState(null); // Store selected booking details
     const [showDates, setShowDates] = useState(true); // State to toggle dates visibility
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+
 
     const toggleDates = () => setShowDates(!showDates); // Toggle function
 
@@ -169,6 +171,18 @@ export default function DetailedAppointmentBooking() {
         }
     };
 
+
+    const checkLoggedIn = async () => {
+        const verifyRequest = await fetch('http://localhost:8080/api/auth/verify', {
+            method: 'GET',
+            credentials: 'include',
+        });
+
+        if (verifyRequest.status === 200) {
+            const data = await verifyRequest.json();
+            setIsLoggedIn(true);
+        }
+    }
     
 
     // Confirm booking function
@@ -182,7 +196,7 @@ export default function DetailedAppointmentBooking() {
 
         const formattedDate = selectedDateObj.toISOString().split('T')[0];
 
-        const token = sessionStorage.getItem('jwt');
+        const token = checkLoggedIn(); 
     
         if (!token) {
             alert('Please log in to confirm the booking.');
