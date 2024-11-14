@@ -339,12 +339,12 @@ export default function DetailedAppointmentBooking() {
                                     {availableDates.map((date, idx) => (
                                         <button
                                             key={idx}
-                                            className={`w-16 h-22 mr-2 rounded-lg flex flex-col items-center justify-center text-lg cursor-pointer ${
+                                            className={`w-16 h-22 mr-2 rounded-lg flex flex-col items-center justify-center text-lg cursor-pointer transition-colors duration-300 ${
                                                 selectedDate === date.formattedDate
-                                                    ? 'border-[#DA291C] text-[#DA291C]'
+                                                    ? 'border-[#DA291C] text-[#DA291C] hover:border-[#A51C14]'
                                                     : date.isClosed
                                                     ? 'text-gray-300 cursor-not-allowed' // Make closed days unclickable
-                                                    : 'text-gray-500'
+                                                    : 'text-gray-500 hover:border-gray-700'
                                             }`}
                                             onClick={() => !date.isClosed && handleDateSelect(date.formattedDate)} // Only allow click on non-closed dates
                                             disabled={date.isClosed} // Prevent action on closed days
@@ -373,7 +373,7 @@ export default function DetailedAppointmentBooking() {
                                     timeslots.filter(timeslot => timeslot.isAvailable).map((timeslot, idx) => (
                                         <div
                                             key={timeslot.id}
-                                            className={`flex justify-between items-center p-2 mb-2 rounded-lg cursor-pointer border-2 ${
+                                            className={`flex justify-between items-center p-2 mb-2 rounded-lg cursor-pointer border-2 shadow-md hover:shadow-lg transition-shadow ${
                                                 selectedAppointment?.id === timeslot.id ? 'border-[#DA291C]' : 'border-[#C7C7C7]'
                                             }`}
                                             onClick={() => handleAppointmentSelect(timeslot)}
