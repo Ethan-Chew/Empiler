@@ -11,7 +11,10 @@ module.exports = {
       },
       backgroundImage: {
         "faq-hero": "url(https://www.ocbc.com/iwov-resources/sg/ocbc/personal/img/live/help-and-support/featured_bg-contactus.png)"
-      }
+      },
+      fontFamily: {
+        inter: ['Inter', 'sans-serif'], // Add Inter font here
+      },
     },
     borderWidth: {
       DEFAULT: '1px',

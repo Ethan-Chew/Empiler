@@ -7,6 +7,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
 import { initialiseDB } from './utils/sqliteDB.js';
+import authoriseJWT from './middleware/authoriseJWT.js';
 import startAutoNotifJob from './utils/appointmentNotif.js';
 
 // Routes
@@ -44,7 +45,7 @@ app.use(bodyParser.json());
 const db = await initialiseDB();
 
 // API Routes
-app.use("/api/user", user);
+app.use("/api/user", user, authoriseJWT);
 app.use("/api/chatHistory", chatHistory);
 app.use("/api/faq", faq);
 app.use("/api/auth", auth);

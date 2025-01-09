@@ -81,6 +81,13 @@ export default function (io, db, socket) {
             }
         });
     });
+    
+    socket.on("staff:active-chats", async () => {
+        const activeChats = await getActiveChatsForStaff(db, socket.user.id);
+        if (activeChats && activeChats.length !== 0) {
+            io.to(socket.id).emit('staff:active-chats', activeChats);
+        }
+    });
 
     // Remove customer from waiting list on disconnect
     socket.on("disconnect", async () => {

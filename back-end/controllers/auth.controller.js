@@ -34,7 +34,7 @@ const authLoginUser = async (req, res) => {
                 message: "Incorrect Password",
             });
         }
-
+        console.log(user);
         // Generate JWT Token
         const token = await jwt.sign(
             {
@@ -59,7 +59,6 @@ const authLoginUser = async (req, res) => {
             message: "Login Successful",
             accountId: user.id,
             role: user.role,
-            token: token,
         });
     } catch (err) {
         console.error(err);
