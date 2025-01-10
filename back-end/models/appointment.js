@@ -1,8 +1,9 @@
 import supabase from "../utils/supabase.js";
 
 export default class Appointment {
-    constructor(name, date, timeslotId, branchName) {
-        this.name = name;
+    constructor(id, userId, date, timeslotId, branchName) {
+        this.id = id;
+        this.userId = userId;
         this.date = date;
         this.timeslotId = timeslotId;
         this.branchName = branchName;
@@ -58,11 +59,11 @@ export default class Appointment {
         }
     }
 
-    static async createAppointment(name, date, timeslotId, branchName) {
+    static async createAppointment(userId, date, timeslotId, branchName) {
         try {
             const { data, error } = await supabase
                 .from("branch_appointments")
-                .insert([{ name, date, timeslotId, branchName }])
+                .insert([{ userId, date, timeslotId, branchName }])
                 .single();
                 
             if (error) {
@@ -71,20 +72,18 @@ export default class Appointment {
             }
 
             return {data};
-            
         } catch (error) {
             console.error(error);
             return { error: "Error creating appointment" };
         }
     }
 
-    static async getAllAppointments(name) {
+    static async getAllAppointments(userId) {
         try {
-            console.log(name);
             const { data, error } = await supabase
             .from("branch_appointments")
             .select("*")
-            .eq("name", name);
+            .eq("userId", userId);
 
             if (error) {
                 console.error(error);
@@ -106,13 +105,13 @@ export default class Appointment {
         }
     }
 
-    static async updateAppointments(name, date, timeslotId, branchName, newDate, newTimeslotId, newBranchName) {
+    static async updateAppointments(userId, date, timeslotId, branchName, newDate, newTimeslotId, newBranchName) {
         try {
             // Perform the update without returning updated data
             const { count, error } = await supabase
                 .from("branch_appointments")
                 .update({ date: newDate, timeslotId: newTimeslotId, branchName: newBranchName })
-                .match({ name, date, timeslotId, branchName });
+                .match({ userId, date, timeslotId, branchName });
     
             // Check if there was an error
             if (error) {
@@ -134,15 +133,12 @@ export default class Appointment {
         }
     }
 
-    static async deleteAppointment(name, date, timeslotId, branchName) {
+    static async deleteAppointment(appointmentId) {
         try {
             const { count, error } = await supabase
                 .from("branch_appointments")
                 .delete()
-                .eq("name", name)
-                .eq("date", date)
-                .eq("timeslotId", timeslotId)
-                .eq("branchName", branchName)
+                .eq("id", appointmentId)
                 .single();
                 
             if (error) {
@@ -159,6 +155,107 @@ export default class Appointment {
         } catch (error) {
             console.error(error);
             return { error: "Error deleting appointment" };
+        }
+    }
+
+    static async getReminderTypes() {
+        try {
+            const { data, error } = await supabase
+                .from("appointment_reminder_types")
+                .select("*");
+
+            if (error) {
+                console.error(error);
+                throw new Error(error.message);
+            }
+
+            return data;
+        } catch (error) {
+            console.error(error);
+            return { error: error.message };
+        }
+    }
+
+    static async setAppointmentReminder(appointmentId, reminderType) {
+        try {
+            const { data, error } = await supabase
+                .from("appointment_reminders")
+                .insert([{ appointmentId, reminderType }])
+                .single();
+
+            if (error) {
+                console.error(error);
+                return { error: "Error setting reminder" };
+            }
+
+            return data;
+        } catch (error) {
+            console.error(error);
+            return { error: "Error setting reminder" };
+        }
+    }
+
+    static async updateAppointmentReminder(appointmentId, reminderType) {
+        try {
+            const { data, error } = await supabase
+                .from("appointment_reminders")
+                .update({ reminderType })
+                .eq("appointmentId", appointmentId)
+                .single();
+
+            if (error) {
+                console.error(error);
+                return { error: "Error updating reminder" };
+            }
+
+            return data;
+        } catch (error) {
+            console.error(error);
+            return { error: "Error updating reminder" };
+        }
+    }
+
+    static async getAppointmentReminder(userId) {
+        try {
+            const { data, error } = await supabase
+                .from('branch_appointments')
+                .select(`
+                    id,
+                    date,
+                    timeslotId,
+                    branchName,
+                    appointment_reminder (
+                        type
+                    )
+                `);
+            
+            if (error) {
+                console.error(error);
+                return { error: "Error retrieving reminders" };
+            }
+
+            return data;
+        } catch (error) {
+            console.error(error);
+            return { error: "Error retrieving reminders" };
+        }
+    }
+
+    static async deleteAppointmentReminder(appointmentId) {
+        try {
+            const { data, error } = await supabase
+                .from('appointment_reminder')
+                .eq('appointmentId', appointmentId);
+            
+            if (error) {
+                console.error(error);
+                return { error: "Error retrieving reminders" };
+            }
+
+            return data;
+        } catch (error) {
+            console.error(error);
+            return { error: "Error retrieving reminders" };
         }
     }
 }
