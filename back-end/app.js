@@ -54,7 +54,7 @@ app.get("/api/branch", branches.getSpecificOCBCBranch);
 app.use("/api/appointments", appointment);
 app.use("/api/chat/upload", chatAttachments);
 app.use("/api/translate", translate);
-app.use("/api/tele", telegram);
+app.use("/api/telegram", telegram);
 
 // Handle Socket.IO Connection
 const server = createServer(app);

@@ -5,8 +5,8 @@ import dotenv from "dotenv";
 dotenv.config();
 
 // Controllers
-import { startController } from "./controllers/startController.js";
-import { linkController } from "./controllers/linkController.js";
+import { startController } from "./controllers/startController";
+import { linkController } from "./controllers/linkController";
 
 const token = process.env.TELEGRAM_API_KEY || "";
 const bot = new Bot(token);
