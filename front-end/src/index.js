@@ -10,10 +10,6 @@ import Login from './pages/login';
 import InitisaliseChat from './pages/Customer/InitialiseChat';
 import CustomerChat from './pages/Customer/CustomerChat';
 
-//temporary route, move to staff later
-import CustomerSupportStatistics from './pages/CustomerSupportStatistics';
-
-
 import ViewDetailedAppointments from './pages/ViewDetailedAppointments';
 import ChatRating from './pages/Customer/ChatRating';
 import ViewUpcomingAppointments from './pages/ViewUpcomingAppointments';
@@ -40,9 +36,6 @@ root.render(
     <Routes>
       <Route exact path="/" element={<App />} />
       <Route path="/login" element={<Login />} />
-
-      {/* temporary route, move to staff protection later*/}
-      <Route path="/customer-support-statistics" element={<CustomerSupportStatistics />} />
 
       {/* Updated frontend Routes */}
       <Route path="/view-detailed-upcoming-appointments" element={<ViewDetailedUpcomingAppointments />} />
