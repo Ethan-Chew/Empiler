@@ -129,7 +129,14 @@ const setAppointmentReminder = async (req, res) => {
     }
 
     try {
-        const setReminder = await Appointment.setAppointmentReminder(appointmentId, reminderType);
+        const dbReminderType = await Appointment.getReminderType(reminderType);
+        const appointment = await Appointment.getAppointment(appointmentId);
+        
+        // Convert Appointment Start Date to UNIX time
+        const appointmentDateTime = `${appointment.date}T${appointment.appointment_timeslots.timeslot}:00`;
+        const appointmentDate = (new Date(appointmentDateTime).getTime()) - (dbReminderType.hours * 3600000);
+
+        const setReminder = await Appointment.setAppointmentReminder(appointmentId, reminderType, appointmentDate);
 
         if (setReminder.error) {
             return res.status(500).json({ error: setReminder.error });
@@ -149,7 +156,14 @@ const updateAppointmentReminder = async (req, res) => {
     }
 
     try {
-        const setReminder = await Appointment.updateAppointmentReminder(appointmentId, reminderType);
+        const dbReminderType = await Appointment.getReminderType(reminderType);
+        const appointment = await Appointment.getAppointment(appointmentId);
+        
+        // Convert Appointment Start Date to UNIX time
+        const appointmentDateTime = `${appointment.date}T${appointment.appointment_timeslots.timeslot}:00`;
+        const appointmentDate = (new Date(appointmentDateTime).getTime()) - (dbReminderType.hours * 3600000);
+
+        const setReminder = await Appointment.updateAppointmentReminder(appointmentId, reminderType, appointmentDate);
 
         if (setReminder.error) {
             return res.status(500).json({ error: setReminder.error });
