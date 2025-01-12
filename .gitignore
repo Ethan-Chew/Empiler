@@ -5,6 +5,7 @@ front-end/node_modules
 back-end/node_modules
 front-end/package-lock.json
 back-end/package-lock.json
+/telegram-bot/node_modules
 /.pnp
 .pnp.js
 
@@ -17,6 +18,7 @@ back-end/package-lock.json
 # misc
 .DS_Store
 .env
+/telegram-bot/.env
 .env.local
 .env.development.local
 .env.test.local
