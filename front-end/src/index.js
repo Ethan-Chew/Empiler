@@ -10,6 +10,9 @@ import Login from './pages/login';
 import InitisaliseChat from './pages/Customer/InitialiseChat';
 import CustomerChat from './pages/Customer/CustomerChat';
 
+//move to staff later
+import CustomerSupportStatistics from './pages/CustomerSupportStatistics';
+
 import ViewDetailedAppointments from './pages/ViewDetailedAppointments';
 import ChatRating from './pages/Customer/ChatRating';
 import ViewUpcomingAppointments from './pages/ViewUpcomingAppointments';
@@ -41,6 +44,10 @@ root.render(
       <Route path="/view-detailed-upcoming-appointments" element={<ViewDetailedUpcomingAppointments />} />
       <Route path="/faqlistpage" element={<FAQListPage />} />
       <Route path="/individualfaqpage" element={<IndividualFAQPage />} />
+
+      {/* move to staff later */}
+      <Route path="/customer-support-statistics" element={<CustomerSupportStatistics />} />
+
 
       {/* FAQ Routes */}
 
