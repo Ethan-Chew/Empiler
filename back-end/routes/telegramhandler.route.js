@@ -1,5 +1,5 @@
 import express from "express";
-import telegramhandlerController from "../controllers/telegramhandler.controller.js";
+import telegramhandlerController from "../controllers/telegram/telegramhandler.controller.js";
 
 const router = express.Router()
 

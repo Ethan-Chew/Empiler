@@ -5,10 +5,18 @@ DECLARE
 BEGIN
   SELECT * INTO current_record
   FROM telegram_verification
-  WHERE "verificationCode" = code::UUID;
+  WHERE "telegramUsername" = "teleUsername";
 
   IF current_record IS NULL THEN
-    RETURN 'Invalid Verification Code.';
+    RETURN 'This Telegram Account is not linked to an OCBC Support Account. Please check your Telegram Username on the OCBC Support Portal.';
+  END IF;
+
+  IF current_record."telegramId" IS NOT NULL THEN
+    RETURN 'This Telegram Account has already been linked.';
+  END IF;
+
+  IF current_record."verificationCode" != code::UUID THEN
+    RETURN 'Invalid Verification Code';
   END IF;
 
   IF current_record."telegramUsername" != "teleUsername" IS NULL THEN
@@ -16,7 +24,7 @@ BEGIN
   END IF;
 
   UPDATE telegram_verification
-  SET verified = TRUE, "telegramId" = "teleId"
+  SET verified = TRUE, "telegramId" = "teleId"::INTEGER
   WHERE "verificationCode" = code::UUID;
 
   RETURN 'Success';

@@ -61,11 +61,6 @@ const linkController = (ctx) => __awaiter(void 0, void 0, void 0, function* () {
             yield ctx.reply("Invalid Verification Code.");
             return;
         }
-        // const checkLinked = await axios.get(`http://localhost:8080/api/telegram/verify/${ctx.from?.id}`);
-        // if (checkLinked.status === 200) {
-        //     await ctx.reply("Your account is already linked to the bot.");
-        //     return;
-        // }
         // Send a Validation Request
         const response = yield axios_1.default.put(`http://localhost:8080/api/telegram/link`, {
             verificationCode: payload,
@@ -76,7 +71,6 @@ const linkController = (ctx) => __awaiter(void 0, void 0, void 0, function* () {
                 'Content-Type': 'application/json',
             }
         });
-        console.log(response);
         if (response.status === 200) {
             yield ctx.reply("Successfully linked your account to the bot.");
         }

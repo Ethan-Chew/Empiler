@@ -1,4 +1,4 @@
-import telegramVerification from "../models/telegramVerfication.js";
+import telegramVerification from "../../models/telegramVerfication.js";
 
 const linkAccount = async (req, res) => {
     try {

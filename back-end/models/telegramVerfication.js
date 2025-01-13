@@ -28,7 +28,9 @@ export default class telegramVerification {
         const verified = false;
         const { data, error } = await supabase
             .from('telegram_verification')
-            .insert([{ userId, telegramUsername, verified }]);
+            .insert([{ userId, telegramUsername, verified }])
+            .select()
+            .single();
         
         if (error) {
             console.log(error);
@@ -46,6 +48,7 @@ export default class telegramVerification {
         });
 
         if (error) {
+            console.log(error)
             throw new Error(error.message);
         }
 
