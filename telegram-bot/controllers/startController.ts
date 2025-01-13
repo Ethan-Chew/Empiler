@@ -1,5 +1,6 @@
 import { Context } from "grammy";
 import axios, { AxiosError } from "axios";
+import validateUUID from "../utils/validateUUID";
 
 const startController = async (ctx: Context) => {
     await ctx.reply(`__*OCBC Support Bot*__\nHi, I am the 'official' Support Bot for OCBC, here to help you with your queries.\n*Commands*\n- \`/start\` - Start the bot\n- \`/help\` - Get help\n- \`/link\` - Relink the bot to your OCBC Account`, { 
@@ -11,6 +12,11 @@ const startController = async (ctx: Context) => {
     if (payload) {
         await ctx.reply("Verifying your account...");
         try {
+            if (!validateUUID(payload as string)) {
+                await ctx.reply("Invalid Verification Code.");
+                return;
+            }
+
             const response = await axios.put(`http://localhost:8080/api/telegram/link`, {
                 verificationCode: payload,
                 telegramId: ctx.from?.id,

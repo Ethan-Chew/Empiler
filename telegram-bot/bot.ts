@@ -7,6 +7,7 @@ dotenv.config();
 // Controllers
 import { startController } from "./controllers/startController";
 import { linkController } from "./controllers/linkController";
+import { helpController } from "./controllers/helpController";
 
 const token = process.env.TELEGRAM_API_KEY || "";
 const bot = new Bot(token);
@@ -17,6 +18,7 @@ if (process.env.ENVIRONMENT === "development") {
 // Command Handling
 bot.command("start", startController)
 bot.command("link", linkController);
+bot.command("help", helpController);
 
 // Catch any errors
 bot.catch((err) => {

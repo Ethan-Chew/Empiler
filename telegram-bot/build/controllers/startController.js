@@ -41,9 +41,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.startController = void 0;
 const axios_1 = __importStar(require("axios"));
+const validateUUID_1 = __importDefault(require("../utils/validateUUID"));
 const startController = (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c;
     yield ctx.reply(`__*OCBC Support Bot*__\nHi, I am the 'official' Support Bot for OCBC, here to help you with your queries.\n*Commands*\n- \`/start\` - Start the bot\n- \`/help\` - Get help\n- \`/link\` - Relink the bot to your OCBC Account`, {
@@ -54,6 +58,10 @@ const startController = (ctx) => __awaiter(void 0, void 0, void 0, function* () 
     if (payload) {
         yield ctx.reply("Verifying your account...");
         try {
+            if (!(0, validateUUID_1.default)(payload)) {
+                yield ctx.reply("Invalid Verification Code.");
+                return;
+            }
             const response = yield axios_1.default.put(`http://localhost:8080/api/telegram/link`, {
                 verificationCode: payload,
                 telegramId: (_a = ctx.from) === null || _a === void 0 ? void 0 : _a.id,

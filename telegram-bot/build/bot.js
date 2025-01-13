@@ -10,6 +10,7 @@ dotenv_1.default.config();
 // Controllers
 const startController_1 = require("./controllers/startController");
 const linkController_1 = require("./controllers/linkController");
+const helpController_1 = require("./controllers/helpController");
 const token = process.env.TELEGRAM_API_KEY || "";
 const bot = new grammy_1.Bot(token);
 if (process.env.ENVIRONMENT === "development") {
@@ -18,6 +19,7 @@ if (process.env.ENVIRONMENT === "development") {
 // Command Handling
 bot.command("start", startController_1.startController);
 bot.command("link", linkController_1.linkController);
+bot.command("help", helpController_1.helpController);
 // Catch any errors
 bot.catch((err) => {
     const ctx = err.ctx;
