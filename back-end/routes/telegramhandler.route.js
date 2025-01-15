@@ -7,11 +7,17 @@ const router = express.Router()
 router.route("/link")
     .put(telegramhandlerController.linkAccount);
 
+router.route("/unlink/:userId")
+    .get(telegramhandlerController.unlinkAccount);
+
 router.route("/create")
     .post(telegramhandlerController.createTelegramInfo);
 
-router.route("/verify/:telegramId")
+router.route("/verify/tele/:telegramId")
     .get(telegramhandlerController.verifyTelegramLinked);
+
+router.route("/verify/user/:userId")
+    .get(telegramhandlerController.verifyUserTelegramLinked);
 
 router.route("/:verificationCode")
     .get(telegramhandlerController.getTelegramInfo);

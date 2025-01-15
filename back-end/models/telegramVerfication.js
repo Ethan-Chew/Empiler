@@ -1,12 +1,13 @@
 import supabase from "../utils/supabase.js";
 
 export default class telegramVerification {
-    constructor(userId, telegramUsername, telegramId, verificationCode, verified) {
+    constructor(userId, telegramUsername, telegramId, verificationCode, verified, verifiedDate) {
         this.userId = userId;
         this.telegramUsername = telegramUsername;
         this.telegramId = telegramId;
         this.verificationCode = verificationCode;
         this.verified = verified;
+        this.verifiedDate = verifiedDate;
     }
 
     static async getTelegramInfo(verificationCode) {
@@ -41,10 +42,12 @@ export default class telegramVerification {
     }
 
     static async linkTelegramInfo(code, teleId, teleUsername) {
+        const currentUnixMs = Date.now();
         const { data, error } = await supabase.rpc('validate_telegram_user', {
             code,
             teleId,
-            teleUsername
+            teleUsername,
+            currentUnixMs
         });
 
         if (error) {
@@ -54,6 +57,19 @@ export default class telegramVerification {
 
         if (data !== 'Success') {
             throw new Error(data)
+        }
+
+        return { success: true };
+    }
+
+    static async unlinkTelegramInfo(userId) {
+        const { error } = await supabase
+            .from('telegram_verification')
+            .delete()
+            .eq('userId', userId);
+
+        if (error) {
+            throw new Error(error.message);
         }
 
         return { success: true };
@@ -70,6 +86,20 @@ export default class telegramVerification {
             throw new Error(error.message);
         }
 
+        return data;
+    }
+
+    static async verifyUserTelegramLinked(userId) {
+        const { data, error } = await supabase
+            .from('telegram_verification')
+            .select('*')
+            .eq('userId', userId)
+            .single();
+
+        if (error) {
+            throw new Error(error.message);
+        }
+        
         return data;
     }
 }

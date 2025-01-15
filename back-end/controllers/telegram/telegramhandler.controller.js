@@ -34,6 +34,30 @@ const linkAccount = async (req, res) => {
     }
 }
 
+const unlinkAccount = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        if (!userId) {
+            return res.status(400).json({
+                status: "error",
+                message: "Missing required fields"
+            });
+        }
+
+        await telegramVerification.unlinkTelegramInfo(userId);
+        
+        return res.status(200).json({
+            status: "success"
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            status: "error",
+            message: error.message
+        })
+    }
+}
+
 const createTelegramInfo = async (req, res) => {
     try {
         const { userId, telegramUsername } = req.body;
@@ -121,9 +145,41 @@ const verifyTelegramLinked = async (req, res) => {
     }
 }
 
+const verifyUserTelegramLinked = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        if (!userId) {
+            return res.status(400).json({
+                status: "error",
+                message: "Missing required fields"
+            });
+        }
+
+        const telegramInfo = await telegramVerification.verifyUserTelegramLinked(userId);
+        if (telegramInfo == null) {
+            return res.status(404).json({
+                status: "error",
+                message: "Account not linked"
+            });
+        }
+
+        return res.status(200).json({
+            status: "success",
+            data: telegramInfo
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: "error",
+            message: error.message
+        })
+    }
+}
+
 export default {
     linkAccount,
+    unlinkAccount,
     createTelegramInfo,
     getTelegramInfo,
-    verifyTelegramLinked
+    verifyTelegramLinked,
+    verifyUserTelegramLinked,
 };

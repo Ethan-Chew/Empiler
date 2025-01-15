@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION validate_telegram_user(code TEXT, "teleId" TEXT, "teleUsername" TEXT)
+CREATE OR REPLACE FUNCTION validate_telegram_user(code TEXT, "teleId" TEXT, "teleUsername" TEXT, "currentUnixMs" INTEGER)
 RETURNS TEXT AS $$
 DECLARE
   current_record RECORD;
@@ -24,7 +24,7 @@ BEGIN
   END IF;
 
   UPDATE telegram_verification
-  SET verified = TRUE, "telegramId" = "teleId"::INTEGER
+  SET verified = TRUE, "telegramId" = "teleId"::INTEGER, "verifiedDate" = "currentUnixMs"
   WHERE "verificationCode" = code::UUID;
 
   RETURN 'Success';

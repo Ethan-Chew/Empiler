@@ -5,15 +5,26 @@ import LiveChatPopup from '../../components/Chat/LiveChatPopup';
 import { useState } from 'react';
 import { PiChats, PiCalendarBlank } from "react-icons/pi";
 import { MdEditCalendar } from "react-icons/md";
+import { FaGear } from "react-icons/fa6";
+import LinkTelegramPopup from '../../components/Telegram/LinkTelegramPopup';
 
-const CustomerLandingPage = () => {
+const CustomerLandingPage = (props) => {
     const [isOpen, setIsOpen] = useState(false);
+    const [custSettingsPopup, setCustSettingsPopup] = useState(true);
+    
     return (
         <div className="bg-white font-inter">
             <NavBar />
 
             <div className="text-left mt-6 px-4 lg:px-8">
-                <h1 className="text-[48px] text-[#343434]">Good Afternoon, John Customer!</h1>
+                <div className='flex flex-row'>
+                    <h1 className="text-[48px] text-[#343434] mr-auto">Good Afternoon, John Customer!</h1>
+                    <button
+                        onClick={() => setCustSettingsPopup(true)}
+                    >
+                        <FaGear />
+                    </button>
+                </div>
                 <p className="text-[20px] text-[#999999] mt-2">What would you like to do today?</p>
                 <hr className="border-t-[2px] border-[#DCD6D6] mt-12" />
             </div>
@@ -61,6 +72,10 @@ const CustomerLandingPage = () => {
 
             {/* Footer */}
             <Footer />
+
+            { custSettingsPopup && (
+                <LinkTelegramPopup closePopup={() => setCustSettingsPopup(false)} userId={props.userId} />
+            ) }
         </div>
     );
 }
