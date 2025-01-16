@@ -42,7 +42,7 @@ export default class telegramVerification {
     }
 
     static async linkTelegramInfo(code, teleId, teleUsername) {
-        const currentUnixMs = Date.now();
+        const currentUnixMs = Date.now().toString();
         const { data, error } = await supabase.rpc('validate_telegram_user', {
             code,
             teleId,

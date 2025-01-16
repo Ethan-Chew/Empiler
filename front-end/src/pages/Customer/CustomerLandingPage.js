@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { PiChats, PiCalendarBlank } from "react-icons/pi";
 import { MdEditCalendar } from "react-icons/md";
 import { FaGear } from "react-icons/fa6";
-import LinkTelegramPopup from '../../components/Telegram/LinkTelegramPopup';
+import UserSettingsPopup from '../../components/User/UserSettingsPopup';
 
 const CustomerLandingPage = (props) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -22,7 +22,7 @@ const CustomerLandingPage = (props) => {
                     <button
                         onClick={() => setCustSettingsPopup(true)}
                     >
-                        <FaGear />
+                        <FaGear className="w-8 h-8" />
                     </button>
                 </div>
                 <p className="text-[20px] text-[#999999] mt-2">What would you like to do today?</p>
@@ -74,7 +74,7 @@ const CustomerLandingPage = (props) => {
             <Footer />
 
             { custSettingsPopup && (
-                <LinkTelegramPopup closePopup={() => setCustSettingsPopup(false)} userId={props.userId} />
+                <UserSettingsPopup closePopup={() => setCustSettingsPopup(false)} userId={props.userId} />
             ) }
         </div>
     );

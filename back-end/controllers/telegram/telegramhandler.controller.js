@@ -133,6 +133,12 @@ const verifyTelegramLinked = async (req, res) => {
             });
         }
 
+        if (!telegramInfo.verified) {
+            return res.status(200).json({
+                status: "pending",
+            });
+        }
+
         return res.status(200).json({
             status: "success",
             data: telegramInfo
@@ -160,6 +166,13 @@ const verifyUserTelegramLinked = async (req, res) => {
             return res.status(404).json({
                 status: "error",
                 message: "Account not linked"
+            });
+        }
+
+        if (!telegramInfo.verified) {
+            return res.status(200).json({
+                status: "pending",
+                data: telegramInfo
             });
         }
 

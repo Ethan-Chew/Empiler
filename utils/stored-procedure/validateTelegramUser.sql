@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION validate_telegram_user(code TEXT, "teleId" TEXT, "teleUsername" TEXT, "currentUnixMs" INTEGER)
+CREATE OR REPLACE FUNCTION validate_telegram_user(code TEXT, "teleId" TEXT, "teleUsername" TEXT, "currentUnixMs" TEXT)
 RETURNS TEXT AS $$
 DECLARE
   current_record RECORD;
