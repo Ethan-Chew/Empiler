@@ -308,7 +308,13 @@ export default function StaffChats() {
             {/* Handle Disconnect Messages */}
             <div className="fixed bottom-5 left-5">
                 {disconnectedChats.map((chat, index) => (
-                    toastVisiblities[index] && <ToastMessage key={index} index={index} message={`Customer with Case ID: ${chat.caseID} has left the chat`} isShown={toastVisiblities[index]} hideToast={handleHideToastMsg} />
+                    <ToastMessage
+                        description={`Customer with Case ID: ${chat.caseID} has left the chat`}
+                        isShown={toastVisiblities[index]}
+                        hideToast={handleHideToastMsg}
+                        index={index}
+                        type="warn"
+                    />
                 ))}
             </div>
         </div>
