@@ -80,7 +80,7 @@ export default function BookingDetails() {
     
             // Prepare the data to send for updating the appointment
             const updatedBooking = {
-                name: booking.name,
+                id: booking.id,
                 date: booking.date,
                 timeslotId: booking.timeslotId,
                 branchName: booking.branchDetails.landmark,
@@ -116,9 +116,9 @@ export default function BookingDetails() {
     const cancelAppointment = async () => {
         try {
             // Prepare the data needed for the cancellation
-            const { name, date, timeslotId, branchName } = booking;
+            const { id } = booking;
 
-            console.log(name, date, timeslotId, branchName);
+            console.log(id);
             
             // Call the API to delete the appointment
             const response = await fetch('http://localhost:8080/api/appointments/delete', {
@@ -127,10 +127,7 @@ export default function BookingDetails() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    name,
-                    date,
-                    timeslotId,
-                    branchName
+                    appointmentId: id
                 }),
             });
     
@@ -273,6 +270,7 @@ export default function BookingDetails() {
     if (!booking) {
         return <p>No booking details found</p>;
     }
+
 
     return (
         <div className="min-h-screen flex flex-col justify-between">

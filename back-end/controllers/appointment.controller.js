@@ -53,10 +53,10 @@ const getAllAppointments = async (req, res) => {
 }
 
 const updateAppointment = async (req, res) => {
-    const { userId, date, timeslotId, branchName, newDate, newTimeslotId, newBranchName } = req.body;
+    const { id, date, timeslotId, branchName, newDate, newTimeslotId, newBranchName } = req.body;
 
     try {
-        const appointment = await Appointment.updateAppointments(userId, date, timeslotId, branchName, newDate, newTimeslotId, newBranchName);
+        const appointment = await Appointment.updateAppointments(id, date, timeslotId, branchName, newDate, newTimeslotId, newBranchName);
 
         if (appointment.error) {
             return res.status(400).json({ error: appointment.error });
