@@ -29,6 +29,7 @@ import ViewBranchAppointments from './pages/Staff/ViewBranchAppointments';
 // Customer Routes
 import AppointmentBooking from './pages/Customer/AppointmentBooking';
 import DetailedAppointmentBooking from './pages/Customer/DetailedAppointmentBooking';
+import Ticket from './pages/Customer/Ticket';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -67,6 +68,7 @@ root.render(
       <Route path="/appointments/timeslots" element={<ProtectedRoute Component={DetailedAppointmentBooking} role="customer" />} />
       <Route path="/appointments/viewBooking" element={<ProtectedRoute Component={viewCustomerBookings} role="customer" />} />
       <Route path="/appointments/booking/details" element={<ProtectedRoute Component={BookingDetails} role="customer" />} />
+      <Route path="/tickets" element={<ProtectedRoute Component={Ticket} role="customer" />} />
     </Routes>
   </BrowserRouter>
 );
