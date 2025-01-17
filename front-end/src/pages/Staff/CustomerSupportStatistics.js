@@ -16,49 +16,45 @@ const CustomerSupportStatistics = () => {
         poor: 0,
     });
 
+    const [averageRating, setAverageRating] = useState(null);
+    const [totalChats, setTotalChats] = useState(0);
+    const [staffId, setStaffId] = useState(null);
+
     useEffect(() => {
-        const fetchRatings = () => {
+        const fetchStaffData = async () => {
             try {
-                // Sample data for testing
-                const sampleChats = [
-                    { rating: 5 },
-                    { rating: 5 },
-                    { rating: 4 },
-                    { rating: 4 },
-                    { rating: 3 },
-                    { rating: 2 },
-                    { rating: 2 },
-                    { rating: 1 },
-                    { rating: 1 },
-                    { rating: 1 },
-                ];
-
-                const counts = {
-                    excellent: 0,
-                    good: 0,
-                    mediocre: 0,
-                    poor: 0,
-                };
-
-                //determine what rating
-                sampleChats.forEach((item) => {
-                    const rating = item.rating;
-                    if (rating === 5) counts.excellent++;
-                    else if (rating === 4) counts.good++;
-                    else if (rating === 3) counts.mediocre++;
-                    else if (rating === 1 || rating === 2) counts.poor++;
+                // Fetch feedback data
+                const response = await fetch('http://localhost:8080/api/user/staff-feedback', {
+                    method: 'GET',
+                    credentials: 'include', // Include cookies for auth
                 });
 
-                setRatings(counts);
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error("Error fetching feedback:", errorData);
+                    return;
+                }
+
+                const statsData = await response.json();
+                console.log("Fetched stats data:", statsData); // Debug the data
+
+                setRatings({
+                    excellent: statsData.excellentPercentage,
+                    good: statsData.goodPercentage,
+                    mediocre: statsData.mediocrePercentage,
+                    poor: statsData.poorPercentage,
+                });
+
+                setTotalChats(statsData.totalRatings);
             } catch (error) {
-                console.error('Error processing ratings:', error);
+                console.error("Error fetching staff data:", error);
             }
         };
 
-        fetchRatings();
+        fetchStaffData();
     }, []);
 
-    const totalRatings = ratings.excellent + ratings.good + ratings.mediocre + ratings.poor;
+    const totalRatings = totalChats;
 
     // percentage calculator
     const excellentPercentage = totalRatings > 0 ? ((ratings.excellent / totalRatings) * 100).toFixed(2) : 0;

@@ -44,7 +44,8 @@ app.use(bodyParser.json());
 const db = await initialiseDB();
 
 // API Routes
-app.use("/api/user", user, authoriseJWT);
+app.use("/api/user", authoriseJWT, user);
+app.use("/api/staff-feedback", authoriseJWT, user);
 app.use("/api/chatHistory", chatHistory);
 app.use("/api/faq", faq);
 app.use("/api/auth", auth);

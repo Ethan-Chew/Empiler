@@ -4,7 +4,10 @@ import authoriseJWT from "../middleware/authoriseJWT.js";
 
 const router = express.Router()
 
-router.route("/user", authoriseJWT)
+router.route("/staff-feedback")
+    .get(authoriseJWT, UserController.getStaffFeedback);
+
+router.route("/", authoriseJWT)
     .get(UserController.getUser)
 
 export default router
