@@ -28,9 +28,9 @@ function setupIndexedDB() {
 
 function clearObjectStore(storeName) {
     const request = indexedDB.open("KeyStorage", 1);
-    request.onsuccess = (event) => {
+    request.onsuccess = async (event) => {
         const db = event.target.result;
-        const transaction = db.transaction(storeName, "readwrite");
+        const transaction = await db.transaction(storeName, "readwrite");
         const store = transaction.objectStore(storeName);
         store.clear();
     };

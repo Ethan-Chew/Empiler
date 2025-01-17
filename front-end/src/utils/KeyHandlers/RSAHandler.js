@@ -76,8 +76,8 @@ async function generateRSAKeyPair() {
   const db = await IndexedDB.setupIndexedDB();
 
   // Try to retrieve Public and Private Key
-  const publicKey = await retrieveRSAKeyPair(db, "rsa-public");
-  const privateKey = await retrieveRSAKeyPair(db, "rsa-private");
+  const publicKey = await retrieveRSAKeyPair("rsa-public");
+  const privateKey = await retrieveRSAKeyPair("rsa-private");
 
   // Check if the RSA Key Pair already exists
   if (publicKey && privateKey) {
@@ -112,11 +112,9 @@ async function generateRSAKeyPair() {
   store.add({ type: "rsa-private", key: privateKeyPem });
 }
 
-async function retrieveRSAKeyPair(db, type) {
-  if (!db) {
-    db = await IndexedDB.setupIndexedDB()();
-  }
-  const transaction = await db.transaction("rsa-keys", "readonly");
+async function retrieveRSAKeyPair(type) {
+  let database = await IndexedDB.setupIndexedDB();
+  const transaction = await database.transaction("rsa-keys", "readonly");
   const store = transaction.objectStore("rsa-keys");
   
   return new Promise((resolve, reject) => {
@@ -133,6 +131,7 @@ async function retrieveRSAKeyPair(db, type) {
 }
 
 async function encryptDataWithRSAPublic(data, publicKey) {
+  console.log(publicKey);
   const keyArrayBuffer = convertPemToBinary(publicKey);
   const key = await crypto.subtle.importKey(
     'spki',
