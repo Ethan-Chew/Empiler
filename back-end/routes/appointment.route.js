@@ -18,6 +18,17 @@ router.route('/update')
 router.route('/delete')
     .delete(AppointmentController.deleteAppointment);
 
+router.route('/remindertypes')
+    .get(AppointmentController.getAppointmentReminderTypes)
+
+router.route('/reminders/:id')
+    .get(AppointmentController.getAppointmentReminders)
+    .delete(AppointmentController.deleteAppointmentReminder);
+
+router.route('/reminders')
+    .put(AppointmentController.updateAppointmentReminder)
+    .post(AppointmentController.setAppointmentReminder);
+
 router.route("/")
 
 export default router;
