@@ -17,6 +17,7 @@ import auth from './routes/auth.route.js';
 import translate from './routes/translate.route.js';
 import appointment from './routes/appointment.route.js';
 import telegram from './routes/telegramhandler.route.js';
+import telegramAppointments from './routes/telegramappointment.route.js';
 import branches from './controllers/branches.controller.js';
 
 // Socket.IO Event Handlers
@@ -55,6 +56,7 @@ app.use("/api/appointments", appointment);
 app.use("/api/chat/upload", chatAttachments);
 app.use("/api/translate", translate);
 app.use("/api/telegram", telegram);
+app.use("/api/telegram/appointments", telegramAppointments);
 
 // Handle Socket.IO Connection
 const server = createServer(app);
