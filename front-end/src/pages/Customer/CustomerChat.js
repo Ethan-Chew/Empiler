@@ -7,6 +7,8 @@ import { useSearchParams } from "react-router-dom";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import MessageTextField from "../../components/Chat/MessageTextField";
+import RSAHandler from "../../utils/KeyHandlers/RSAHandler";
+import ToastMessage from "../../components/ToastMessage";
 
 export default function CustomerChat() {
     const navigate = useNavigate();
@@ -21,6 +23,10 @@ export default function CustomerChat() {
     const [staffEndedChat, setStaffEndedChat] = useState(false);
     const [sentMessage, setSentMessage] = useState("");
     const [staffName, setStaffName] = useState("[insert name]");
+
+    // E2E Encryption States
+    const [ receiverRSAPublicKey, setReceiverRSAPublicKey ] = useState(null);
+    const [ e2eCommunicationError, setE2ECommunicationError ] = useState(false);
 
     // User Inactivity States
     const [inactivityTimer, setInactivityTimer] = useState(0);
@@ -84,6 +90,9 @@ export default function CustomerChat() {
             setStaffName(location.state.staffName);
         }
 
+        // Generate the RSA Key Pair for the Customer
+        RSAHandler.generateRSAKeyPair();
+
         // Socket.IO Event Handlers
         const handleConnection = () => {
             setIsConnected(true);
@@ -92,10 +101,14 @@ export default function CustomerChat() {
             if (!customerSessionIdentifier) {
                 navigateHome();
             }
-
+            
             socket.emit("utils:verify-activechat", customerSessionIdentifier, (chatExistanceReq) => {
                 setStaffName(chatExistanceReq.staffName);
                 if (chatExistanceReq.exist && chatExistanceReq.caseID === caseID) {
+                    // TODO: Emit the User's RSA Public Key
+
+
+                    // Add the new Socket to the Room
                     socket.emit("utils:add-socket", customerSessionIdentifier, "customer");
                     setMessages(chatExistanceReq.chatHistory);
                 } else {
@@ -119,10 +132,15 @@ export default function CustomerChat() {
             socket.disconnect();
         }
 
+        const handleReceiveRSAPublicKey = (res) => {
+            setReceiverRSAPublicKey(res);
+        }
+
         socket.on("connect", handleConnection);
         socket.on("disconnect", handleDisconnection);
         socket.on("utils:receive-msg", handleReceiveMessage);
         socket.on("utils:chat-ended", handleChatClosure);
+        socket.on("utils:receive-keys", handleReceiveRSAPublicKey)
 
         return () => {
             socket.off("connect", handleConnection);
@@ -228,6 +246,16 @@ export default function CustomerChat() {
                     </button>
                 </div>
             </div>
+
+            { e2eCommunicationError && (
+                <ToastMessage
+                    title="Authentication"
+                    description="An error occured with making a secure connection with the server."
+                    isShown={e2eCommunicationError}
+                    hideToast={() => setE2ECommunicationError(false)}
+                    type="error"
+                />
+            )}
         </div>
     );
 }

@@ -76,4 +76,13 @@ export default function (io, db, socket) {
         // Remove the Chat from the list of Active Chats
         await endActiveChat(db, caseID, isCustomerDisconnect);
     });
+
+    /*
+    Share Keys Object
+    - key: Client's RSA Public Key
+    - case: case ID
+    */
+    socket.on("utils:share-keys", async (obj) => {
+        socket.broadcast.to(obj.case).emit("utils:receive-keys", obj.key);
+    })
 }
