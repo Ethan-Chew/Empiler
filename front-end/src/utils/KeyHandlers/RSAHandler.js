@@ -1,4 +1,4 @@
-import setupIndexedDB from "./setupIndexedDB";
+import IndexedDB from "./indexedDB";
 
 const rsaEncryptAlgorithm = {
     name: "RSA-OAEP",
@@ -10,10 +10,70 @@ const rsaEncryptAlgorithm = {
     }
 }
 
+// Helper Conversion Functions
+function addNewLines(str) {
+  let finalString = '';
+  while(str.length > 0) {
+      finalString += str.substring(0, 64) + '\n';
+      str = str.substring(64);
+  }
+
+  return finalString;
+}
+/// Convert between Data Types
+function _base64StringToArrayBuffer(b64str) {
+  const byteStr = atob(b64str)
+  const bytes = new Uint8Array(byteStr.length)
+  for (let i = 0; i < byteStr.length; i++) {
+    bytes[i] = byteStr.charCodeAt(i)
+  }
+  return bytes.buffer
+}
+
+function _arrayBufferToBase64(arrayBuffer) {
+  const byteArray = new Uint8Array(arrayBuffer);
+  let byteString = '';
+  for(let i=0; i < byteArray.byteLength; i++) {
+      byteString += String.fromCharCode(byteArray[i]);
+  }
+  const b64 = btoa(byteString);
+
+  return b64;
+}
+/// Convert Key from Array Buffer to Private Key PEM
+function toPrivatePem(privateKey) {
+  const b64Txt = addNewLines(_arrayBufferToBase64(privateKey));
+  const pem = "-----BEGIN RSA PRIVATE KEY-----\n" + b64Txt + "-----END RSA PRIVATE KEY-----";
+  
+  return pem;
+}
+/// Convert Key from Array Buffer to Public Key PEM
+function toPublicPem(privateKey) {
+  const b64 = addNewLines(_arrayBufferToBase64(privateKey));
+  const pem = "-----BEGIN PUBLIC KEY-----\n" + b64 + "-----END PUBLIC KEY-----";
+  
+  return pem;
+}
+/// Convert from a Key PEM to Array Buffer
+function convertPemToBinary(pem) {
+  const lines = pem.split('\n')
+  let encoded = ''
+  for(let i = 0;i < lines.length;i++){
+    if (lines[i].trim().length > 0 &&
+        lines[i].indexOf('-----BEGIN RSA PRIVATE KEY-----') < 0 &&
+        lines[i].indexOf('-----BEGIN PUBLIC KEY-----') < 0 &&
+        lines[i].indexOf('-----END RSA PRIVATE KEY-----') < 0 &&
+        lines[i].indexOf('-----END PUBLIC KEY-----') < 0) {
+      encoded += lines[i].trim()
+    }
+  }
+  return _base64StringToArrayBuffer(encoded)
+}
+
 // Generate a one-time RSA Key Pair for the Client to use
 /// Key Pair is stored in IndexedDB
 async function generateRSAKeyPair() {
-  const db = await setupIndexedDB();
+  const db = await IndexedDB.setupIndexedDB();
 
   // Try to retrieve Public and Private Key
   const publicKey = await retrieveRSAKeyPair(db, "rsa-public");
@@ -30,17 +90,31 @@ async function generateRSAKeyPair() {
     true,
     ["encrypt", "decrypt"]
   )
+
+  // Export the Private and Public Keys
+  let privateKeyPem, publicKeyPem;
+  const exportedPrivateKey = await window.crypto.subtle.exportKey(
+    "pkcs8",
+    keyPair.privateKey
+  )
+  privateKeyPem = toPrivatePem(exportedPrivateKey);
+    
+  const exportedPublicKey = await window.crypto.subtle.exportKey(
+    "spki",
+    keyPair.publicKey
+  )
+  publicKeyPem = toPublicPem(exportedPublicKey);
   
   // Save it into IndexedDB
   const transaction = await db.transaction("rsa-keys", "readwrite");
   const store = transaction.objectStore("rsa-keys");
-  store.add({ type: "rsa-public", key: keyPair.publicKey });
-  store.add({ type: "rsa-private", key: keyPair.privateKey });
+  store.add({ type: "rsa-public", key: publicKeyPem });
+  store.add({ type: "rsa-private", key: privateKeyPem });
 }
 
 async function retrieveRSAKeyPair(db, type) {
   if (!db) {
-    db = await setupIndexedDB();
+    db = await IndexedDB.setupIndexedDB()();
   }
   const transaction = await db.transaction("rsa-keys", "readonly");
   const store = transaction.objectStore("rsa-keys");
@@ -58,11 +132,18 @@ async function retrieveRSAKeyPair(db, type) {
   });
 }
 
-async function encryptDataWithRSAPublic(data) {
-  const publicKey = retrieveRSAKeyPair("rsa-public");
+async function encryptDataWithRSAPublic(data, publicKey) {
+  const keyArrayBuffer = convertPemToBinary(publicKey);
+  const key = await crypto.subtle.importKey(
+    'spki',
+    keyArrayBuffer,
+    rsaEncryptAlgorithm,
+    true,
+    ["encrypt"]
+  )
   const encryptedData = await crypto.subtle.encrypt(
     rsaEncryptAlgorithm,
-    publicKey,
+    key,
     new TextEncoder().encode(data)
   )
 
@@ -72,10 +153,17 @@ async function encryptDataWithRSAPublic(data) {
 }
 
 async function decryptDataWithRSAPrivate(data) {
-  const privateKey = retrieveRSAKeyPair("rsa-private");
+  const privateKey = convertPemToBinary(await retrieveRSAKeyPair("rsa-private"));
+  const secretKey = await crypto.subtle.importKey(
+    'pkcs8',
+    privateKey,
+    rsaEncryptAlgorithm,
+    true,
+    ['decrypt']
+  );
   const decryptedData = await crypto.subtle.decrypt(
     rsaEncryptAlgorithm,
-    privateKey,
+    secretKey,
     new Uint8Array(atob(data).split("").map(c => c.charCodeAt(0)))
   )
 
@@ -83,4 +171,4 @@ async function decryptDataWithRSAPrivate(data) {
   return decodedDataString;
 }
 
-export { encryptDataWithRSAPublic, decryptDataWithRSAPrivate, retrieveRSAKeyPair, generateRSAKeyPair };
+export default { encryptDataWithRSAPublic, decryptDataWithRSAPrivate, retrieveRSAKeyPair, generateRSAKeyPair };

@@ -24,21 +24,36 @@ async function encryptDataWithAESKey(data, key) {
     )
 
     const encryptedDataString = btoa(String.fromCharCode(...new Uint8Array(encryptedData)));
+    const ivBase64 = btoa(String.fromCharCode(...iv));
+
     return {
-        iv: iv,
+        iv: ivBase64,
         data: encryptedDataString
     };
 }
 
 async function decryptDataWithAESKey(data, iv, key) {
-    const encryptedData = new Uint8Array(data.slice(12));
+    const rawKey = Uint8Array.from(atob(key), (c) => c.charCodeAt(0));
+
+    const aesKey = await crypto.subtle.importKey(
+        "raw",
+        rawKey,
+        { name: "AES-GCM" },
+        true,
+        ["decrypt"]
+    );
+
+    // Decode Base64 to ArrayBuffer
+    const encryptedData = Uint8Array.from(atob(data), c => c.charCodeAt(0));
+    const ivArrayBuffer = Uint8Array.from(atob(iv), c => c.charCodeAt(0));
+
     const decryptedData = await crypto.subtle.decrypt(
         {
             name: 'AES-GCM',
-            iv: iv
+            iv: ivArrayBuffer
         },
-        key,
-        encryptedData
+        aesKey,
+        encryptedData,
     )
     return new TextDecoder().decode(decryptedData);
 }

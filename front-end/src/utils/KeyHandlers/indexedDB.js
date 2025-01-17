@@ -1,4 +1,4 @@
-export default function setupIndexedDB() {
+function setupIndexedDB() {
     return new Promise((resolve, reject) => {
         const request = indexedDB.open("KeyStorage", 1);
     
@@ -24,4 +24,16 @@ export default function setupIndexedDB() {
             reject(event.target.error);
         };
     });
-}  
+}
+
+function clearObjectStore(storeName) {
+    const request = indexedDB.open("KeyStorage", 1);
+    request.onsuccess = (event) => {
+        const db = event.target.result;
+        const transaction = db.transaction(storeName, "readwrite");
+        const store = transaction.objectStore(storeName);
+        store.clear();
+    };
+}
+
+export default { setupIndexedDB, clearObjectStore };

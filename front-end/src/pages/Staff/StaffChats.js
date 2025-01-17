@@ -11,6 +11,7 @@ import StaffNavigationBar from "../../components/StaffNavbar";
 import MessageContainer from "../../components/Chat/MessageContainer";
 import ToastMessage from "../../components/ToastMessage";
 import MessageTextField from "../../components/Chat/MessageTextField";
+import RSAHandler from "../../utils/KeyHandlers/RSAHandler";
 
 export default function StaffChats() {
     const navigate = useNavigate();
@@ -123,6 +124,9 @@ export default function StaffChats() {
     }
 
     useEffect(() => {  
+        // Generate RSA Key Pair for the Staff
+        RSAHandler.generateRSAKeyPair();
+
         const handleConnection = (params) => {
             setIsConnected(true);
             socket.emit('staff:avail'); 
