@@ -7,6 +7,7 @@ import NavigationBar from "./components/Navbar";
 import LiveChatPopup from './components/Chat/LiveChatPopup';
 import { searchClient } from '@algolia/client-search';
 import { useState, useEffect } from 'react';
+import ToastMessage from './components/ToastMessage';
 
 
 export default function App() {
@@ -114,9 +115,8 @@ export default function App() {
             <LiveChatFooter setIsOpen={setIsOpen}/>
 
             <div className="w-full h-[3px] bg-[#DCD6D6]" />
-
-            {/* Footer */}
-            <Footer />
+              {/* Footer */}
+              <Footer />
             </div>
         </div>
     );
