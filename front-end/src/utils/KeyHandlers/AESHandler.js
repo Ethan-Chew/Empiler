@@ -1,11 +1,10 @@
+const aesEncryptAlgorithm = { name: 'AES-GCM', length: 256 };
+
 // Generate a one-time AES Key for the Client to use to send message
 /// Key is not stored, but tied to the message
 async function generateAESKey() {
     const generatedKey = await crypto.subtle.generateKey(
-        {
-            name: 'AES-GCM',
-            length: 256
-        },
+        aesEncryptAlgorithm,
         true,
         ["encrypt", "decrypt"]
     )
@@ -14,12 +13,19 @@ async function generateAESKey() {
 
 async function encryptDataWithAESKey(data, key) {
     const iv = crypto.getRandomValues(new Uint8Array(12));
+    const aesKey = await crypto.subtle.importKey(
+        "raw",
+        key,
+        aesEncryptAlgorithm,
+        true,
+        ["encrypt"]
+    );
     const encryptedData = await crypto.subtle.encrypt(
         {
             name: 'AES-GCM',
             iv: iv
         },
-        key,
+        aesKey,
         new TextEncoder().encode(data)
     )
 
@@ -57,3 +63,5 @@ async function decryptDataWithAESKey(data, iv, key) {
     )
     return new TextDecoder().decode(decryptedData);
 }
+
+export default { generateAESKey, encryptDataWithAESKey, decryptDataWithAESKey };

@@ -9,6 +9,7 @@ import { useState, useEffect } from "react";
 import MessageTextField from "../../components/Chat/MessageTextField";
 import RSAHandler from "../../utils/KeyHandlers/RSAHandler";
 import ToastMessage from "../../components/ToastMessage";
+import AESHandler from "../../utils/KeyHandlers/AESHandler";
 
 export default function CustomerChat() {
     const navigate = useNavigate();
@@ -26,7 +27,7 @@ export default function CustomerChat() {
 
     // E2E Encryption States
     const [ receiverRSAPublicKey, setReceiverRSAPublicKey ] = useState(null);
-    const [ e2eCommunicationError, setE2ECommunicationError ] = useState(false);
+    const [ e2eCommunicationError, setE2ECommunicationError ] = useState(true);
 
     // User Inactivity States
     const [inactivityTimer, setInactivityTimer] = useState(0);
@@ -101,13 +102,18 @@ export default function CustomerChat() {
             if (!customerSessionIdentifier) {
                 navigateHome();
             }
+
+            // Emit the User's RSA Public Key
+            RSAHandler.retrieveRSAKeyPair("rsa-public").then((res) => {
+                socket.emit("utils:share-keys", {
+                    key: res.key,
+                    case: caseID
+                });
+            });
             
             socket.emit("utils:verify-activechat", customerSessionIdentifier, (chatExistanceReq) => {
                 setStaffName(chatExistanceReq.staffName);
                 if (chatExistanceReq.exist && chatExistanceReq.caseID === caseID) {
-                    // TODO: Emit the User's RSA Public Key
-
-
                     // Add the new Socket to the Room
                     socket.emit("utils:add-socket", customerSessionIdentifier, "customer");
                     setMessages(chatExistanceReq.chatHistory);
@@ -121,7 +127,15 @@ export default function CustomerChat() {
             setIsConnected(false);
         }
 
-        const handleReceiveMessage = (msg) => {
+        const handleReceiveMessage = async (msg) => {
+            const decryptedAESKey = await RSAHandler.decryptDataWithRSAPrivate(msg.key);
+            const decryptedMessage = await AESHandler.decryptDataWithAESKey(decryptedAESKey, msg.iv, msg.fileUrl ? msg.fileUrl : msg.message);
+            if (msg.fileUrl) {
+                msg.fileUrl = decryptedMessage;
+            } else {
+                msg.message = decryptedMessage;
+            }
+
             setMessages(prev => [...prev, msg]);
         }
 
@@ -133,7 +147,8 @@ export default function CustomerChat() {
         }
 
         const handleReceiveRSAPublicKey = (res) => {
-            setReceiverRSAPublicKey(res);
+            setReceiverRSAPublicKey(res.key);
+            setE2ECommunicationError(false);
         }
 
         socket.on("connect", handleConnection);
@@ -150,12 +165,21 @@ export default function CustomerChat() {
         }
     }, []);
 
-    function sendMessage(fileUrl) {
+    async function sendMessage(fileUrl) {
         if (sentMessage === "" && fileUrl === null) return;
+        const isFile = fileUrl ? true : false;
+
+        // Encrypt the message with the Customer's RSA Public Key
+        const aesKey = await AESHandler.generateAESKey();
+        const encryptedMessage = await AESHandler.encryptDataWithAESKey(isFile ? fileUrl : sentMessage, aesKey);
+        const encryptedKey = await RSAHandler.encryptDataWithRSAPublic(aesKey, receiverRSAPublicKey);
+
         const formattedMsg = {
             case: caseID,
-            message: fileUrl ? "" : sentMessage,
-            fileUrl: fileUrl ? fileUrl : null,
+            message: isFile ? null : encryptedMessage.data,
+            fileUrl: isFile ? encryptedMessage.data : null,
+            key: encryptedKey,
+            iv: encryptedMessage.iv,
             timestamp: Date.now(),
             sender: "customer",
             sessionIdentifier: sessionStorage.getItem("customerSessionIdentifier"),

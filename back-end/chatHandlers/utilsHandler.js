@@ -12,6 +12,7 @@ export default function (io, db, socket) {
     }
     */
     socket.on("utils:send-msg", async (msg) => {
+        console.log(msg);
         if (msg.sender === "staff") {
             msg["sessionIdentifier"] = socket.user.id;
         }
@@ -83,6 +84,6 @@ export default function (io, db, socket) {
     - case: case ID
     */
     socket.on("utils:share-keys", async (obj) => {
-        socket.broadcast.to(obj.case).emit("utils:receive-keys", obj.key);
+        socket.broadcast.to(obj.case).emit("utils:receive-keys", obj);
     })
 }

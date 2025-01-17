@@ -4,7 +4,6 @@ import handleFileUpload from "../../utils/handleFileUpload";
 import { formatTimestamp } from "../../utils/formatTimestamp";
 import { useNavigate } from 'react-router-dom';
 
-
 // Components
 import AwaitChatContainer from "../../components/Chat/AwaitingChatContainer";
 import StaffNavigationBar from "../../components/StaffNavbar";
@@ -12,6 +11,7 @@ import MessageContainer from "../../components/Chat/MessageContainer";
 import ToastMessage from "../../components/ToastMessage";
 import MessageTextField from "../../components/Chat/MessageTextField";
 import RSAHandler from "../../utils/KeyHandlers/RSAHandler";
+import AESHandler from "../../utils/KeyHandlers/AESHandler";
 
 export default function StaffChats() {
     const navigate = useNavigate();
@@ -27,6 +27,9 @@ export default function StaffChats() {
     const [sentMessage, setSentMessage] = useState("");
     const [disconnectedChats, setDisconnectedChats] = useState([]);
     const [toastVisiblities, setToastVisibilities] = useState([]);
+
+    // E2E Encryption Status
+    const [ rsaPublicKeys, setRsaPublicKeys ] = useState([]);
 
     // Setter Functions
     const joinChat = async (customerSessionIdentifier) => {    
@@ -45,6 +48,15 @@ export default function StaffChats() {
                 ...response.chat,
                 messages: []
             };
+
+            // Emit the User's RSA Public Key
+            RSAHandler.retrieveRSAKeyPair("rsa-public").then((res) => {
+                console.log(res);
+                socket.emit("utils:share-keys", {
+                    key: res.key,
+                    case: formattedChat.caseID
+                });
+            });
     
             setConnectedChats((prev) => [...prev, formattedChat]);
             setSelectedChatId(formattedChat.caseID);
@@ -62,12 +74,22 @@ export default function StaffChats() {
         setDisplayAwaitCustomerList(true);
     }
 
-    const sendMessage = (fileUrl) => {
+    const sendMessage = async (fileUrl) => {
         if (sentMessage === "" && fileUrl === null) return;
+        const isFile = fileUrl ? true : false;
+
+        // Encrypt the message with the Customer's RSA Public Key
+        const customerRSAPublic = rsaPublicKeys.filter((key) => key.caseId === selectedChatId)[0].key;
+        const aesKey = await AESHandler.generateAESKey();
+        const encryptedMessage = await AESHandler.encryptDataWithAESKey(isFile ? fileUrl : sentMessage, aesKey);
+        const encryptedKey = await RSAHandler.encryptDataWithRSAPublic(aesKey, customerRSAPublic);
+
         const formattedMsg = {
             case: connectedChats.filter((chat) => chat.caseID === selectedChatId)[0].caseID,
-            message: fileUrl ? "" : sentMessage,
-            fileUrl: fileUrl ? fileUrl : null,
+            message: isFile ? null : encryptedMessage.data,
+            fileUrl: isFile ? encryptedMessage.data : null,
+            key: encryptedKey,
+            iv: encryptedMessage.iv,
             timestamp: Date.now(),
             sender: "staff",
         }
@@ -136,7 +158,14 @@ export default function StaffChats() {
             setIsConnected(false);
         }
 
-        const handleReceiveMessage = (msg) => {
+        const handleReceiveMessage = async (msg) => {
+            const decryptedAESKey = await RSAHandler.decryptDataWithRSAPrivate(msg.key);
+            const decryptedMessage = await AESHandler.decryptDataWithAESKey(decryptedAESKey, msg.iv, msg.fileUrl ? msg.fileUrl : msg.message);
+            if (msg.fileUrl) {
+                msg.fileUrl = decryptedMessage;
+            } else {
+                msg.message = decryptedMessage;
+            }
             setConnectedChats((prevChats) => {
                 const updatedChats = prevChats.map((chat) => {
                     if (chat.caseID === msg.case) {
@@ -178,6 +207,13 @@ export default function StaffChats() {
             socket.emit("utils:add-socket", null, "staff");
         }
 
+        const handleReceiveRSAPublicKey = (res) => {
+            setRsaPublicKeys((prev) => [...prev, {
+                key: res.key,
+                caseId: res.case,
+            }]);
+        }
+
         // Handle Event Listeners
         socket.on("connect", handleConnection);
         socket.on("disconnect", handleDisconnection);
@@ -185,6 +221,7 @@ export default function StaffChats() {
         socket.on("utils:receive-msg", handleReceiveMessage);
         socket.on("utils:chat-ended", handleChatEnded);
         socket.on("staff:active-chats", handleReconnectAddChats);
+        socket.on("utils:receive-keys", handleReceiveRSAPublicKey);
         socket.on("error", (err) => console.error(err));
         
         return () => {
