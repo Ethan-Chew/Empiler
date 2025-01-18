@@ -26,7 +26,9 @@ const manageAppointments_1 = require("./controllers/callbackQuery/manageAppointm
 const manageAppointmentSelection_1 = require("./controllers/callbackQuery/manage-appointment/manageAppointmentSelection");
 const rescheduleAppointment_1 = require("./controllers/callbackQuery/manage-appointment/rescheduleAppointment");
 const cancelAppointment_1 = require("./controllers/callbackQuery/manage-appointment/cancelAppointment");
-const manageReminder_1 = require("./controllers/callbackQuery/manage-appointment/manageReminder");
+const manageReminder_1 = require("./controllers/callbackQuery/manage-appointment/reminder/manageReminder");
+const selectReminderType_1 = require("./controllers/callbackQuery/manage-appointment/reminder/selectReminderType");
+const confirmSetReminder_1 = require("./controllers/callbackQuery/manage-appointment/reminder/confirmSetReminder");
 const token = process.env.TELEGRAM_API_KEY || "";
 const bot = new grammy_1.Bot(token);
 if (process.env.ENVIRONMENT === "development") {
@@ -34,7 +36,7 @@ if (process.env.ENVIRONMENT === "development") {
 }
 // Return Initial Session Data
 function initial() {
-    return { lastManageApptMsg: null, selectedAppt: null, userId: null };
+    return { lastManageApptMsg: null, selectedAppt: null, selectedReminderType: null, userId: null };
 }
 bot.use((0, grammy_1.session)({ initial: initial }));
 // Command Handling
@@ -45,11 +47,14 @@ bot.command("upcoming", upcomingController_1.upcomingController);
 // Handle Inline Keyboard Clicks
 /// Manage Appointments
 bot.callbackQuery("manage-appointments", manageAppointments_1.cqManageAppointments);
-//// Manage Appointment Options (Reschedule, Cancel, Manage Reminder, Back)
+//// Manage Appointment Options (Reschedule, Cancel, Manage Reminder)
 bot.callbackQuery("reschedule-appt", rescheduleAppointment_1.cqRescheduleAppointment);
 bot.callbackQuery("cancel-appt", cancelAppointment_1.cqCancelAppointment);
-bot.callbackQuery("manage-reminder-appt", manageReminder_1.cqManageReminder);
+bot.callbackQuery("manage-reminder-appt", manageReminder_1.cqManageReminderTime);
+/// Back Button Handlers
 bot.callbackQuery("back-to-manage-appt", manageAppointments_1.cqManageAppointments);
+bot.callbackQuery("back-to-manage-appt-optns", manageAppointmentSelection_1.cqManageAppointmentSelection);
+bot.callbackQuery("back-to-reminder-time", manageReminder_1.cqManageReminderTime);
 /// Catch-All for Callback Queries
 bot.on("callback_query:data", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     const callbackData = ctx.callbackQuery.data;
@@ -57,6 +62,15 @@ bot.on("callback_query:data", (ctx) => __awaiter(void 0, void 0, void 0, functio
     if (callbackData.startsWith("manage-appt-")) {
         ctx.session.selectedAppt = callbackData.replace("manage-appt-", "");
         (0, manageAppointmentSelection_1.cqManageAppointmentSelection)(ctx);
+    }
+    // Selection of Reminder Time Slot
+    if (callbackData.startsWith("appt-reminder-type-")) {
+        ctx.session.selectedReminderType = callbackData.replace("appt-reminder-type-", "");
+        (0, selectReminderType_1.cqSelectReminderType)(ctx);
+    }
+    // Selection of Reminder Type
+    if (callbackData.startsWith("reminder-area-")) {
+        (0, confirmSetReminder_1.cqConfirmSetReminder)(ctx, callbackData.replace("reminder-area-", ""));
     }
     // await ctx.answerCallbackQuery(); // remove loading animation
 }));

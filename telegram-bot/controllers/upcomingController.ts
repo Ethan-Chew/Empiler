@@ -37,9 +37,14 @@ const upcomingController = async (ctx: MyContext) => {
         // Display the User's upcoming appointments
         const formattedAppointments = [];
         let i = 0;
-        for (let appointment of appointments) {
+        for (const appointment of appointments) {
             i++;
-            formattedAppointments.push(`*Appointment ${i}*\nDate: ${escapeMarkdownV2(appointment.date)}\nTime: ${escapeMarkdownV2(appointment.timeslot.timeslot)}\nLocation: ${appointment.branchName}\n\n`);
+            const reminders = []
+            for (const reminder of appointment.reminder) {
+                reminders.push(`\\- Reminder ${reminder.type} before over _${reminder.area}_ \\(${new Date(reminder.reminderTime).toLocaleString("en-SG")}\\)`);
+            }
+            const reminderType = reminders.join("\n");
+            formattedAppointments.push(`*Appointment ${i}*\nDate: ${escapeMarkdownV2(appointment.date)}\nTime: ${escapeMarkdownV2(appointment.timeslot.timeslot)}\nLocation: ${appointment.branchName}\n${reminderType}\n`);
         }
         formattedAppointments.join("\n\n");
         const response = await ctx.reply(

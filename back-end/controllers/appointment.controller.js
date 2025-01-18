@@ -123,8 +123,8 @@ const getAppointmentReminders = async (req, res) => {
 }
 
 const setAppointmentReminder = async (req, res) => {
-    const { appointmentId, reminderType } = req.body;
-    if (!appointmentId || !reminderType) {
+    const { appointmentId, reminderType, area } = req.body;
+    if (!appointmentId || !reminderType || !area) {
         return res.status(400).json({ error: 'Missing required fields' });
     }
 
@@ -133,14 +133,10 @@ const setAppointmentReminder = async (req, res) => {
         const appointment = await Appointment.getAppointment(appointmentId);
         
         // Convert Appointment Start Date to UNIX time
-        const appointmentDateTime = `${appointment.date}T${appointment.appointment_timeslots.timeslot}:00`;
-        const appointmentDate = (new Date(appointmentDateTime).getTime()) - (dbReminderType.hours * 3600000);
+        const appointmentDateTime = `${appointment.date}T${appointment.appointment_timeslots.timeslot.split("-")[0]}:00`;
+        const reminderTime = (new Date(appointmentDateTime).getTime()) - (dbReminderType.hours * 3600000);
 
-        const setReminder = await Appointment.setAppointmentReminder(appointmentId, reminderType, appointmentDate);
-
-        if (setReminder.error) {
-            return res.status(500).json({ error: setReminder.error });
-        }
+        const setReminder = await Appointment.setAppointmentReminder(appointmentId, reminderType, reminderTime, area);
 
         res.status(200).json({ message: 'Reminder set successfully', reminder: setReminder });
     } catch (error) {
@@ -150,8 +146,8 @@ const setAppointmentReminder = async (req, res) => {
 }
 
 const updateAppointmentReminder = async (req, res) => {
-    const { appointmentId, reminderType } = req.body;
-    if (!appointmentId || !reminderType) {
+    const { appointmentId, reminderType, area } = req.body;
+    if (!appointmentId || !reminderType || !area) {
         return res.status(400).json({ error: 'Missing required fields' });
     }
 
@@ -160,10 +156,10 @@ const updateAppointmentReminder = async (req, res) => {
         const appointment = await Appointment.getAppointment(appointmentId);
         
         // Convert Appointment Start Date to UNIX time
-        const appointmentDateTime = `${appointment.date}T${appointment.appointment_timeslots.timeslot}:00`;
-        const appointmentDate = (new Date(appointmentDateTime).getTime()) - (dbReminderType.hours * 3600000);
+        const appointmentDateTime = `${appointment.date}T${appointment.appointment_timeslots.timeslot.split("-")[0]}:00`;
+        const reminderTime = (new Date(appointmentDateTime).getTime()) - (dbReminderType.hours * 3600000);
 
-        const setReminder = await Appointment.updateAppointmentReminder(appointmentId, reminderType, appointmentDate);
+        const setReminder = await Appointment.updateAppointmentReminder(appointmentId, reminderType, reminderTime, area);
 
         if (setReminder.error) {
             return res.status(500).json({ error: setReminder.error });

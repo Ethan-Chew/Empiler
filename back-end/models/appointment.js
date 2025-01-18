@@ -181,7 +181,8 @@ export default class Appointment {
     static async getReminderType(type) {
         try {
             const { data, error } = await supabase
-                .from("appointment_reminder_types")
+                .from("appointment_reminder_type")
+                .select("*")
                 .eq("type", type)
                 .single();
             
@@ -200,7 +201,7 @@ export default class Appointment {
     static async getReminderTypes() {
         try {
             const { data, error } = await supabase
-                .from("appointment_reminder_types")
+                .from("appointment_reminder_type")
                 .select("*");
 
             if (error) {
@@ -253,11 +254,11 @@ export default class Appointment {
         }
     }
 
-    static async setAppointmentReminder(appointmentId, reminderType, appointmentDate) {
+    static async setAppointmentReminder(appointmentId, type, reminderTime, area) {
         try {
             const { data, error } = await supabase
                 .from("appointment_reminder")
-                .insert([{ appointmentId, reminderType, appointmentDate }])
+                .insert([{ appointmentId, type, reminderTime, area }])
                 .single();
 
             if (error) {
@@ -272,11 +273,11 @@ export default class Appointment {
         }
     }
 
-    static async updateAppointmentReminder(appointmentId, reminderType, appointmentDate) {
+    static async updateAppointmentReminder(appointmentId, type, reminderTime, area) {
         try {
             const { data, error } = await supabase
                 .from("appointment_reminder")
-                .update({ reminderType, appointmentDate })
+                .update({ type, reminderTime, area })
                 .eq("appointmentId", appointmentId)
                 .single();
 
