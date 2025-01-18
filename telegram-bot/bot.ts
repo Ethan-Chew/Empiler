@@ -1,4 +1,4 @@
-import { Bot, GrammyError, HttpError } from "grammy";
+import { Bot, Context, GrammyError, HttpError, session, SessionFlavor } from "grammy";
 import { generateUpdateMiddleware } from "telegraf-middleware-console-time";
 import dotenv from "dotenv";
 
@@ -9,27 +9,27 @@ import { startController } from "./controllers/startController";
 import { linkController } from "./controllers/linkController";
 import { helpController } from "./controllers/helpController";
 import { upcomingController } from "./controllers/upcomingController";
+import { cqManageAppointments } from "./controllers/callbackQuery/manageAppointments";
+
+
+// Handle Telegram Bot Local Session
+interface SessionData {
+  lastManageApptMsg: number | null;
+}
+
+export type MyContext = Context & SessionFlavor<SessionData>;
 
 const token = process.env.TELEGRAM_API_KEY || "";
-const bot = new Bot(token);
+const bot = new Bot<MyContext>(token);
 if (process.env.ENVIRONMENT === "development") {
     bot.use(generateUpdateMiddleware());
 }
 
-// // Handle Telegram Bot Local Session
-// interface SessionData {
-//   pizzaCount: number;
-// }
-
-// // Flavor the context type to include sessions.
-// type MyContext = Context & SessionFlavor<SessionData>;
-
-// const bot = new Bot<MyContext>("");
-
-// // Install session middleware, and define the initial session value.
-// function initial(): SessionData {
-//   return { pizzaCount: 0 };
-// }
+// Return Initial Session Data
+function initial(): SessionData {
+  return { lastManageApptMsg: null };
+}
+bot.use(session({ initial: initial }));
 
 // Command Handling
 bot.command("start", startController)
@@ -38,12 +38,7 @@ bot.command("help", helpController);
 bot.command("upcoming", upcomingController);
 
 // Handle Inline Keyboard Clicks
-bot.callbackQuery("manage-appointments", async (ctx) => {
-  // Retrieve the 
-  await ctx.answerCallbackQuery({
-    text: "You were curious, indeed!",
-  });
-});
+bot.callbackQuery("manage-appointments", cqManageAppointments);
 
 // Catch any errors
 bot.catch((err) => {

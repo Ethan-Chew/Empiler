@@ -12,16 +12,24 @@ const startController_1 = require("./controllers/startController");
 const linkController_1 = require("./controllers/linkController");
 const helpController_1 = require("./controllers/helpController");
 const upcomingController_1 = require("./controllers/upcomingController");
+const manageAppointments_1 = require("./controllers/callbackQuery/manageAppointments");
 const token = process.env.TELEGRAM_API_KEY || "";
 const bot = new grammy_1.Bot(token);
 if (process.env.ENVIRONMENT === "development") {
     bot.use((0, telegraf_middleware_console_time_1.generateUpdateMiddleware)());
 }
+// Return Initial Session Data
+function initial() {
+    return { lastManageApptMsg: null };
+}
+bot.use((0, grammy_1.session)({ initial: initial }));
 // Command Handling
 bot.command("start", startController_1.startController);
 bot.command("link", linkController_1.linkController);
 bot.command("help", helpController_1.helpController);
 bot.command("upcoming", upcomingController_1.upcomingController);
+// Handle Inline Keyboard Clicks
+bot.callbackQuery("manage-appointments", manageAppointments_1.cqManageAppointments);
 // Catch any errors
 bot.catch((err) => {
     const ctx = err.ctx;
