@@ -40,7 +40,16 @@ export default function StaffChats() {
         try {
             const response = await new Promise((resolve, reject) => {
                 socket.emit("staff:join", customerSessionIdentifier, (response) => {
-                    response.status === "Success" ? resolve(response) : reject(new Error("Failed to Join Chat"));
+                    response.status === "Success" ? resolve(response) : reject(new Error("Failed to Join Chat"));// Emit the User's RSA Public Key
+                    console.log("KEy SEnt!")
+
+                    RSAHandler.retrieveRSAKeyPair("rsa-public").then((res) => {
+                        console.log(res);
+                        socket.emit("utils:share-keys", {
+                            key: res.key,
+                            case: formattedChat.caseID
+                        });
+                    });
                 });
             });
 
@@ -49,15 +58,6 @@ export default function StaffChats() {
                 messages: []
             };
 
-            // Emit the User's RSA Public Key
-            RSAHandler.retrieveRSAKeyPair("rsa-public").then((res) => {
-                console.log(res);
-                socket.emit("utils:share-keys", {
-                    key: res.key,
-                    case: formattedChat.caseID
-                });
-            });
-    
             setConnectedChats((prev) => [...prev, formattedChat]);
             setSelectedChatId(formattedChat.caseID);
     
@@ -80,6 +80,7 @@ export default function StaffChats() {
 
         // Encrypt the message with the Customer's RSA Public Key
         const customerRSAPublic = rsaPublicKeys.filter((key) => key.caseId === selectedChatId)[0].key;
+        console.log(customerRSAPublic);
         const aesKey = await AESHandler.generateAESKey();
         const encryptedMessage = await AESHandler.encryptDataWithAESKey(isFile ? fileUrl : sentMessage, aesKey);
         const encryptedKey = await RSAHandler.encryptDataWithRSAPublic(aesKey, customerRSAPublic);

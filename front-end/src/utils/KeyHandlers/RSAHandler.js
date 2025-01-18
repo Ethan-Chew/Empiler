@@ -1,4 +1,5 @@
 import IndexedDB from "./indexedDB";
+import { _arrayBufferToBase64, _base64StringToArrayBuffer } from "./typeConversions";
 
 const rsaEncryptAlgorithm = {
     name: "RSA-OAEP",
@@ -20,26 +21,7 @@ function addNewLines(str) {
 
   return finalString;
 }
-/// Convert between Data Types
-function _base64StringToArrayBuffer(b64str) {
-  const byteStr = atob(b64str)
-  const bytes = new Uint8Array(byteStr.length)
-  for (let i = 0; i < byteStr.length; i++) {
-    bytes[i] = byteStr.charCodeAt(i)
-  }
-  return bytes.buffer
-}
 
-function _arrayBufferToBase64(arrayBuffer) {
-  const byteArray = new Uint8Array(arrayBuffer);
-  let byteString = '';
-  for(let i=0; i < byteArray.byteLength; i++) {
-      byteString += String.fromCharCode(byteArray[i]);
-  }
-  const b64 = btoa(byteString);
-
-  return b64;
-}
 /// Convert Key from Array Buffer to Private Key PEM
 function toPrivatePem(privateKey) {
   const b64Txt = addNewLines(_arrayBufferToBase64(privateKey));
@@ -56,6 +38,7 @@ function toPublicPem(privateKey) {
 }
 /// Convert from a Key PEM to Array Buffer
 function convertPemToBinary(pem) {
+  console.log(pem)
   const lines = pem.split('\n')
   let encoded = ''
   for(let i = 0;i < lines.length;i++){
@@ -131,7 +114,6 @@ async function retrieveRSAKeyPair(type) {
 }
 
 async function encryptDataWithRSAPublic(data, publicKey) {
-  console.log(publicKey);
   const keyArrayBuffer = convertPemToBinary(publicKey);
   const key = await crypto.subtle.importKey(
     'spki',
@@ -143,16 +125,17 @@ async function encryptDataWithRSAPublic(data, publicKey) {
   const encryptedData = await crypto.subtle.encrypt(
     rsaEncryptAlgorithm,
     key,
-    new TextEncoder().encode(data)
+    data
   )
 
   // Convert ArrayBuffer data to Base64
-  const encryptedDataString = btoa(String.fromCharCode(...new Uint8Array(encryptedData)));
+  const encryptedDataString = _arrayBufferToBase64(encryptedData);
   return encryptedDataString;
 }
 
 async function decryptDataWithRSAPrivate(data) {
-  const privateKey = convertPemToBinary(await retrieveRSAKeyPair("rsa-private"));
+  const rsaPrivatePem = await retrieveRSAKeyPair("rsa-private");
+  const privateKey = convertPemToBinary(rsaPrivatePem.key);
   const secretKey = await crypto.subtle.importKey(
     'pkcs8',
     privateKey,
@@ -160,14 +143,13 @@ async function decryptDataWithRSAPrivate(data) {
     true,
     ['decrypt']
   );
+
   const decryptedData = await crypto.subtle.decrypt(
     rsaEncryptAlgorithm,
     secretKey,
-    new Uint8Array(atob(data).split("").map(c => c.charCodeAt(0)))
+    _base64StringToArrayBuffer(data)
   )
-
-  const decodedDataString = new TextDecoder().decode(decryptedData);
-  return decodedDataString;
+  return decryptedData;
 }
 
 export default { encryptDataWithRSAPublic, decryptDataWithRSAPrivate, retrieveRSAKeyPair, generateRSAKeyPair };
