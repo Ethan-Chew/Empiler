@@ -1,3 +1,5 @@
+import { _arrayBufferToBase64, _base64StringToArrayBuffer } from "./typeConversions";
+
 const aesEncryptAlgorithm = { name: 'AES-GCM', length: 256 };
 
 // Generate a one-time AES Key for the Client to use to send message
@@ -26,11 +28,12 @@ async function encryptDataWithAESKey(data, key) {
             iv: iv
         },
         aesKey,
-        new TextEncoder().encode(data)
+        _base64StringToArrayBuffer(data)
     )
 
-    const encryptedDataString = btoa(String.fromCharCode(...new Uint8Array(encryptedData)));
-    const ivBase64 = btoa(String.fromCharCode(...iv));
+    // Encode ArrayBuffer to Base64
+    const encryptedDataString = _arrayBufferToBase64(encryptedData);
+    const ivBase64 = _arrayBufferToBase64(iv);
 
     return {
         iv: ivBase64,
@@ -38,20 +41,19 @@ async function encryptDataWithAESKey(data, key) {
     };
 }
 
-async function decryptDataWithAESKey(data, iv, key) {
-    const rawKey = Uint8Array.from(atob(key), (c) => c.charCodeAt(0));
-
+async function decryptDataWithAESKey(key, iv, data) {
     const aesKey = await crypto.subtle.importKey(
         "raw",
-        rawKey,
+        key,
         { name: "AES-GCM" },
         true,
         ["decrypt"]
     );
-
     // Decode Base64 to ArrayBuffer
-    const encryptedData = Uint8Array.from(atob(data), c => c.charCodeAt(0));
-    const ivArrayBuffer = Uint8Array.from(atob(iv), c => c.charCodeAt(0));
+    const encryptedData = _base64StringToArrayBuffer(data);
+    const ivArrayBuffer = _base64StringToArrayBuffer(iv);
+
+    console.log(encryptedData, ivArrayBuffer);
 
     const decryptedData = await crypto.subtle.decrypt(
         {
@@ -61,7 +63,8 @@ async function decryptDataWithAESKey(data, iv, key) {
         aesKey,
         encryptedData,
     )
-    return new TextDecoder().decode(decryptedData);
+
+    return _arrayBufferToBase64(decryptedData);
 }
 
 export default { generateAESKey, encryptDataWithAESKey, decryptDataWithAESKey };

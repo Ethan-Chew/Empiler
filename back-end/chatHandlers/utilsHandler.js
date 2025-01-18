@@ -84,6 +84,7 @@ export default function (io, db, socket) {
     - case: case ID
     */
     socket.on("utils:share-keys", async (obj) => {
+        console.log(obj);
         socket.broadcast.to(obj.case).emit("utils:receive-keys", obj);
     })
 }
