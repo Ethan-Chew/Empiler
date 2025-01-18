@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -12,7 +21,12 @@ const startController_1 = require("./controllers/startController");
 const linkController_1 = require("./controllers/linkController");
 const helpController_1 = require("./controllers/helpController");
 const upcomingController_1 = require("./controllers/upcomingController");
+/// Context Query Controllers
 const manageAppointments_1 = require("./controllers/callbackQuery/manageAppointments");
+const manageAppointmentSelection_1 = require("./controllers/callbackQuery/manage-appointment/manageAppointmentSelection");
+const rescheduleAppointment_1 = require("./controllers/callbackQuery/manage-appointment/rescheduleAppointment");
+const cancelAppointment_1 = require("./controllers/callbackQuery/manage-appointment/cancelAppointment");
+const manageReminder_1 = require("./controllers/callbackQuery/manage-appointment/manageReminder");
 const token = process.env.TELEGRAM_API_KEY || "";
 const bot = new grammy_1.Bot(token);
 if (process.env.ENVIRONMENT === "development") {
@@ -20,7 +34,7 @@ if (process.env.ENVIRONMENT === "development") {
 }
 // Return Initial Session Data
 function initial() {
-    return { lastManageApptMsg: null };
+    return { lastManageApptMsg: null, selectedAppt: null, userId: null };
 }
 bot.use((0, grammy_1.session)({ initial: initial }));
 // Command Handling
@@ -29,7 +43,23 @@ bot.command("link", linkController_1.linkController);
 bot.command("help", helpController_1.helpController);
 bot.command("upcoming", upcomingController_1.upcomingController);
 // Handle Inline Keyboard Clicks
+/// Manage Appointments
 bot.callbackQuery("manage-appointments", manageAppointments_1.cqManageAppointments);
+//// Manage Appointment Options (Reschedule, Cancel, Manage Reminder, Back)
+bot.callbackQuery("reschedule-appt", rescheduleAppointment_1.cqRescheduleAppointment);
+bot.callbackQuery("cancel-appt", cancelAppointment_1.cqCancelAppointment);
+bot.callbackQuery("manage-reminder-appt", manageReminder_1.cqManageReminder);
+bot.callbackQuery("back-to-manage-appt", manageAppointments_1.cqManageAppointments);
+/// Catch-All for Callback Queries
+bot.on("callback_query:data", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+    const callbackData = ctx.callbackQuery.data;
+    // Selection of Appointment (Manage Appointment)
+    if (callbackData.startsWith("manage-appt-")) {
+        ctx.session.selectedAppt = callbackData.replace("manage-appt-", "");
+        (0, manageAppointmentSelection_1.cqManageAppointmentSelection)(ctx);
+    }
+    // await ctx.answerCallbackQuery(); // remove loading animation
+}));
 // Catch any errors
 bot.catch((err) => {
     const ctx = err.ctx;

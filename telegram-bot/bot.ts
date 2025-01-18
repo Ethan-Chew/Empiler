@@ -9,12 +9,18 @@ import { startController } from "./controllers/startController";
 import { linkController } from "./controllers/linkController";
 import { helpController } from "./controllers/helpController";
 import { upcomingController } from "./controllers/upcomingController";
+/// Context Query Controllers
 import { cqManageAppointments } from "./controllers/callbackQuery/manageAppointments";
-
+import { cqManageAppointmentSelection } from "./controllers/callbackQuery/manage-appointment/manageAppointmentSelection";
+import { cqRescheduleAppointment } from "./controllers/callbackQuery/manage-appointment/rescheduleAppointment";
+import { cqCancelAppointment } from "./controllers/callbackQuery/manage-appointment/cancelAppointment";
+import { cqManageReminder } from "./controllers/callbackQuery/manage-appointment/manageReminder";
 
 // Handle Telegram Bot Local Session
 interface SessionData {
   lastManageApptMsg: number | null;
+  selectedAppt: string | null;
+  userId: string | null
 }
 
 export type MyContext = Context & SessionFlavor<SessionData>;
@@ -27,7 +33,7 @@ if (process.env.ENVIRONMENT === "development") {
 
 // Return Initial Session Data
 function initial(): SessionData {
-  return { lastManageApptMsg: null };
+  return { lastManageApptMsg: null, selectedAppt: null, userId: null };
 }
 bot.use(session({ initial: initial }));
 
@@ -38,7 +44,25 @@ bot.command("help", helpController);
 bot.command("upcoming", upcomingController);
 
 // Handle Inline Keyboard Clicks
+/// Manage Appointments
 bot.callbackQuery("manage-appointments", cqManageAppointments);
+//// Manage Appointment Options (Reschedule, Cancel, Manage Reminder, Back)
+bot.callbackQuery("reschedule-appt", cqRescheduleAppointment);
+bot.callbackQuery("cancel-appt", cqCancelAppointment);
+bot.callbackQuery("manage-reminder-appt", cqManageReminder);
+bot.callbackQuery("back-to-manage-appt", cqManageAppointments);
+
+/// Catch-All for Callback Queries
+bot.on("callback_query:data", async (ctx) => {
+  const callbackData = ctx.callbackQuery.data;
+
+  // Selection of Appointment (Manage Appointment)
+  if (callbackData.startsWith("manage-appt-")) {
+    ctx.session.selectedAppt = callbackData.replace("manage-appt-", "");
+    cqManageAppointmentSelection(ctx);
+  }
+  // await ctx.answerCallbackQuery(); // remove loading animation
+});
 
 // Catch any errors
 bot.catch((err) => {

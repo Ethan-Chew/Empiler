@@ -15,6 +15,9 @@ const upcomingController = async (ctx: MyContext) => {
             return;
         }
 
+        // Save the Telegram User's OCBC User Id to the Session
+        ctx.session.userId = checkAccountLinked.data.data.userId;
+
         // Retrieve the user's appointment details
         const upcomingAppointment = await axios.get(`http://localhost:8080/api/telegram/appointments/upcoming/${ctx.from?.id}`);
         if (upcomingAppointment.status !== 200) {
@@ -40,7 +43,7 @@ const upcomingController = async (ctx: MyContext) => {
         }
         formattedAppointments.join("\n\n");
         const response = await ctx.reply(
-            `Here's a quick look at your upcoming appointments! Let me know if you need help managing them\\-just tap on "Manage Appointments" and I'll be here to assist\\.\n\n${formattedAppointments}\n\nLet me know if there's anything else I can help you with!`,
+            `Here's a quick look at your upcoming appointments\\! Let me know if you need help managing them\\-just tap on "Manage Appointments" and I'll be here to assist\\.\n\n${formattedAppointments}\nLet me know if there's anything else I can help you with\\!`,
              { parse_mode: "MarkdownV2", reply_markup: inlineKeyboard }
         );
 
