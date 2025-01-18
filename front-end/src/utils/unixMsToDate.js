@@ -1,5 +1,6 @@
 export default function convertUnixToDate(unixMs) {
-    const date = new Date(unixMs);
+    console.log(unixMs)
+    const date = new Date(parseInt(unixMs));
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();

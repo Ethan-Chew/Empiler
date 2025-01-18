@@ -29,10 +29,9 @@ const retrieveRemindersForTeleUser = async (req, res) => {
         }
 
         const filteredData = data.filter(item => item.user.appointments.length > 0);
-
         res.status(200).json({
             status: 'success',
-            data: filteredData
+            data: filteredData[0].user.appointments
         })
     } catch (error) {
         console.error(error);

@@ -10,7 +10,7 @@ import UserSettingsPopup from '../../components/User/UserSettingsPopup';
 
 const CustomerLandingPage = (props) => {
     const [isOpen, setIsOpen] = useState(false);
-    const [custSettingsPopup, setCustSettingsPopup] = useState(true);
+    const [custSettingsPopup, setCustSettingsPopup] = useState(false);
     
     return (
         <div className="bg-white font-inter">

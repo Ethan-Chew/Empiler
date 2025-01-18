@@ -108,7 +108,6 @@ export default function UserSettingsPopup({ closePopup, userId }) {
         verifyTelegramLinked();
     }, []);
 
-    // Render
     return (
         <div
             className="fixed top-0 inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"

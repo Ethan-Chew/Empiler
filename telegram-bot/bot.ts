@@ -16,11 +16,34 @@ if (process.env.ENVIRONMENT === "development") {
     bot.use(generateUpdateMiddleware());
 }
 
+// // Handle Telegram Bot Local Session
+// interface SessionData {
+//   pizzaCount: number;
+// }
+
+// // Flavor the context type to include sessions.
+// type MyContext = Context & SessionFlavor<SessionData>;
+
+// const bot = new Bot<MyContext>("");
+
+// // Install session middleware, and define the initial session value.
+// function initial(): SessionData {
+//   return { pizzaCount: 0 };
+// }
+
 // Command Handling
 bot.command("start", startController)
 bot.command("link", linkController);
 bot.command("help", helpController);
 bot.command("upcoming", upcomingController);
+
+// Handle Inline Keyboard Clicks
+bot.callbackQuery("manage-appointments", async (ctx) => {
+  // Retrieve the 
+  await ctx.answerCallbackQuery({
+    text: "You were curious, indeed!",
+  });
+});
 
 // Catch any errors
 bot.catch((err) => {
