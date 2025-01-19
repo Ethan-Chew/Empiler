@@ -38,7 +38,6 @@ function toPublicPem(privateKey) {
 }
 /// Convert from a Key PEM to Array Buffer
 function convertPemToBinary(pem) {
-  console.log(pem)
   const lines = pem.split('\n')
   let encoded = ''
   for(let i = 0;i < lines.length;i++){
@@ -143,7 +142,6 @@ async function decryptDataWithRSAPrivate(data) {
     true,
     ['decrypt']
   );
-
   const decryptedData = await crypto.subtle.decrypt(
     rsaEncryptAlgorithm,
     secretKey,
