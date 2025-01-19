@@ -29,7 +29,7 @@ async function encryptDataWithAESKey(data, key) {
             iv: iv
         },
         aesKey,
-        _base64StringToArrayBuffer(data)
+        (new TextEncoder()).encode(data)
     )
 
     // Encode ArrayBuffer to Base64
@@ -63,7 +63,7 @@ async function decryptDataWithAESKey(key, iv, data) {
         encryptedData,
     )
 
-    return _arrayBufferToBase64(decryptedData);
+    return (new TextDecoder()).decode(decryptedData);
 }
 
 async function saveAESKeyWithMessageId(key, messageId) {

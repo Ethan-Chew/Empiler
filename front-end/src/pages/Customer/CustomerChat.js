@@ -110,14 +110,17 @@ export default function CustomerChat() {
                 navigateHome();
             }
 
-            // Request for Staff's Public RSA Key
-            socket.emit("utils:request-public-key", caseID);
-
             socket.emit("utils:verify-activechat", customerSessionIdentifier, async (chatExistanceReq) => {
                 setStaffName(chatExistanceReq.staffName);
                 if (chatExistanceReq.exist && chatExistanceReq.caseID === caseID) {
                     // Add the new Socket to the Room
-                    socket.emit("utils:add-socket", customerSessionIdentifier, "customer");
+                    socket.emit("utils:add-socket", customerSessionIdentifier, "customer", async (res) => {
+                        if (res) {
+                            // Request for Staff's Public RSA Key
+                            socket.emit("utils:request-public-key", caseID);
+                            console.log("Requesting Public Key from Staff");
+                        }
+                    });
 
                     // Decrypt the Chat History
                     const decryptedChatHistory = [];
@@ -144,7 +147,6 @@ export default function CustomerChat() {
 
                     // Sort Chat History by Timestamp
                     decryptedChatHistory.sort((a, b) => a.timestamp - b.timestamp);
-                    console.log(decryptedChatHistory)
                     setMessages(decryptedChatHistory);
                 } else {
                     navigateHome();
@@ -186,6 +188,7 @@ export default function CustomerChat() {
         }
 
         const handleReceiveRSAPublicKey = (res) => {
+            console.log("Received RSA Public Key from Staff");
             setReceiverRSAPublicKey(res.key);
             setError({ ...error, isShown: false });
         }
@@ -206,6 +209,11 @@ export default function CustomerChat() {
             socket.off("utils:receive-keys", handleReceiveRSAPublicKey)
         }
     }, []);
+
+    useEffect(() => {
+        socket.emit("utils:request-public-key", caseID);
+        console.log("Requesting Public Key from Staff");
+    }, [receiverRSAPublicKey])
 
     async function sendMessage(fileUrl) {
         if (!sentMessage && !fileUrl) return;
