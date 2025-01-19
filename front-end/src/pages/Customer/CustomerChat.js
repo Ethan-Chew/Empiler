@@ -27,7 +27,14 @@ export default function CustomerChat() {
 
     // E2E Encryption States
     const [ receiverRSAPublicKey, setReceiverRSAPublicKey ] = useState(null);
-    const [ e2eCommunicationError, setE2ECommunicationError ] = useState(true);
+
+    // Error
+    const [ error, setError ] = useState({
+        title: "Authentication",
+        description: "An error occured with making a secure connection with the server.",
+        isShown: true,
+        type: "error"
+    })
 
     // User Inactivity States
     const [inactivityTimer, setInactivityTimer] = useState(0);
@@ -94,15 +101,6 @@ export default function CustomerChat() {
         // Generate the RSA Key Pair for the Customer
         RSAHandler.generateRSAKeyPair();
 
-        // Emit the User's RSA Public Key
-        RSAHandler.retrieveRSAKeyPair("rsa-public").then((res) => {
-            console.log("Sending RSA Public Key to Server");
-            socket.emit("utils:share-keys", {
-                key: res.key,
-                case: caseID
-            });
-        });
-
         // Socket.IO Event Handlers
         const handleConnection = () => {
             setIsConnected(true);
@@ -112,12 +110,42 @@ export default function CustomerChat() {
                 navigateHome();
             }
 
-            socket.emit("utils:verify-activechat", customerSessionIdentifier, (chatExistanceReq) => {
+            // Request for Staff's Public RSA Key
+            socket.emit("utils:request-public-key", caseID);
+
+            socket.emit("utils:verify-activechat", customerSessionIdentifier, async (chatExistanceReq) => {
                 setStaffName(chatExistanceReq.staffName);
                 if (chatExistanceReq.exist && chatExistanceReq.caseID === caseID) {
                     // Add the new Socket to the Room
                     socket.emit("utils:add-socket", customerSessionIdentifier, "customer");
-                    setMessages(chatExistanceReq.chatHistory);
+
+                    // Decrypt the Chat History
+                    const decryptedChatHistory = [];
+                    for (const msg of chatExistanceReq.chatHistory) {
+                        let decryptedKey, decryptedMessage;
+                        if (msg.sender === "customer") {
+                            // Retrieve AES key using the message ID for customer
+                            const key = await AESHandler.retrieveAESKeyWithMessageId(msg.id);
+                            decryptedMessage = await AESHandler.decryptDataWithAESKey(key.key, key.iv, msg.fileUrl || msg.message);
+                        } else {
+                            // Decrypt AES key using RSA for staff
+                            decryptedKey = await RSAHandler.decryptDataWithRSAPrivate(msg.key);
+                            decryptedMessage = await AESHandler.decryptDataWithAESKey(decryptedKey, msg.iv, msg.fileUrl || msg.message);
+                        }
+
+                        if (msg.fileUrl) {
+                            msg.fileUrl = decryptedMessage;
+                        } else {
+                            msg.message = decryptedMessage;
+                        }
+
+                        decryptedChatHistory.push(msg);
+                    }
+
+                    // Sort Chat History by Timestamp
+                    decryptedChatHistory.sort((a, b) => a.timestamp - b.timestamp);
+                    console.log(decryptedChatHistory)
+                    setMessages(decryptedChatHistory);
                 } else {
                     navigateHome();
                 }
@@ -129,7 +157,6 @@ export default function CustomerChat() {
         }
 
         const handleReceiveMessage = async (msg) => {
-            // TO FIX: this will obviously fail if you are receiving the message that was sent from here (different private keys.. )
             const decryptedAESKey = await RSAHandler.decryptDataWithRSAPrivate(msg.key);
             const decryptedMessage = await AESHandler.decryptDataWithAESKey(decryptedAESKey, msg.iv, msg.fileUrl ? msg.fileUrl : msg.message);
             if (msg.fileUrl) {
@@ -148,9 +175,19 @@ export default function CustomerChat() {
             socket.disconnect();
         }
 
+        const sendRSAPublicKey = async (obj) => {
+            RSAHandler.retrieveRSAKeyPair("rsa-public").then((res) => {
+                console.log("Sending RSA Public Key to Server");
+                socket.emit("utils:share-keys", {
+                    key: res.key,
+                    case: obj
+                });
+            });
+        }
+
         const handleReceiveRSAPublicKey = (res) => {
             setReceiverRSAPublicKey(res.key);
-            setE2ECommunicationError(false);
+            setError({ ...error, isShown: false });
         }
 
         socket.on("connect", handleConnection);
@@ -158,38 +195,74 @@ export default function CustomerChat() {
         socket.on("utils:receive-msg", handleReceiveMessage);
         socket.on("utils:chat-ended", handleChatClosure);
         socket.on("utils:receive-keys", handleReceiveRSAPublicKey)
+        socket.on("utils:request-public-key", sendRSAPublicKey); 
 
         return () => {
             socket.off("connect", handleConnection);
             socket.off("disconnect", handleDisconnection);
             socket.off("utils:receive-msg", handleReceiveMessage);
-            socket.off("utils:chat-ended", handleChatClosure);
+            socket.off("utils:chat-ended", handleChatClosure)
+            socket.off("utils:request-public-key", sendRSAPublicKey); 
+            socket.off("utils:receive-keys", handleReceiveRSAPublicKey)
         }
     }, []);
 
     async function sendMessage(fileUrl) {
-        if (sentMessage === "" && fileUrl === null) return;
-        const isFile = fileUrl ? true : false;
+        if (!sentMessage && !fileUrl) return;
+    
+        const isFile = Boolean(fileUrl);
+        const currentTimestamp = Date.now();
+        const sessionIdentifier = sessionStorage.getItem("customerSessionIdentifier");
 
-        // Encrypt the message with the Customer's RSA Public Key
-        const aesKey = await AESHandler.generateAESKey();
-        console.log(aesKey);
-        const encryptedMessage = await AESHandler.encryptDataWithAESKey(isFile ? fileUrl : sentMessage, aesKey);
-        const encryptedKey = await RSAHandler.encryptDataWithRSAPublic(aesKey, receiverRSAPublicKey);
-        const formattedMsg = {
+        const messageObject = {
+            id: crypto.randomUUID(),
             case: caseID,
-            message: isFile ? null : encryptedMessage.data,
-            fileUrl: isFile ? encryptedMessage.data : null,
-            key: encryptedKey,
-            iv: encryptedMessage.iv,
-            timestamp: Date.now(),
+            message: isFile ? null : sentMessage,
+            fileUrl: isFile ? fileUrl : null,
+            timestamp: currentTimestamp,
             sender: "customer",
-            sessionIdentifier: sessionStorage.getItem("customerSessionIdentifier"),
+            sessionIdentifier,
         }
+    
+        try {
+            // Encrypt the content
+            const aesKey = await AESHandler.generateAESKey();
 
-        socket.emit("utils:send-msg", formattedMsg);
-        setSentMessage("");
-    }
+            // Save the AES Key, IV and ID to the IndexedDB
+            await AESHandler.saveAESKeyWithMessageId(aesKey, messageObject.id);
+
+            const contentToEncrypt = isFile ? fileUrl : sentMessage;
+            const encryptedContent = await AESHandler.encryptDataWithAESKey(contentToEncrypt, aesKey);
+            const encryptedKey = await RSAHandler.encryptDataWithRSAPublic(aesKey, receiverRSAPublicKey);
+    
+            // Prepare the formatted message
+            const encryptedMessage = JSON.parse(JSON.stringify(messageObject));
+            encryptedMessage.message = isFile ? null : encryptedContent.data;
+            encryptedMessage.fileUrl = isFile ? encryptedContent.data : null;
+            encryptedMessage.key = encryptedKey;
+            encryptedMessage.iv = encryptedContent.iv;
+    
+            // Send the message to the server via socket
+            socket.emit("utils:send-msg", encryptedMessage);
+    
+            // Clear the input message state
+            setSentMessage("");
+
+            // Add message locally
+            setMessages((prev) => [
+                ...prev,
+                messageObject
+            ]);
+        } catch (error) {
+            console.error("Failed to send message:", error);
+            setError({
+                title: "Message Sending",
+                description: "An error occured while sending the message. Please try again.",
+                isShown: true,
+                type: "error"
+            })
+        }
+    }    
 
     async function onUploadClick() {
         try {
@@ -273,12 +346,12 @@ export default function CustomerChat() {
                 </div>
             </div>
 
-            { e2eCommunicationError && (
+            { error.isShown && (
                 <ToastMessage
                     title="Authentication"
                     description="An error occured with making a secure connection with the server."
-                    isShown={e2eCommunicationError}
-                    hideToast={() => setE2ECommunicationError(false)}
+                    isShown={error.isShown}
+                    hideToast={() => setError({ ...error, isShown: false })}
                     type="error"
                 />
             )}
