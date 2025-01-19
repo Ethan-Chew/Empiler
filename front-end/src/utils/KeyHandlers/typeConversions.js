@@ -1,22 +1,38 @@
 /// Convert between Data Types
-function _base64StringToArrayBuffer(b64str) {
-    const byteStr = atob(b64str)
-    const bytes = new Uint8Array(byteStr.length)
-    for (let i = 0; i < byteStr.length; i++) {
-      bytes[i] = byteStr.charCodeAt(i)
+function _base64StringToArrayBuffer(base64) {
+    base64 = base64.replace(/-/g, '+').replace(/_/g, '/');
+
+    // Add padding if necessary
+    while (base64.length % 4 !== 0) {
+        base64 += '=';
     }
-    return bytes.buffer
+
+    // Decode the Base64 string into a binary string
+    const binaryString = atob(base64);
+
+    // Create a new ArrayBuffer and a Uint8Array to hold the binary data
+    const buffer = new ArrayBuffer(binaryString.length);
+    const view = new Uint8Array(buffer);
+
+    // Fill the ArrayBuffer with the binary data
+    for (let i = 0; i < binaryString.length; i++) {
+        view[i] = binaryString.charCodeAt(i);
+    }
+
+    return buffer;
 }
 
-function _arrayBufferToBase64(arrayBuffer) {
-    const byteArray = new Uint8Array(arrayBuffer);
-    let byteString = '';
-    for(let i=0; i < byteArray.byteLength; i++) {
-        byteString += String.fromCharCode(byteArray[i]);
-    }
-    const b64 = btoa(byteString);
+function _arrayBufferToBase64(buffer) {
+    const view = new Uint8Array(buffer);
 
-    return b64;
+    // Create a binary string from the ArrayBuffer data
+    let binaryString = '';
+    for (let i = 0; i < view.length; i++) {
+        binaryString += String.fromCharCode(view[i]);
+    }
+
+    // Encode the binary string to Base64
+    return btoa(binaryString);
 }
 
 export { _base64StringToArrayBuffer, _arrayBufferToBase64 };

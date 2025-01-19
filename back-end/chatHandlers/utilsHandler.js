@@ -21,7 +21,7 @@ export default function (io, db, socket) {
     });
     
     // Using a sessionIdentifier (customer / staff), add the new Socket ID to the Active Chat
-    socket.on("utils:add-socket", async (sessionIdentifier, role) => {
+    socket.on("utils:add-socket", async (sessionIdentifier, role, callback) => {
         if (role === "customer") {
             const searchActiveChat = await searchCustomerInActiveChat(db, sessionIdentifier);
 
@@ -39,6 +39,7 @@ export default function (io, db, socket) {
                 io.sockets.sockets.get(socket.id).join(chat.caseID);
             }
         }
+        callback(true);
     })
 
     socket.on("utils:verify-waitinglist", async (customerSessionIdentifier, callback) => {
@@ -84,13 +85,13 @@ export default function (io, db, socket) {
     - case: case ID
     */
     socket.on("utils:share-keys", async (obj) => {
-        console.log(obj);
+        console.log(`Sharing Keys for ${obj.case} by ${socket.id}`);
         socket.broadcast.to(obj.case).emit("utils:receive-keys", obj);
     })
 
     // Share the RSA Public Key with the Client
     socket.on("utils:request-public-key", async (obj) => {
-        console.log(obj);
+        console.log(`Requesting Public Key from ${obj} by ${socket.id}`);
         socket.broadcast.to(obj).emit("utils:request-public-key", obj);
     })
 }

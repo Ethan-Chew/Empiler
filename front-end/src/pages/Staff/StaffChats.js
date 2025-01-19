@@ -52,8 +52,20 @@ export default function StaffChats() {
                 });
             });
 
-            // Request the Client's RSA Public Key
-            socket.emit("utils:request-public-key", response.chat.caseID);
+            // Set a timer, and request every second if the RSA Public Key is not received
+            let counter = 0;
+            const interval = setInterval(() => {
+                if (rsaPublicKeys.filter((key) => key.caseId === response.chat.caseID).length === 0) {
+                    socket.emit("utils:request-public-key", response.chat.caseID);
+                    counter++;
+                } else {
+                    clearInterval(interval);
+                }
+
+                if (counter >= 10) {
+                    clearInterval(interval);
+                }
+            }, 2000);
 
             const formattedChat = {
                 ...response.chat,
@@ -238,14 +250,14 @@ export default function StaffChats() {
 
         const handleReconnectAddChats = (chats) => {
             setConnectedChats(chats);
-            socket.emit("utils:add-socket", null, "staff");
+            socket.emit("utils:add-socket", null, "staff", (res) => {});
             for (const chat of chats) {
                 socket.emit("utils:request-public-key", chat.caseID);
             }
         }
 
         const handleReceiveRSAPublicKey = (res) => {
-            console.log(res)
+            console.log(`Received Key from ${res.case}`)
             setRsaPublicKeys((prev) => [...prev, {
                 key: res.key,
                 caseId: res.case,
@@ -254,7 +266,7 @@ export default function StaffChats() {
 
         const sendRSAPublicKey = (obj) => {
             RSAHandler.retrieveRSAKeyPair("rsa-public").then((res) => {
-                console.log("Sending Key")
+                console.log(`Sending Key to ${obj}`)
                 socket.emit("utils:share-keys", {
                     key: res.key,
                     case: obj
