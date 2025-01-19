@@ -17,7 +17,7 @@ export default function (io, db, socket) {
             msg["sessionIdentifier"] = socket.user.id;
         }
         await saveMessages(db, msg);
-        io.to(msg.case).emit("utils:receive-msg", msg);
+        socket.broadcast.to(msg.case).emit("utils:receive-msg", msg);
     });
     
     // Using a sessionIdentifier (customer / staff), add the new Socket ID to the Active Chat
@@ -86,5 +86,11 @@ export default function (io, db, socket) {
     socket.on("utils:share-keys", async (obj) => {
         console.log(obj);
         socket.broadcast.to(obj.case).emit("utils:receive-keys", obj);
+    })
+
+    // Share the RSA Public Key with the Client
+    socket.on("utils:request-public-key", async (obj) => {
+        console.log(obj);
+        socket.broadcast.to(obj).emit("utils:request-public-key", obj);
     })
 }

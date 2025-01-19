@@ -1,3 +1,4 @@
+import indexedDB from "./indexedDB";
 import { _arrayBufferToBase64, _base64StringToArrayBuffer } from "./typeConversions";
 
 const aesEncryptAlgorithm = { name: 'AES-GCM', length: 256 };
@@ -53,8 +54,6 @@ async function decryptDataWithAESKey(key, iv, data) {
     const encryptedData = _base64StringToArrayBuffer(data);
     const ivArrayBuffer = _base64StringToArrayBuffer(iv);
 
-    console.log(encryptedData, ivArrayBuffer);
-
     const decryptedData = await crypto.subtle.decrypt(
         {
             name: 'AES-GCM',
@@ -67,4 +66,30 @@ async function decryptDataWithAESKey(key, iv, data) {
     return _arrayBufferToBase64(decryptedData);
 }
 
-export default { generateAESKey, encryptDataWithAESKey, decryptDataWithAESKey };
+async function saveAESKeyWithMessageId(key, messageId) {
+    const db = await indexedDB.setupIndexedDB();
+    const transaction = await db.transaction("aes-keys", "readwrite");
+    const store = transaction.objectStore("aes-keys");
+    
+    store.add({ msgId: messageId, key: key.key, iv: key.iv });
+}
+
+async function retrieveAESKeyWithMessageId(messageId) {
+    const db = await indexedDB.setupIndexedDB();
+    const transaction = await db.transaction("aes-keys", "readonly");
+    const store = transaction.objectStore("aes-keys");
+
+    return new Promise((resolve, reject) => {
+        const request = store.get(messageId);
+
+        request.onsuccess = (event) => {
+            resolve(event.target.result);
+        };
+
+        request.onerror = (event) => {
+            reject(event.target.error);
+        };
+    });
+}
+
+export default { generateAESKey, encryptDataWithAESKey, decryptDataWithAESKey, saveAESKeyWithMessageId, retrieveAESKeyWithMessageId };
