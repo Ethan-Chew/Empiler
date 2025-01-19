@@ -9,8 +9,8 @@ function setupIndexedDB() {
             rsaStore.createIndex("key", "key", { unique: false });
             rsaStore.createIndex("type", "type", { unique: true });
 
-            const aesStore = db.createObjectStore("aes-keys", { keyPath: "id", autoIncrement: true }); 
-            aesStore.createIndex("msgId", "msgId", { unique: false });
+            const aesStore = db.createObjectStore("aes-keys", { keyPath: "msgId" }); 
+            aesStore.createIndex("msgId", "msgId", { unique: true });
             aesStore.createIndex("key", "key", { unique: false });
             aesStore.createIndex("iv", "iv", { unique: false });
             aesStore.createIndex("timestamp", "timestamp", { unique: false });

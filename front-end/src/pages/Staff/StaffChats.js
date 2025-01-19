@@ -107,9 +107,6 @@ export default function StaffChats() {
             // Encrypt the message with the Customer's RSA Public Key
             const aesKey = await AESHandler.generateAESKey();
 
-            // Save the AES Key, IV and ID to the IndexedDB
-            await AESHandler.saveAESKeyWithMessageId(aesKey, messageObject.id);
-
             const customerRSAPublic = rsaPublicKeys.filter((key) => key.caseId === selectedChatId)[0].key;
             const encryptedMessage = await AESHandler.encryptDataWithAESKey(isFile ? fileUrl : sentMessage, aesKey);
             const encryptedKey = await RSAHandler.encryptDataWithRSAPublic(aesKey, customerRSAPublic);
@@ -121,6 +118,9 @@ export default function StaffChats() {
             encrypedMessageObject.key = encryptedKey;
             encrypedMessageObject.iv = encryptedMessage.iv;
 
+            // Save the AES Key, IV and ID to the IndexedDB
+            await AESHandler.saveAESKeyWithMessageId(aesKey, encryptedMessage.iv, messageObject.id);
+            
             socket.emit("utils:send-msg", encrypedMessageObject);
             setSentMessage("");
 
@@ -248,7 +248,22 @@ export default function StaffChats() {
             });
         }
 
-        const handleReconnectAddChats = (chats) => {
+        const handleReconnectAddChats = async (chats) => {
+            await chats.map(async (chat) => {
+                for (const msg of chat.messages) {
+                    let decryptedKey, decryptedMessage;
+                    if (msg.sender === "staff") {
+                        // AES Key is stored in IndexedDB -> Retrieve and Decrypt
+                        const key = await AESHandler.retrieveAESKeyWithMessageId(msg.id);
+                        decryptedMessage = await AESHandler.decryptDataWithAESKey(key.key, key.iv, msg.fileUrl || msg.message);
+                    } else {
+                        // Key was sent by the Customer, so decrypt with Staff's RSA Private Key, before decrypting message
+                        decryptedKey = await RSAHandler.decryptDataWithRSAPrivate(msg.key);
+                        decryptedMessage = await AESHandler.decryptDataWithAESKey(decryptedKey, msg.iv, msg.fileUrl || msg.message);
+                    }
+                    msg.message = decryptedMessage;
+                }
+            });
             setConnectedChats(chats);
             socket.emit("utils:add-socket", null, "staff", (res) => {});
             for (const chat of chats) {

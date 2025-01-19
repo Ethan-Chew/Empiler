@@ -12,7 +12,6 @@ export default function (io, db, socket) {
     }
     */
     socket.on("utils:send-msg", async (msg) => {
-        console.log(msg);
         if (msg.sender === "staff") {
             msg["sessionIdentifier"] = socket.user.id;
         }
@@ -53,11 +52,12 @@ export default function (io, db, socket) {
 
     socket.on("utils:verify-activechat", async (customerSessionIdentifier, callback) => {
         const searchActiveChat = await searchCustomerInActiveChat(db, customerSessionIdentifier);
-
+        console.log(`Verifying Active Chat for ${customerSessionIdentifier} by ${socket.id}`);
         if (searchActiveChat) {
             const chatHistory = await retrieveChatMessages(db, searchActiveChat.caseID);
             const staffInformation = await searchForAvailStaff(db, searchActiveChat.staffID);
             io.to(customerSessionIdentifier).emit("utils:waiting-time", Math.floor(Math.random() * 5) + 1); // TODO: Random Number lolxd
+            console.log(`Re-joining ${searchActiveChat.caseID} by ${socket.id}`);
             callback({
                 exist: true,
                 caseID: searchActiveChat.caseID,

@@ -66,12 +66,11 @@ async function decryptDataWithAESKey(key, iv, data) {
     return (new TextDecoder()).decode(decryptedData);
 }
 
-async function saveAESKeyWithMessageId(key, messageId) {
+async function saveAESKeyWithMessageId(key, iv, messageId) {
     const db = await indexedDB.setupIndexedDB();
     const transaction = await db.transaction("aes-keys", "readwrite");
     const store = transaction.objectStore("aes-keys");
-    
-    store.add({ msgId: messageId, key: key.key, iv: key.iv });
+    store.add({ msgId: messageId, key: _arrayBufferToBase64(key), iv: iv });
 }
 
 async function retrieveAESKeyWithMessageId(messageId) {
@@ -83,7 +82,11 @@ async function retrieveAESKeyWithMessageId(messageId) {
         const request = store.get(messageId);
 
         request.onsuccess = (event) => {
-            resolve(event.target.result);
+            const formattedResult = {
+                key: _base64StringToArrayBuffer(event.target.result.key),
+                iv: event.target.result.iv
+            }
+            resolve(formattedResult);
         };
 
         request.onerror = (event) => {
