@@ -2,7 +2,7 @@ import otp from "../models/otp.js";
 
 const getOtp = async (req, res) => {
     try {
-        const { email } = req.params;
+        const { email } = req.body;
         const { secretKey, otpURI } = await otp.getOtp(email);
 
         console.log(secretKey, otpURI);
@@ -29,7 +29,7 @@ const getOtp = async (req, res) => {
 
 const createOtp = async (req, res) => {
     try {
-        const { email } = req.params;
+        const { email } = req.body;
         const { data, otpauth } = await otp.createOtp(email);
 
         if (!data) {

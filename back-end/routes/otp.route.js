@@ -3,10 +3,10 @@ import otpController from '../controllers/otp.controller.js';
 
 const router = express.Router();
 
-router.route('/get/:email')
-    .get(otpController.getOtp);
+router.route('/get/')
+    .post(otpController.getOtp);
 
-router.route('/create/:email')
+router.route('/create')
     .post(otpController.createOtp);
 
 router.route('/verify')

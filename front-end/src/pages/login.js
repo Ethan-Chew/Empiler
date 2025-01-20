@@ -49,9 +49,12 @@ export default function Login() {
             const data = await response.json();
 
             if (response.ok) {
-                const has2fa = await fetch(`http://localhost:8080/api/otp/get/${data.email}`);
+                const has2fa = await fetch(`http://localhost:8080/api/otp/get`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email: data.email }),
+                });
                 const twofaData = await has2fa.json();
-                console.log(twofaData.status);
                 if (twofaData.status === "Success") {
                     setCurrentUser(data);
                     setIs2faOpen(true);

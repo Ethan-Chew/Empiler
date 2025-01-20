@@ -12,11 +12,12 @@ function TwoFactorPopup({ isOpen, setIsOpen, setIsTwofaDisabled }) {
 
   const createOtp = async () => {
     try {
-      const response = await fetch(`http://localhost:8080/api/otp/create/${currentUser.email}`, {
+      const response = await fetch(`http://localhost:8080/api/otp/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
-        }
+        },
+        body: JSON.stringify({ email: currentUser.email })
       });
       const data = await response.json();
       setSecret(data.secretkey);
@@ -48,7 +49,7 @@ function TwoFactorPopup({ isOpen, setIsOpen, setIsTwofaDisabled }) {
       if (data.status === true) {
         alert('OTP verified successfully!');
         setIsOpen(false);
-        setIsTwofaDisabled(false); // Enable the 2FA setup button
+        setIsTwofaDisabled(false);
         
       } else {
         alert('Invalid OTP. Please try again.');
@@ -76,9 +77,14 @@ function TwoFactorPopup({ isOpen, setIsOpen, setIsTwofaDisabled }) {
   useEffect(() => {
     const existingOtp = async () => {
       try {
-        const response = await fetch(`http://localhost:8080/api/otp/get/${currentUser.email}`);
+        const response = await fetch('http://localhost:8080/api/otp/get', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ email: currentUser.email })
+        });
         const data = await response.json(); 
-        console.log(data);
         if (data.status === false) {
           createOtp();
         } else {
