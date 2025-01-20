@@ -29,6 +29,9 @@ router.route('/reminders')
     .put(AppointmentController.updateAppointmentReminder)
     .post(AppointmentController.setAppointmentReminder);
 
+router.route('/openingHours')
+    .get(AppointmentController.getOpeningHours);
+
 router.route("/")
 
 export default router;

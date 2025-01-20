@@ -193,6 +193,23 @@ const deleteAppointmentReminder = async (req, res) => {
     }
 }
 
+const getOpeningHours = async (req, res) => {
+    try {
+        const { openingHours } = req.query; // Adjust to req.body or req.params if needed
+
+        if (!openingHours) {
+            return res.status(400).json({ error: 'openingHours parameter is required' });
+        }
+
+        const openingHoursData = await Appointment.getOpeningHours(openingHours);
+
+        res.status(200).json({ openingHours: openingHoursData });
+    } catch (error) {
+        console.error("Error in getting opening hours:", error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
 export default {
     filterAppointments,
     bookAppointment,
@@ -203,5 +220,6 @@ export default {
     getAppointmentReminders,
     setAppointmentReminder,
     updateAppointmentReminder,
-    deleteAppointmentReminder
+    deleteAppointmentReminder,
+    getOpeningHours
 };

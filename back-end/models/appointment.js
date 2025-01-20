@@ -341,4 +341,27 @@ export default class Appointment {
             return { error: "Error retrieving reminders" };
         }
     }
+
+    static async getOpeningHours(openingHours) {
+        try {
+            const today = new Date();
+            const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+            const todayName = dayNames[today.getDay()];
+
+            // Updated regex to handle specific days and ranges of times (mon-fri, etc.)
+            const regex = new RegExp(`(?:${todayName}|${dayNames.join('|')})(?:\\s*-\\s*${dayNames.join('|')})?:\\s*(\\d{1,2}\\.\\d{2}[ap]m)\\s*[-to]{1,2}\\s*(\\d{1,2}\\.\\d{2}[ap]m)`, 'i');
+            const match = openingHours.match(regex);
+
+            if (match) {
+                const [, start, end] = match;
+                return {start, end};
+            } else {
+                return "Closed";
+            }
+        } catch (error) {
+            console.error(error);
+            return "Error getting opening hours";
+        }
+    }
+    
 }
