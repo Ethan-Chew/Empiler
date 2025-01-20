@@ -41,7 +41,7 @@ export default function ViewBookings() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ name }) // Send name in the request body
+                body: JSON.stringify({ userId: name }) // Send name in the request body
             });
 
             if (!response.ok) {

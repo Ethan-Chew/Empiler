@@ -117,7 +117,8 @@ export default function InitialiseChat() {
               <div className="flex flex-col items-center justify-center p-10 bg-white drop-shadow-[0_0px_4px_rgba(0,0,0,.15)]">
                 <p className="text-xl font-medium text-gray-800 mb-2">Please hold while we connect you to an agent.</p>
                 <div className="w-8 h-8 border-4 border-t-4 border-gray-300 rounded-full animate-spin mb-2" style={{ borderTopColor: "#8b3d58" }}></div>
-                <p>Estimated Waiting Time: <span className="font-bold">{connectionErr ? "Loading queue information..." : `${waitingTime} minutes`}</span></p>
+                {/* TODO: USE DYNAMIC WAITING TIME */}
+                <p>Estimated Waiting Time: <span className="font-bold">{connectionErr ? "Loading queue information..." : `${waitingTime} minutes`}</span></p> 
                 <button
                   className="mt-4 px-4 py-2 bg-ocbcred text-white rounded hover:bg-ocbcdarkred focus:outline-none"
                   onClick={handleDisconnectionButton}

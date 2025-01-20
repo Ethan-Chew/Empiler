@@ -6,11 +6,13 @@ import TwofaPopup from '../../components/2FA/TwofaPopup';
 import { useState } from 'react';
 import { PiChats, PiCalendarBlank } from "react-icons/pi";
 import { MdEditCalendar } from "react-icons/md";
+import { IoMdSettings } from "react-icons/io";
 
 const CustomerLandingPage = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [twofaIsOpen, setTwofaIsOpen] = useState(false); 
     const [isTwofaDisabled, setIsTwofaDisabled] = useState(true);
+    const [settingsIsOpen, setSettingsIsOpen] = useState(false);
 
     useEffect(() => {
         const checkExistingOtp = async () => {
@@ -31,13 +33,19 @@ const CustomerLandingPage = () => {
         checkExistingOtp();
     }, []);
 
-
     return (
         <div className="bg-white font-inter">
             <NavBar />
 
             <div className="text-left mt-6 px-4 lg:px-8">
-                <h1 className="text-[48px] text-[#343434]">Good Afternoon, John Customer!</h1>
+                <div className='flex flex-row'>
+                    <h1 className="text-[48px] text-[#343434]">Good Afternoon, John Customer!</h1>
+                    <button
+                        onClick={() => setSettingsIsOpen(true)}
+                    >
+                        <IoMdSettings className="ml-auto w-10 h-10 object-contain fill-ocbcred" />
+                    </button>
+                </div>
                 <p className="text-[20px] text-[#999999] mt-2">What would you like to do today?</p>
                 <hr className="border-t-[2px] border-[#DCD6D6] mt-12" />
             </div>
