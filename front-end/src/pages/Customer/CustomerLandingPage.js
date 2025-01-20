@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import NavBar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import LiveChatPopup from '../../components/Chat/LiveChatPopup';
@@ -9,7 +9,28 @@ import { MdEditCalendar } from "react-icons/md";
 
 const CustomerLandingPage = () => {
     const [isOpen, setIsOpen] = useState(false);
-    const [twofaIsOpen, setTwofaIsOpen] = useState(false);
+    const [twofaIsOpen, setTwofaIsOpen] = useState(false); 
+    const [isTwofaDisabled, setIsTwofaDisabled] = useState(true);
+
+    useEffect(() => {
+        const checkExistingOtp = async () => {
+            try {
+                const userSession = JSON.parse(sessionStorage.getItem('userDetails'));
+                const response = await fetch(`http://localhost:8080/api/otp/get/${userSession.email}`);
+                const data = await response.json();
+                if (data !== false) {
+                    setIsTwofaDisabled(true);
+                } else {
+                    setIsTwofaDisabled(false);
+                }
+            } catch (error) {
+                console.error('Error checking existing OTP:', error);
+            }
+        };
+
+        checkExistingOtp();
+    }, []);
+
 
     return (
         <div className="bg-white font-inter">
@@ -63,7 +84,10 @@ const CustomerLandingPage = () => {
                     </div>
 
                     <div className="flex flex-wrap justify-center space-x-8 mt-8 mx-12">
-                        <div onClick={() => setTwofaIsOpen(true)} className="border border-gray-200 bg-white shadow-md rounded-xl p-6 w-[400px] h-[250px] hover:shadow-lg transition-shadow duration-300 mb-8 cursor-pointer">
+                        <div
+                            onClick={!isTwofaDisabled ? () => setTwofaIsOpen(true) : null}
+                            className={`border border-gray-200 shadow-md rounded-xl p-6 w-[400px] h-[250px] transition-shadow duration-300 mb-8 ${isTwofaDisabled ? 'bg-gray-300 cursor-not-allowed' : 'bg-white hover:shadow-lg cursor-pointer'}`}
+                        >
                             <PiCalendarBlank className="w-12 h-12 object-contain fill-ocbcred mb-4" />
                             <h3 className="text-[24px] font-semibold text-left">2FA Setup</h3>
                             <p className="text-[18px] font-light text-left text-gray-500 mt-2">
@@ -71,7 +95,6 @@ const CustomerLandingPage = () => {
                             </p>
                         </div>
                     </div>
-
                     <hr className="border-t-[2px] border-[#DCD6D6] mt-16" />
                 </div>
             </div>

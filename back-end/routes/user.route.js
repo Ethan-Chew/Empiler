@@ -7,4 +7,7 @@ const router = express.Router()
 router.route("/user", authoriseJWT)
     .get(UserController.getUser)
 
+router.route("/:id", authoriseJWT)
+    .get(UserController.getUserWithId)
+
 export default router
