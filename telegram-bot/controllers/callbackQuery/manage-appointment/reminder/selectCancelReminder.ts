@@ -2,15 +2,10 @@ import { MyContext } from "../../../../bot";
 import { InlineKeyboard } from "grammy";
 import axios from "axios";
 
-const cqManageReminder = async (ctx: MyContext) => {
+const cqSelectCancelReminder = async (ctx: MyContext) => {
     if (ctx.session.selectedAppt === null || ctx.session.lastManageApptMsg === null) {
         return;
     }
-
-    // Create Inline Keyboard for User to Choose Reminder
-    const manageReminderKVP = [
-        ["Create Reminder", "create-appt-reminder"],
-    ]
 
     // Check if the user has any appointment to cancel
     const appointment = await axios.get(`http://localhost:8080/api/appointments/viewbooking/${ctx.session.selectedAppt}`);
@@ -19,15 +14,18 @@ const cqManageReminder = async (ctx: MyContext) => {
         return;
     }
     const appointmentData = await appointment.data;
-    if (appointmentData.reminders.length > 0) {
-        manageReminderKVP.push(["Cancel Reminder", "cancel-appt-reminder"]);
+
+    // Create Inline Keyboard for User to Choose Appointment
+    const remindersKVP = [];
+    for (const reminder of appointmentData.reminders) {
+        remindersKVP.push([`${reminder.type} - ${reminder.area}`, `reminder-type-${reminder.type}-${reminder.area}`]);
     }
 
-    const reminderTimeButtons = manageReminderKVP.map(([label, data]) => InlineKeyboard.text(label, data));
-    const inlineKeyboard = InlineKeyboard.from([reminderTimeButtons]).row().text("<< Back", "back-to-manage-appt-optns");
+    const reminderTimeButtons = remindersKVP.map(([label, data]) => InlineKeyboard.text(label, data));
+    const inlineKeyboard = InlineKeyboard.from([reminderTimeButtons]).row().text("<< Back", "back-to-manage-reminder-optns");
 
     // // Edit the Original Message to include the new inlineKeyboard
     await ctx.api.editMessageReplyMarkup(ctx.chat!.id, ctx.session.lastManageApptMsg, { reply_markup: inlineKeyboard });
 }
 
-export { cqManageReminder };
+export { cqSelectCancelReminder };

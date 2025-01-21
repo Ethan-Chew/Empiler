@@ -82,10 +82,9 @@ export default class Appointment {
         try {
             const { data, error } = await supabase
                 .from("branch_appointments")
-                .select(`*, appointment_timeslots(timeslot)`)
+                .select(`*, appointment_timeslots(timeslot), reminders:appointment_reminder!appointmentId (type, reminderTime, area)`)
                 .eq("id", appointmentId)
                 .single();
-
             if (error) {
                 console.error(error);
                 return null;
@@ -320,7 +319,7 @@ export default class Appointment {
         }
     }
 
-    static async deleteAppointmentReminder(appointmentIds) {
+    static async deleteAppointmentReminders(appointmentIds) {
         try {
             // If it's a single ID, convert it into an array for consistency
             const idsToDelete = Array.isArray(appointmentIds) ? appointmentIds : [appointmentIds];
@@ -332,13 +331,34 @@ export default class Appointment {
             
             if (error) {
                 console.error(error);
-                return { error: "Error retrieving reminders" };
+                return { error: "Error deleting reminders" };
             }
 
             return data;
         } catch (error) {
             console.error(error);
-            return { error: "Error retrieving reminders" };
+            return { error: "Error deleting reminders" };
+        }
+    }
+
+    static async deleteAppointmentReminder(appointmentId, type, area) {
+        try {
+            const { data, error } = await supabase
+                .from('appointment_reminder')
+                .delete()
+                .eq('appointmentId', appointmentId)
+                .eq('type', type)
+                .eq('area', area);
+            
+            if (error) {
+                console.error(error);
+                return { error: "Error deleting reminder" };
+            }
+
+            return data;
+        } catch (error) {
+            console.error(error);
+            return { error: "Error deleting reminder" };
         }
     }
 

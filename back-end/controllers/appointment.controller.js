@@ -35,6 +35,23 @@ const bookAppointment = async (req, res) => {
     }
 }
 
+const getAppointment = async (req, res) => {
+    const { appointmentId } = req.params;
+
+    try {
+        const appointments = await Appointment.getAppointment(appointmentId);
+
+        if (!appointments || appointments.length === 0) {
+            return res.status(404).json({ error: "No appointment found" });
+        }
+
+        res.status(200).json(appointments);
+    } catch (error) {
+        console.error("Error in getAppointment:", error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+}
+
 const getAllAppointments = async (req, res) => {
     const { userId } = req.body;
 
@@ -172,19 +189,37 @@ const updateAppointmentReminder = async (req, res) => {
     }
 }
 
-const deleteAppointmentReminder = async (req, res) => {
+const deleteAppointmentReminders = async (req, res) => {
     try {
         const { id } = req.params;
 
-        if (!userId) {
+        if (!id) {
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
-        const reminders = await Appointment.deleteAppointmentReminder(id);
+        const reminders = await Appointment.deleteAppointmentReminders(id);
 
         if (reminders.error) {
             return res.status(404).json({ error: reminders.error });
         }
+
+        res.status(200).json({ status: "success" });
+    } catch (error) {
+        console.error("Error in getting reminders:", error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+}
+
+const deleteAppointmentReminder = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { type, area } = req.body;
+
+        if (!type | !area) {
+            return res.status(400).json({ error: 'Missing required fields' });
+        }
+
+        const reminders = await Appointment.deleteAppointmentReminder(id, type, area);
 
         res.status(200).json({ status: "success" });
     } catch (error) {
@@ -214,12 +249,14 @@ export default {
     filterAppointments,
     bookAppointment,
     getAllAppointments,
+    getAppointment,
     updateAppointment,
     deleteAppointment,
     getAppointmentReminderTypes,
     getAppointmentReminders,
     setAppointmentReminder,
-    updateAppointmentReminder,
     deleteAppointmentReminder,
+    updateAppointmentReminder,
+    deleteAppointmentReminders,
     getOpeningHours
 };

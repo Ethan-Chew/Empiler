@@ -9,6 +9,9 @@ router.route('/filter/:date/:branchName')
 router.route('/book')
     .post(AppointmentController.bookAppointment);
 
+router.route('/viewbooking/:appointmentId')
+    .get(AppointmentController.getAppointment);
+
 router.route('/viewbookings')
     .post(AppointmentController.getAllAppointments);
 
@@ -20,6 +23,9 @@ router.route('/delete')
 
 router.route('/remindertypes')
     .get(AppointmentController.getAppointmentReminderTypes)
+
+router.route('/reminder/:id')
+    .delete(AppointmentController.deleteAppointmentReminder)
 
 router.route('/reminders/:id')
     .get(AppointmentController.getAppointmentReminders)
