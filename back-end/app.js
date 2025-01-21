@@ -18,6 +18,7 @@ import auth from './routes/auth.route.js';
 import translate from './routes/translate.route.js';
 import appointment from './routes/appointment.route.js';
 import branches from './controllers/branches.controller.js';
+import otp from './routes/otp.route.js';
 
 // Socket.IO Event Handlers
 import chatAttachments from './routes/chatAttachments.route.js';
@@ -54,6 +55,7 @@ app.get("/api/branch", branches.getSpecificOCBCBranch);
 app.use("/api/appointments", appointment);
 app.use("/api/chat/upload", chatAttachments);
 app.use("/api/translate", translate);
+app.use("/api/otp", otp);
 
 // Handle Socket.IO Connection
 const server = createServer(app);

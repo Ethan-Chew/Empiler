@@ -1,13 +1,36 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import NavigationBar from "../components/Navbar";
+import Login2faPopup from '../components/2FA/Login2faPopup';
 
 export default function Login() {
+    const [is2faOpen, setIs2faOpen] = useState(false);
+    const [currentUser, setCurrentUser] = useState(null);
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
     const navigate = useNavigate();
     const { callback } = useLocation();
+
+    const handleSuccessfulLogin = (data) => {
+        // Store user details in sessionStorage
+        sessionStorage.setItem('userDetails', JSON.stringify({
+            id: data.accountId,
+            email: data.email,
+            role: data.role,
+        }));
+
+        // Check the role of the logged-in user
+        if (data.role === "staff") {
+            navigate(callback ? callback : "/staff/home");
+        } else if (data.role === "customer") {
+            navigate(callback ? callback : "/customer/home");
+        } else {
+            console.error("Unknown user role:", data.role);
+            // Optionally, redirect to a default page or show an error
+            navigate("/login");
+        }
+    };
     
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -25,25 +48,18 @@ export default function Login() {
 
             const data = await response.json();
 
-            console.log(data);
-
             if (response.ok) {
-                // Store user details in sessionStorage
-                sessionStorage.setItem('userDetails', JSON.stringify({
-                    id: data.accountId,
-                    email: data.email,
-                    role: data.role,
-                }));
-
-                // Check the role of the logged-in user
-                if (data.role === "staff") {
-                    navigate(callback ? callback : "/staff/home");
-                } else if (data.role === "customer") {
-                    navigate(callback ? callback : "/customer/home");
+                const has2fa = await fetch(`http://localhost:8080/api/otp/get`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email: data.email }),
+                });
+                const twofaData = await has2fa.json();
+                if (twofaData.status === "Success") {
+                    setCurrentUser(data);
+                    setIs2faOpen(true);
                 } else {
-                    console.error("Unknown user role:", data.role);
-                    // Optionally, redirect to a default page or show an error
-                    navigate("/login");
+                    handleSuccessfulLogin(data);
                 }
             } else {
                 // Display error message if login fails
@@ -109,6 +125,14 @@ export default function Login() {
                         <a>Don't have a support account? <span className="text-ocbcred">Sign up now</span></a>
                     </div>
                 </form>
+                {is2faOpen && (
+                <Login2faPopup
+                    isOpen={is2faOpen}
+                    setIsOpen={setIs2faOpen}
+                    currentUser={currentUser}
+                    handleSuccessfulLogin={handleSuccessfulLogin}
+                />
+            )}
             </div>
         </div>
     );
