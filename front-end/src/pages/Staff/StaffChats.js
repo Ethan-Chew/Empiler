@@ -303,7 +303,13 @@ export default function StaffChats() {
         
         return () => {
             // Clear Event Listeners on Deconstructor
-            socket.off("connect", handleConnection);
+            socket.off("connect", (ctx) => {
+                const initialGetTimeout = setTimeout(() => {
+                    console.log("Initial Connection Timeout");
+                    handleConnection(ctx);
+                    clearTimeout(initialGetTimeout);
+                }, 1000);
+            });
             socket.off("disconnect", handleDisconnection);
             socket.off("staff:avail-chats", handleSetWaitingCustomers)
             socket.off("utils:receive-msg", handleReceiveMessage);

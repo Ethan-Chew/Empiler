@@ -68,7 +68,7 @@ export default function CustomerChat() {
             if (!customerSessionIdentifier) {
                 navigateHome();
             }
-            console.log("IM HERE")
+
             socket.emit("utils:verify-activechat", customerSessionIdentifier, async (chatExistanceReq) => {
                 setStaffName(chatExistanceReq.staffName);
                 if (chatExistanceReq.exist && chatExistanceReq.caseID === caseID) {
