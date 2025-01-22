@@ -1,4 +1,5 @@
-import { appendCustSIDToActiveChat, searchCustomerInActiveChat, searchForWaitingCustomer, saveMessages, retrieveChatMessages, addSocketIdToAvailStaff, getChatIdsForStaff, endActiveChat, searchForAvailStaff } from "../utils/sqliteDB.js";
+import { get } from "http";
+import { appendCustSIDToActiveChat, searchCustomerInActiveChat, searchForWaitingCustomer, saveMessages, retrieveChatMessages, addSocketIdToAvailStaff, getChatIdsForStaff, endActiveChat, searchForAvailStaff, retrieveWaitingCustomers } from "../utils/sqliteDB.js";
 
 export default function (io, db, socket) {
     /*
@@ -11,6 +12,21 @@ export default function (io, db, socket) {
         sessionIdentifier: "customerSessionIdentifier / staffID"
     }
     */
+
+    const getCustomersAhead = async (db, customerSessionIdentifier) => {
+        const waitingCustomers = await retrieveWaitingCustomers(db);
+        console.log(waitingCustomers);
+        let customersAhead = 10;
+        for (const customer of waitingCustomers) {
+            console.log(customer);
+            if (customer.customerSessionIdentifier === customerSessionIdentifier) {
+                break;
+            }
+            customersAhead++;
+        }
+        return customersAhead;
+    }
+
     socket.on("utils:send-msg", async (msg) => {
         if (msg.sender === "staff") {
             msg["sessionIdentifier"] = socket.user.id;
@@ -55,7 +71,6 @@ export default function (io, db, socket) {
         if (searchActiveChat) {
             const chatHistory = await retrieveChatMessages(db, searchActiveChat.caseID);
             const staffInformation = await searchForAvailStaff(db, searchActiveChat.staffID);
-            io.to(customerSessionIdentifier).emit("utils:waiting-time", Math.floor(Math.random() * 5) + 1); // TODO: Random Number lolxd
             callback({
                 exist: true,
                 caseID: searchActiveChat.caseID,
@@ -66,6 +81,16 @@ export default function (io, db, socket) {
             callback({
                 exist: false
             })
+        }
+    });
+
+    socket.on("utils:get-customers-ahead", async (customerSessionIdentifier) => {
+        try {
+            const customersAhead = await getCustomersAhead(db, customerSessionIdentifier);
+            console.log(`Number of customers ahead of ${customerSessionIdentifier}: ${customersAhead}`);
+            io.to(customerSessionIdentifier).emit("utils:waiting-time", customersAhead);
+        } catch (error) {
+            console.error('Error getting customers ahead:', error);
         }
     });
     
