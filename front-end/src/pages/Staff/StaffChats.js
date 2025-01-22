@@ -143,17 +143,6 @@ export default function StaffChats() {
         }
     }
 
-    const sendAppointment = () => {
-        const formattedMsg = {
-            case: connectedChats.filter((chat) => chat.caseID === selectedChatId)[0].caseID,
-            message: "appointment",
-            timestamp: Date.now(),
-            sender: "staff",
-        };
-        socket.emit("utils:send-msg", formattedMsg);
-        setSentMessage("");
-    }
-
     const handleEndChat = () => {        
         // Remove from backend
         socket.emit("utils:end-chat", selectedChatId, false);
@@ -173,7 +162,7 @@ export default function StaffChats() {
 
     async function handleAppointmentClick() {
         try {
-            sendAppointment();
+            sendMessage("appointment");
         } catch (err) {
             console.error('Error: ', err);
         }
