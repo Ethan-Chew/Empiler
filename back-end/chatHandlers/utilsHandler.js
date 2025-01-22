@@ -13,20 +13,6 @@ export default function (io, db, socket) {
     }
     */
 
-    const getCustomersAhead = async (db, customerSessionIdentifier) => {
-        const waitingCustomers = await retrieveWaitingCustomers(db);
-        console.log(waitingCustomers);
-        let customersAhead = 10;
-        for (const customer of waitingCustomers) {
-            console.log(customer);
-            if (customer.customerSessionIdentifier === customerSessionIdentifier) {
-                break;
-            }
-            customersAhead++;
-        }
-        return customersAhead;
-    }
-
     socket.on("utils:send-msg", async (msg) => {
         if (msg.sender === "staff") {
             msg["sessionIdentifier"] = socket.user.id;
@@ -81,16 +67,6 @@ export default function (io, db, socket) {
             callback({
                 exist: false
             })
-        }
-    });
-
-    socket.on("utils:get-customers-ahead", async (customerSessionIdentifier) => {
-        try {
-            const customersAhead = await getCustomersAhead(db, customerSessionIdentifier);
-            console.log(`Number of customers ahead of ${customerSessionIdentifier}: ${customersAhead}`);
-            io.to(customerSessionIdentifier).emit("utils:waiting-time", customersAhead);
-        } catch (error) {
-            console.error('Error getting customers ahead:', error);
         }
     });
     

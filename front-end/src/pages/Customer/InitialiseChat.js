@@ -43,7 +43,6 @@ export default function InitialiseChat() {
                 });
             }
         });
-        socket.emit('utils:get-customers-ahead', customerSessionIdentifier);
     }
 
     const handleDisconnection = () => {

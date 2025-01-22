@@ -1,7 +1,20 @@
-import { addWaitingCustomers, removeWaitingCustomer, searchForWaitingCustomer, endActiveChat } from "../utils/sqliteDB.js";
+import { addWaitingCustomers, removeWaitingCustomer, searchForWaitingCustomer, endActiveChat, retrieveWaitingCustomers } from "../utils/sqliteDB.js";
 import { notifyForWaitingCustomers } from "./staffHandler.js";
 
 export default function (io, db, socket) {
+
+    const getCustomersAhead = async (db, customerSessionIdentifier) => {
+            const waitingCustomers = await retrieveWaitingCustomers(db);
+            let customersAhead = 0;
+            for (const customer of waitingCustomers) {
+                if (customer.customerSessionIdentifier === customerSessionIdentifier) {
+                    break;
+                }
+                customersAhead++;
+            }
+            return customersAhead;
+        }
+
     socket.on("customer:join", async (customerSessionIdentifier, section, question) => {
         const customerData = {
             customerSessionIdentifier: customerSessionIdentifier,
@@ -24,7 +37,9 @@ export default function (io, db, socket) {
         await notifyForWaitingCustomers(db, io);
 
         socket.join(customerSessionIdentifier); // Connect the Customer's Socket to a room with ID of customerSessionIdentifier
-        io.to(customerSessionIdentifier).emit("utils:waiting-time", Math.floor(Math.random() * 5) + 1); // TODO: Random Number lolxd
+        io.to(customerSessionIdentifier).emit("utils:waiting-time",
+            await getCustomersAhead(db, customerSessionIdentifier)
+        );
     });
 
     socket.on("customer:leave", async () => {
