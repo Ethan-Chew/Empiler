@@ -291,7 +291,13 @@ export default function StaffChats() {
         }
 
         // Handle Event Listeners
-        socket.on("connect", handleConnection);
+        socket.on("connect", (ctx) => {
+            const initialGetTimeout = setTimeout(() => {
+                console.log("Initial Connection Timeout");
+                handleConnection(ctx);
+                clearTimeout(initialGetTimeout);
+            }, 1000);
+        });
         socket.on("disconnect", handleDisconnection);
         socket.on("staff:avail-chats", handleSetWaitingCustomers)
         socket.on("utils:receive-msg", handleReceiveMessage);
@@ -303,13 +309,7 @@ export default function StaffChats() {
         
         return () => {
             // Clear Event Listeners on Deconstructor
-            socket.off("connect", (ctx) => {
-                const initialGetTimeout = setTimeout(() => {
-                    console.log("Initial Connection Timeout");
-                    handleConnection(ctx);
-                    clearTimeout(initialGetTimeout);
-                }, 1000);
-            });
+            socket.off("connect", handleConnection);
             socket.off("disconnect", handleDisconnection);
             socket.off("staff:avail-chats", handleSetWaitingCustomers)
             socket.off("utils:receive-msg", handleReceiveMessage);
