@@ -215,21 +215,26 @@ export default class Appointment {
         }
     }
 
-    static async getAppointmentReminders({ type }) {
+    static async getAllAppointmentReminders({ type }) {
 
         try {
             let query = supabase
                 .from('appointment_reminder')
                 .select(`
-                    *,
-                    branchappt:branch_appointments!appointmentId (
-                        id,
-                        branchName,
-                        userId,
-                        date,
-                        timeslot:appointment_timeslots!timeslotId (
+                    appointmentId,
+                    reminders:(
+                        type,
+                        reminderTime,
+                        area,
+                        branchappt:branch_appointments!appointmentId (
                             id,
-                            timeslot
+                            branchName,
+                            userId,
+                            date,
+                            timeslot:appointment_timeslots!timeslotId (
+                                id,
+                                timeslot
+                            )
                         )
                     )
                 `);

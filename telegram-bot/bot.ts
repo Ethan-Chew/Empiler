@@ -20,6 +20,7 @@ import { cqConfirmSetReminder } from "./controllers/callbackQuery/manage-appoint
 import { cqManageReminder } from "./controllers/callbackQuery/manage-appointment/reminder/manageReminder";
 import { cqSelectCancelReminder } from "./controllers/callbackQuery/manage-appointment/reminder/selectCancelReminder";
 import { cqCancelReminder } from "./controllers/callbackQuery/manage-appointment/reminder/cancelReminder";
+import autoNotification from "./utils/autoNotification";
 
 // Handle Telegram Bot Local Session
 interface SessionData {
@@ -102,6 +103,9 @@ bot.catch((err) => {
       console.error("Unknown error:", e);
     }
 });
+
+// Handle Auto Notification CRON Job
+autoNotification(bot);
 
 // Start the Bot
 console.log("Telegram Bot Started");

@@ -25,11 +25,11 @@ router.route('/remindertypes')
     .get(AppointmentController.getAppointmentReminderTypes)
 
 router.route('/reminder/:id')
+    .get(AppointmentController.getAppointmentReminders)
     .delete(AppointmentController.deleteAppointmentReminder)
 
-router.route('/reminders/:id')
-    .get(AppointmentController.getAppointmentReminders)
-    .delete(AppointmentController.deleteAppointmentReminder);
+router.route('/reminders/:type')
+    .get(AppointmentController.getAllAppointmentReminders);
 
 router.route('/reminders')
     .put(AppointmentController.updateAppointmentReminder)

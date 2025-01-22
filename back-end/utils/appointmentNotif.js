@@ -18,7 +18,7 @@ export default async function startAutoNotifJob() {
     // A Cron Job that runs every hour
     try {
         cron.schedule("0 * * * *",  async () => {
-            const data = await Appointment.getAppointmentReminders("email");
+            const data = await Appointment.getAllAppointmentReminders("email");
             const currentUnixMS = new Date().getTime();
             const sentApptIds = [];
 

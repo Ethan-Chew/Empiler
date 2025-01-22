@@ -118,11 +118,31 @@ const getAppointmentReminderTypes = async (req, res) => {
     }
 }
 
+const getAllAppointmentReminders = async (req, res) => {
+    try {
+        const { type } = req.params;
+
+        if (!type) {
+            return res.status(400).json({ error: 'Missing required fields' });
+        }
+
+        const reminders = await Appointment.getAllAppointmentReminders(type);
+        if (reminders.error) {
+            return res.status(404).json({ error: reminders.error });
+        }
+
+        res.status(200).json(reminders);
+    } catch (error) {
+        console.error("Error in all reminders:", error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+}
+
 const getAppointmentReminders = async (req, res) => {
     try {
         const { id } = req.params;
 
-        if (!userId) {
+        if (!id) {
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
@@ -253,6 +273,7 @@ export default {
     updateAppointment,
     deleteAppointment,
     getAppointmentReminderTypes,
+    getAllAppointmentReminders,
     getAppointmentReminders,
     setAppointmentReminder,
     deleteAppointmentReminder,

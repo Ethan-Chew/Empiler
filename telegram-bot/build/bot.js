@@ -32,6 +32,7 @@ const confirmSetReminder_1 = require("./controllers/callbackQuery/manage-appoint
 const manageReminder_1 = require("./controllers/callbackQuery/manage-appointment/reminder/manageReminder");
 const selectCancelReminder_1 = require("./controllers/callbackQuery/manage-appointment/reminder/selectCancelReminder");
 const cancelReminder_1 = require("./controllers/callbackQuery/manage-appointment/reminder/cancelReminder");
+const autoNotification_1 = __importDefault(require("./utils/autoNotification"));
 const token = process.env.TELEGRAM_API_KEY || "";
 const bot = new grammy_1.Bot(token);
 if (process.env.ENVIRONMENT === "development") {
@@ -100,6 +101,8 @@ bot.catch((err) => {
         console.error("Unknown error:", e);
     }
 });
+// Handle Auto Notification CRON Job
+(0, autoNotification_1.default)(bot);
 // Start the Bot
 console.log("Telegram Bot Started");
 bot.start();
