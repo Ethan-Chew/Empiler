@@ -19,7 +19,7 @@ dotenv_1.default.config();
 // Controllers
 const startController_1 = require("./controllers/startController");
 const linkController_1 = require("./controllers/linkController");
-const helpController_1 = require("./controllers/helpController");
+const unlinkController_1 = require("./controllers/unlinkController");
 const upcomingController_1 = require("./controllers/upcomingController");
 /// Context Query Controllers
 const manageAppointments_1 = require("./controllers/callbackQuery/manageAppointments");
@@ -32,6 +32,7 @@ const confirmSetReminder_1 = require("./controllers/callbackQuery/manage-appoint
 const manageReminder_1 = require("./controllers/callbackQuery/manage-appointment/reminder/manageReminder");
 const selectCancelReminder_1 = require("./controllers/callbackQuery/manage-appointment/reminder/selectCancelReminder");
 const cancelReminder_1 = require("./controllers/callbackQuery/manage-appointment/reminder/cancelReminder");
+/// CRON to send Auto Notification
 const autoNotification_1 = __importDefault(require("./utils/autoNotification"));
 const token = process.env.TELEGRAM_API_KEY || "";
 const bot = new grammy_1.Bot(token);
@@ -46,7 +47,7 @@ bot.use((0, grammy_1.session)({ initial: initial }));
 // Command Handling
 bot.command("start", startController_1.startController);
 bot.command("link", linkController_1.linkController);
-bot.command("help", helpController_1.helpController);
+bot.command("unlink", unlinkController_1.unlinkController);
 bot.command("upcoming", upcomingController_1.upcomingController);
 // Handle Inline Keyboard Clicks
 /// Manage Appointments

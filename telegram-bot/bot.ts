@@ -7,7 +7,7 @@ dotenv.config();
 // Controllers
 import { startController } from "./controllers/startController";
 import { linkController } from "./controllers/linkController";
-import { helpController } from "./controllers/helpController";
+import { unlinkController } from "./controllers/unlinkController";
 import { upcomingController } from "./controllers/upcomingController";
 /// Context Query Controllers
 import { cqManageAppointments } from "./controllers/callbackQuery/manageAppointments";
@@ -20,6 +20,7 @@ import { cqConfirmSetReminder } from "./controllers/callbackQuery/manage-appoint
 import { cqManageReminder } from "./controllers/callbackQuery/manage-appointment/reminder/manageReminder";
 import { cqSelectCancelReminder } from "./controllers/callbackQuery/manage-appointment/reminder/selectCancelReminder";
 import { cqCancelReminder } from "./controllers/callbackQuery/manage-appointment/reminder/cancelReminder";
+/// CRON to send Auto Notification
 import autoNotification from "./utils/autoNotification";
 
 // Handle Telegram Bot Local Session
@@ -47,7 +48,7 @@ bot.use(session({ initial: initial }));
 // Command Handling
 bot.command("start", startController)
 bot.command("link", linkController);
-bot.command("help", helpController);
+bot.command("unlink", unlinkController);
 bot.command("upcoming", upcomingController);
 
 // Handle Inline Keyboard Clicks

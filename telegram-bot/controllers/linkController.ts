@@ -1,5 +1,4 @@
 import { Context } from "grammy";
-import bot from "../bot";
 import axios, { AxiosError } from "axios";
 import validateUUID from "../utils/validateUUID";
 
