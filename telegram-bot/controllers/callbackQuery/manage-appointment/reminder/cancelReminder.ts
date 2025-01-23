@@ -1,5 +1,4 @@
 import { MyContext } from "../../../../bot";
-import { InlineKeyboard } from "grammy";
 import axios from "axios";
 
 const cqCancelReminder = async (ctx: MyContext, reminderInfo: string) => {
@@ -8,14 +7,12 @@ const cqCancelReminder = async (ctx: MyContext, reminderInfo: string) => {
     }
 
     // Check if the user has any appointment to cancel
-    const [ type, area ] = reminderInfo.split("-");
     const appointment = await axios.delete(`http://localhost:8080/api/appointments/reminder/${ctx.session.selectedAppt}`, {
         headers: {
             "Content-Type": "application/json",
         },
         data: {
-            type: type,
-            area: area,
+            reminderIds: [reminderInfo]
         }
     });
     if (appointment.status !== 200) {

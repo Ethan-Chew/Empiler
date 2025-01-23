@@ -146,7 +146,7 @@ const getAppointmentReminders = async (req, res) => {
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
-        const reminders = await Appointment.getAppointmentReminder(id);
+        const reminders = await Appointment.getAppointmentReminders(id);
 
         if (reminders.error) {
             return res.status(404).json({ error: reminders.error });
@@ -211,35 +211,13 @@ const updateAppointmentReminder = async (req, res) => {
 
 const deleteAppointmentReminders = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { reminderIds } = req.body;
 
-        if (!id) {
+        if (!reminderIds) {
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
-        const reminders = await Appointment.deleteAppointmentReminders(id);
-
-        if (reminders.error) {
-            return res.status(404).json({ error: reminders.error });
-        }
-
-        res.status(200).json({ status: "success" });
-    } catch (error) {
-        console.error("Error in getting reminders:", error);
-        res.status(500).json({ error: 'Internal Server Error' });
-    }
-}
-
-const deleteAppointmentReminder = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { type, area } = req.body;
-
-        if (!type | !area) {
-            return res.status(400).json({ error: 'Missing required fields' });
-        }
-
-        const reminders = await Appointment.deleteAppointmentReminder(id, type, area);
+        const reminders = await Appointment.deleteAppointmentReminders(reminderIds);
 
         res.status(200).json({ status: "success" });
     } catch (error) {
@@ -276,7 +254,6 @@ export default {
     getAllAppointmentReminders,
     getAppointmentReminders,
     setAppointmentReminder,
-    deleteAppointmentReminder,
     updateAppointmentReminder,
     deleteAppointmentReminders,
     getOpeningHours

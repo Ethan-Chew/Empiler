@@ -82,7 +82,7 @@ export default class Appointment {
         try {
             const { data, error } = await supabase
                 .from("branch_appointments")
-                .select(`*, appointment_timeslots(timeslot), reminders:appointment_reminder!appointmentId (type, reminderTime, area)`)
+                .select(`*, appointment_timeslots(timeslot), reminders:appointment_reminder!appointmentId (reminderId, type, reminderTime, area)`)
                 .eq("id", appointmentId)
                 .single();
             if (error) {
@@ -219,23 +219,27 @@ export default class Appointment {
 
         try {
             let query = supabase
-                .from('appointment_reminder')
+                .from('branch_appointments')
                 .select(`
-                    appointmentId,
-                    reminders:(
-                        type,
-                        reminderTime,
-                        area,
-                        branchappt:branch_appointments!appointmentId (
-                            id,
-                            branchName,
-                            userId,
-                            date,
-                            timeslot:appointment_timeslots!timeslotId (
-                                id,
-                                timeslot
-                            )
+                    *,
+                    timeslot:appointment_timeslots!id (
+                        timeslot
+                    ),
+                    user:user!id (
+                        id,
+                        email,
+                        name,
+                        telegram:telegram_verification!id (
+                            telegramId
                         )
+                    ),
+                    reminders:appointment_reminder!appointmentId (
+                        reminderId,
+                        type:appointment_reminder_type!type (
+                            hours
+                        ),
+                        reminderTime,
+                        area
                     )
                 `);
 
@@ -251,7 +255,10 @@ export default class Appointment {
                 return { error: "Error retrieving reminders" };
             }
 
-            return data;
+            // Filter out appointments that don't have reminders
+            const filteredData = data.filter((appt) => appt.reminders.length > 0);
+
+            return filteredData;
         } catch (error) {
             console.error(error);
             return { error: "Error retrieving reminders" };
@@ -297,7 +304,7 @@ export default class Appointment {
         }
     }
 
-    static async getAppointmentReminder(userId) {
+    static async getAppointmentReminders(userId) {
         try {
             const { data, error } = await supabase
                 .from('branch_appointments')
@@ -324,15 +331,15 @@ export default class Appointment {
         }
     }
 
-    static async deleteAppointmentReminders(appointmentIds) {
+    static async deleteAppointmentReminders(reminderIds) {
         try {
             // If it's a single ID, convert it into an array for consistency
-            const idsToDelete = Array.isArray(appointmentIds) ? appointmentIds : [appointmentIds];
+            const idsToDelete = Array.isArray(reminderIds) ? reminderIds : [reminderIds];
 
             const { data, error } = await supabase
                 .from('appointment_reminder')
                 .delete()
-                .in('appointmentId', idsToDelete);
+                .in('reminderId', idsToDelete);
             
             if (error) {
                 console.error(error);
@@ -343,27 +350,6 @@ export default class Appointment {
         } catch (error) {
             console.error(error);
             return { error: "Error deleting reminders" };
-        }
-    }
-
-    static async deleteAppointmentReminder(appointmentId, type, area) {
-        try {
-            const { data, error } = await supabase
-                .from('appointment_reminder')
-                .delete()
-                .eq('appointmentId', appointmentId)
-                .eq('type', type)
-                .eq('area', area);
-            
-            if (error) {
-                console.error(error);
-                return { error: "Error deleting reminder" };
-            }
-
-            return data;
-        } catch (error) {
-            console.error(error);
-            return { error: "Error deleting reminder" };
         }
     }
 

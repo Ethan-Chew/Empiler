@@ -24,40 +24,34 @@ export default async function startAutoNotifJob() {
 
             if (data.length > 0) {
                 data.forEach(async (appt) => {
-                    if (appt.reminderTime > currentUnixMS) {
-                        return;
-                    }
-
-                    // Retrieve user email for each appointment
-                    const { userData, userError } = await supabase
-                        .from("user")
-                        .select("*")
-                        .eq("id", appt.branchappt.userId);
-                    
-                    if (userError) {
-                        console.error(userError);
-                        return;
-                    }
-    
-                    const email = userData[0].email;
-                    const mailOptions = {
-                        from: `OCBC Support ${process.env.NOTIF_EMAIL}`,
-                        to: email,
-                        subject: "Appointment Reminder",
-                        text: `Dear ${userData[0].name}, this is a reminder for your appointment at ${appt.branchappt.branchName} on ${appt.branchappt.date} at ${appt.branchappt.timeslot.timeslot}.`
-                    }
-    
-                    transporter.sendMail(mailOptions, (err, info) => {
-                        if (err) {
-                            console.error(err);
-                        } else {
-                            sentApptIds.push(appt.id);
+                    appt.reminders.forEach(async (reminder) => {
+                        if (reminder.reminderTime > currentUnixMS) {
+                            return;
                         }
-                    });
+                        
+                        const email = appt.user.email;
+                        const mailOptions = {
+                            from: `OCBC Support ${process.env.NOTIF_EMAIL}`,
+                            to: email,
+                            subject: "Appointment Reminder",
+                            text: `Dear ${appt.user.name}, this is a reminder for your appointment at ${appt.branchName} on ${appt.date} at ${appt.timeslot.timeslot}.`
+                        }
+        
+                        transporter.sendMail(mailOptions, (err, info) => {
+                            if (err) {
+                                console.error(err);
+                            } else {
+                                sentApptIds.push({
+                                    apptId: appt.id,
+                                    reminderId: reminder.reminderId
+                                });
+                            }
+                        });
+                    })
                 })
 
                 // Remove all sent reminders from the database
-                await Appointment.deleteAppointmentReminder(sentApptIds);
+                await Appointment.deleteAppointmentReminders(sentApptIds);
             }
         })
     } catch (error) {

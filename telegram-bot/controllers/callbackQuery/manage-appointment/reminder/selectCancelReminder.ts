@@ -18,7 +18,7 @@ const cqSelectCancelReminder = async (ctx: MyContext) => {
     // Create Inline Keyboard for User to Choose Appointment
     const remindersKVP = [];
     for (const reminder of appointmentData.reminders) {
-        remindersKVP.push([`${reminder.type} - ${reminder.area}`, `reminder-type-${reminder.type}-${reminder.area}`]);
+        remindersKVP.push([`${reminder.type} - ${reminder.area}`, `reminder-type-${reminder.reminderId}`]);
     }
 
     const reminderTimeButtons = remindersKVP.map(([label, data]) => InlineKeyboard.text(label, data));
