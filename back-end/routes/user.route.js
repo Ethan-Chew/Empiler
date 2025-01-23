@@ -10,4 +10,7 @@ router.route("/staff-feedback")
 router.route("/", authoriseJWT)
     .get(UserController.getUser)
 
+router.route("/monthly-chat-counts")
+    .get(authoriseJWT, UserController.getMonthlyChatCounts);
+
 export default router

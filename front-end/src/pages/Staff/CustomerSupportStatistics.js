@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
-import { FaChevronUp } from 'react-icons/fa';
+import { FaChevronUp, FaChevronDown } from 'react-icons/fa';
 import { FaArrowLeft } from 'react-icons/fa';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
@@ -18,16 +18,24 @@ const CustomerSupportStatistics = () => {
 
     const [averageRating, setAverageRating] = useState(null);
     const [totalChats, setTotalChats] = useState(0);
+    const [prevMonthlyChats, setPrevMonthlyChats] = useState(0);
+    const [selectedMonth, setSelectedMonth] = useState(() => {
+        const now = new Date();
+        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+    });
+    const [monthlyChats, setMonthlyChats] = useState(0);
     const [staffId, setStaffId] = useState(null);
 
     useEffect(() => {
-        const fetchStaffData = async () => {
+        const fetchMonthlyFeedback = async () => {
             try {
-                // Fetch feedback data
-                const response = await fetch('http://localhost:8080/api/user/staff-feedback', {
-                    method: 'GET',
-                    credentials: 'include', // Include cookies for auth
-                });
+                const response = await fetch(
+                    `http://localhost:8080/api/user/staff-feedback?month=${selectedMonth}`,
+                    {
+                        method: 'GET',
+                        credentials: 'include',
+                    }
+                );
 
                 if (!response.ok) {
                     const errorData = await response.json();
@@ -36,8 +44,6 @@ const CustomerSupportStatistics = () => {
                 }
 
                 const statsData = await response.json();
-                console.log("Fetched stats data:", statsData); // Debug the data
-
                 setRatings({
                     excellent: statsData.excellentPercentage,
                     good: statsData.goodPercentage,
@@ -47,12 +53,78 @@ const CustomerSupportStatistics = () => {
 
                 setTotalChats(statsData.totalRatings);
             } catch (error) {
-                console.error("Error fetching staff data:", error);
+                console.error("Error fetching feedback data:", error);
             }
         };
 
-        fetchStaffData();
-    }, []);
+        fetchMonthlyFeedback();
+    }, [selectedMonth]);
+
+    useEffect(() => {
+        const fetchMonthlyChats = async () => {
+            try {
+                const response = await fetch(
+                    `http://localhost:8080/api/user/monthly-chat-counts?month=${selectedMonth}`,
+                    {
+                        method: "GET",
+                        credentials: "include",
+                    }
+                );
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error("Error fetching monthly chats:", errorData);
+                    setMonthlyChats(0);
+                    return;
+                }
+
+                const data = await response.json();
+                setMonthlyChats(data.chatCount);
+
+                const prevMonth = getPreviousMonth(selectedMonth); 
+                const prevResponse = await fetch(
+                    `http://localhost:8080/api/user/monthly-chat-counts?month=${prevMonth}`,
+                    {
+                        method: "GET",
+                        credentials: "include",
+                    }
+                );
+
+                if (!prevResponse.ok) {
+                    const errorData = await prevResponse.json();
+                    console.error("Error fetching previous monthly chats:", errorData);
+                    setPrevMonthlyChats(0);
+                    return;
+                }
+
+                const prevData = await prevResponse.json();
+                setPrevMonthlyChats(prevData.chatCount);
+            } catch (error) {
+                console.error("Error fetching monthly chats:", error);
+            }
+        };
+
+        fetchMonthlyChats();
+    }, [selectedMonth]);
+
+    const handleMonthChange = (event) => {
+        setSelectedMonth(event.target.value);
+    };
+
+    const getPreviousMonth = (month) => {
+        const [year, monthNum] = month.split("-").map(Number);
+        const date = new Date(year, monthNum - 1, 1);
+        date.setMonth(date.getMonth() - 1);
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+    };
+
+    // Calculate percentage change
+    const calculatePercentageChange = (current, previous) => {
+        if (previous === 0) return current > 0 ? 100 : 0;
+        return (((current - previous) / previous) * 100).toFixed(2);
+    };
+
+    const percentageChange = calculatePercentageChange(monthlyChats, prevMonthlyChats);
 
     const totalRatings = totalChats;
 
@@ -90,7 +162,25 @@ const CustomerSupportStatistics = () => {
 
                 <div>
                     <h1 className="text-[30px] text-[#343434] font-bold">Customer Support Statistics</h1>
-                    <p className="text-[16px] text-[#7F7F7F]">For the month of: <span className="text-[#D00E35]">March 2025</span></p>
+                    <p className="text-[16px] text-[#7F7F7F]">
+                        For the month of:{" "}
+                        <select
+                            value={selectedMonth}
+                            onChange={handleMonthChange}
+                            className="text-[#D00E35] bg-transparent border-none outline-none"
+                        >
+                            {Array.from({ length: 24 }, (_, i) => {
+                                const date = new Date();
+                                date.setMonth(date.getMonth() - 12 + i);
+                                const value = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+                                return (
+                                    <option key={i} value={value}>
+                                        {date.toLocaleString("default", { month: "long", year: "numeric" })}
+                                    </option>
+                                );
+                            })}
+                        </select>
+                    </p>
                 </div>
             </div>
 
@@ -105,9 +195,20 @@ const CustomerSupportStatistics = () => {
                 </div>
 
                 <div className="bg-gray-100 rounded-lg p-4 flex justify-between items-center">
-                    <div className="text-[#7F7F7F] text-[18px] font-medium">Chats Answered: 34</div>
-                    <div className="text-[#23C552] text-[16px] font-medium flex items-center">
-                        +12% <FaChevronUp className="ml-1" />
+                    <div className="text-[#7F7F7F] text-[18px] font-medium">Chats Answered: {monthlyChats}</div>
+                    <div
+                        className={`text-[16px] font-medium flex items-center ${percentageChange >= 0 ? "text-[#23C552]" : "text-[#EF6461]"
+                            }`}
+                    >
+                        {percentageChange >= 0 ? (
+                            <>
+                                +{percentageChange}% <FaChevronUp className="ml-1" />
+                            </>
+                        ) : (
+                            <>
+                                {percentageChange}% <FaChevronDown className="ml-1" />
+                            </>
+                        )}
                     </div>
                 </div>
             </div>
@@ -115,13 +216,13 @@ const CustomerSupportStatistics = () => {
             <div className="px-8 mt-6 grid grid-cols-2 gap-4">
                 <div className="bg-gray-100 rounded-lg p-6 flex flex-col justify-center">
                     <div className="text-[#000000] text-[18px] font-bold">Average Customer Waiting Time</div>
-                    <div className="text-[#7F7F7F] text-[14px]">Data from 1-31 Mar 2025</div>
+                    <div className="text-[#7F7F7F] text-[14px]">Data from {selectedMonth}</div>
                     <div className="text-[72px] text-[#D00E35] font-bold mt-4 flex-grow flex items-center justify-center">5 minutes</div>
                 </div>
 
                 <div className="bg-gray-100 rounded-lg p-6 flex flex-col">
                     <div className="text-[#000000] text-[18px] font-bold">Overall Feedback</div>
-                    <div className="text-[#7F7F7F] text-[14px]">Data from 1-31 Mar 2025</div>
+                    
 
                     <div className="mt-4 flex flex-col flex-grow space-y-4">
                         <div className="flex justify-between items-center">

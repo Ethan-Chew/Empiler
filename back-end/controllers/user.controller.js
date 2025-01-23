@@ -20,6 +20,45 @@ const getUser = async (req, res) => {
     }
 }
 
+const getMonthlyChatCounts = async (req, res) => {
+    try {
+        const staffId = req.user.id; // Get the staff ID from the JWT
+        const { month } = req.query; // Extract the month from query parameters (format: YYYY-MM)
+
+        if (!month) {
+            return res.status(400).json({ message: "Month is required in YYYY-MM format." });
+        }
+
+        const { data, error } = await supabase
+            .from("chat_history")
+            .select("chatLog")
+            .eq("staffId", staffId);
+
+        if (error) {
+            console.error("Supabase error:", error);
+            return res.status(500).json({ message: error.message });
+        }
+
+        if (!data || data.length === 0) {
+            return res.status(404).json({ message: "No chat data found for this staff." });
+        }
+
+        // Filter and count chats by month
+        const chatCount = data.reduce((count, record) => {
+            const chats = record.chatLog || [];
+            const filteredChats = chats.filter(chat => {
+                const chatMonth = new Date(chat.timestamp).toISOString().slice(0, 7); // Extract YYYY-MM
+                return chatMonth === month;
+            });
+            return count + filteredChats.length;
+        }, 0);
+
+        return res.status(200).json({ month, chatCount });
+    } catch (error) {
+        console.error("Unexpected error:", error);
+        return res.status(500).json({ message: "An unexpected error occurred." });
+    }
+};
 
 
 const getStaffFeedback = async (req, res) => {
@@ -77,5 +116,6 @@ const getStaffFeedback = async (req, res) => {
 
 export default {
     getUser,
-    getStaffFeedback
+    getStaffFeedback,
+    getMonthlyChatCounts,
 }
