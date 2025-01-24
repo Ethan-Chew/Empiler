@@ -22,7 +22,7 @@ export default function (io, db, socket) {
     });
     
     // Using a sessionIdentifier (customer / staff), add the new Socket ID to the Active Chat
-    socket.on("utils:add-socket", async (sessionIdentifier, role) => {
+    socket.on("utils:add-socket", async (sessionIdentifier, role) => {  
         if (role === "customer") {
             const searchActiveChat = await searchCustomerInActiveChat(db, sessionIdentifier);
 

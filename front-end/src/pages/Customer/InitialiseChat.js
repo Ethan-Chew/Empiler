@@ -6,6 +6,7 @@ import * as CryptoJS from 'crypto-js';
 // Components
 import Navbar from '../../components/Navbar';
 import { BsCalendarCheck } from "react-icons/bs";
+import { time } from 'framer-motion';
 
 export default function InitialiseChat() {
     const navigate = useNavigate();
@@ -19,22 +20,56 @@ export default function InitialiseChat() {
 
     // Handle Connect and Disconnect Events
     const handleConnection = () => {
-        if (isConnected) return;
+        if (isConnected) {
+            console.log('Already connected');
+            return;
+        }
         setIsConnected(true);
 
         // Generate a Unique Identifier for this Customer Session
         let customerSessionIdentifier = sessionStorage.getItem('customerSessionIdentifier');
-    
+        let queueNumber = sessionStorage.getItem('queueNumber');
+
         if (!customerSessionIdentifier) {
             customerSessionIdentifier = CryptoJS.lib.WordArray.random(16).toString(CryptoJS.enc.Hex);
             sessionStorage.setItem('customerSessionIdentifier', customerSessionIdentifier);
         }
 
+        
+
         // Check if the Customer already exists on the waiting list.
         socket.emit('utils:verify-waitinglist', customerSessionIdentifier, (result) => {
+            socket.on('utils:waiting-time', (queuePosition) => {
+                console.log(`Queue position updated: ${queuePosition}`);
+                sessionStorage.setItem('queueNumber', queuePosition); // Persist updated queue number
+                setWaitingTime(queuePosition); // Update the UI
+            });
+            console.log(`Customer is on the waiting list: ${result}`);
             if (!result) { // If the Customer is not on the Waiting List, request for a new connection
+                console.log('Requesting for a new connection');
                 socket.emit('customer:join', customerSessionIdentifier, sessionStorage.getItem('faqSection'), sessionStorage.getItem('faqQuestion'));
+                socket.on('utils:waiting-time', (queuePosition) => {
+                    console.log(`Queue position: ${queuePosition}`);
+                    sessionStorage.setItem('queueNumber', queuePosition);
+                });
             } else {
+                if (queueNumber) {
+                    // If queue number is already stored, use it
+                    socket.emit('customer:join', customerSessionIdentifier, sessionStorage.getItem('faqSection'), sessionStorage.getItem('faqQuestion'));
+                    console.log(`Queue number retrieved from sessionStorage: ${queueNumber}`);
+                    setWaitingTime(parseInt(queueNumber, 10));
+                    
+                } else {
+                    console.log('Fetching queue position...');
+                    socket.on('utils:waiting-time', (queuePosition) => {
+                        console.log(`Queue position: ${queuePosition}`);
+                        sessionStorage.setItem('queueNumber', queuePosition);
+                        setWaitingTime(queuePosition);
+                    });
+
+                    // Request an update to get the current queue position
+                    socket.emit('customer:join', customerSessionIdentifier, sessionStorage.getItem('faqSection'), sessionStorage.getItem('faqQuestion'));
+                }
                 // Check if the Customer is already in an active chat. If yes, redirect to the chat page; else, do nothing.
                 socket.emit('utils:verify-activechat', customerSessionIdentifier, (chatExistanceReq) => {
                     if (chatExistanceReq.exist) {
@@ -47,12 +82,15 @@ export default function InitialiseChat() {
 
     const handleDisconnection = () => {
         setIsConnected(false);
+        socket.emit('customer:leave', sessionStorage.getItem('customerSessionIdentifier'), sessionStorage.getItem("queueNumber"));
         sessionStorage.removeItem('customerSessionIdentifier');
-        socket.emit('customer:leave');
+        sessionStorage.removeItem('queueNumber');
     };
 
     const handleDisconnectionButton = () => {
-        socket.disconnect();
+        socket.emit('customer:leave', sessionStorage.getItem('customerSessionIdentifier'), sessionStorage.getItem("queueNumber"));
+        sessionStorage.removeItem('customerSessionIdentifier');
+        sessionStorage.removeItem('queueNumber');
         navigate('/');
     };
 
@@ -66,7 +104,7 @@ export default function InitialiseChat() {
 
         // Handle Utility Events
         socket.on('utils:waiting-time', (time) => {
-            console.log('Time:', time);
+            console.log(`Queue position: ${time}`);
             setWaitingTime(time);
         })
 
