@@ -1,15 +1,15 @@
 import supabase from "../utils/supabase.js";
 
 export default class Ticket {
-    constructor (tiicketId, dateCreated, detail, category, custId, reply, adminId, dateUpdated, status) {
+    constructor (ticketId, dateCreated, detail, category, custId, reply, adminId, dateUpdated, status) {
         this.ticketId = ticketId;
         this.dateCreated = dateCreated;
         this.detail = detail;
         this.category = category;
         this.custId = custId;
-        this.reply = reply;
-        this.adminId = adminId;
-        this.dateUpdated = dateUpdated;
+        this.reply = reply || null;
+        this.adminId = adminId || null;
+        this.dateUpdated = dateUpdated || null;
         this.status = status;
     }
 
@@ -126,7 +126,7 @@ export default class Ticket {
 
     // Delete ticket
     static async deleteTicket(ticketId) {
-        const { data, error } = await supabase
+        const { error } = await supabase
             .from("tickets")
             .delete()
             .eq("ticketId", ticketId);
@@ -135,7 +135,7 @@ export default class Ticket {
             throw new Error(error.message);
         }
 
-        return data;
+        return true;
     }
 
     // Retrieve categories

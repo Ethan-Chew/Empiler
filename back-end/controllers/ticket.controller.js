@@ -96,6 +96,7 @@ const getTicketsByAdminId = async (req, res) => {
 const createTicket = async (req, res) => {
     try {
         const ticket = req.body;
+        console.log("ticket:", ticket);
         const newTicket = await Ticket.createTicket(ticket);
         res.status(201).json(newTicket);
 
@@ -130,7 +131,9 @@ const deleteTicket = async (req, res) => {
         if (!deletedTicket) {
             return res.status(404).json({ error: "Ticket not found" });
         }
-        res.status(200).json(deletedTicket);
+
+        // Return a success message instead of the deleted ticket
+        res.status(200).json({ message: "Ticket deleted successfully" });
 
     } catch (error) {
         console.error("Error in deleteTicket:", error);
