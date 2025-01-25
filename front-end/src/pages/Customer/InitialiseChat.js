@@ -13,6 +13,7 @@ export default function InitialiseChat() {
     const [isConnected, setIsConnected] = useState(socket.connected);
     const [waitingTime, setWaitingTime] = useState(0);
     const [connectionErr, setConnectionErr] = useState(false);
+    const [queueLength, setQueueLength] = useState(0);
 
     // Reccomend make Appointment
     const [custWaitingTime, setCustWaitingTime] = useState(0);
@@ -26,9 +27,10 @@ export default function InitialiseChat() {
         }
         setIsConnected(true);
 
+        socket.emit('customer:request-queue-position', sessionStorage.getItem('customerSessionIdentifier'));
+
         // Generate a Unique Identifier for this Customer Session
         let customerSessionIdentifier = sessionStorage.getItem('customerSessionIdentifier');
-        let queueNumber = sessionStorage.getItem('queueNumber');
 
         if (!customerSessionIdentifier) {
             customerSessionIdentifier = CryptoJS.lib.WordArray.random(16).toString(CryptoJS.enc.Hex);
@@ -39,43 +41,16 @@ export default function InitialiseChat() {
 
         // Check if the Customer already exists on the waiting list.
         socket.emit('utils:verify-waitinglist', customerSessionIdentifier, (result) => {
-            socket.on('utils:waiting-time', (queuePosition) => {
-                console.log(`Queue position updated: ${queuePosition}`);
-                sessionStorage.setItem('queueNumber', queuePosition); // Persist updated queue number
-                setWaitingTime(queuePosition); // Update the UI
-            });
-            console.log(`Customer is on the waiting list: ${result}`);
             if (!result) { // If the Customer is not on the Waiting List, request for a new connection
-                console.log('Requesting for a new connection');
                 socket.emit('customer:join', customerSessionIdentifier, sessionStorage.getItem('faqSection'), sessionStorage.getItem('faqQuestion'));
-                socket.on('utils:waiting-time', (queuePosition) => {
-                    console.log(`Queue position: ${queuePosition}`);
-                    sessionStorage.setItem('queueNumber', queuePosition);
-                });
             } else {
-                if (queueNumber) {
-                    // If queue number is already stored, use it
-                    socket.emit('customer:join', customerSessionIdentifier, sessionStorage.getItem('faqSection'), sessionStorage.getItem('faqQuestion'));
-                    console.log(`Queue number retrieved from sessionStorage: ${queueNumber}`);
-                    setWaitingTime(parseInt(queueNumber, 10));
-                    
-                } else {
-                    console.log('Fetching queue position...');
-                    socket.on('utils:waiting-time', (queuePosition) => {
-                        console.log(`Queue position: ${queuePosition}`);
-                        sessionStorage.setItem('queueNumber', queuePosition);
-                        setWaitingTime(queuePosition);
-                    });
-
-                    // Request an update to get the current queue position
-                    socket.emit('customer:join', customerSessionIdentifier, sessionStorage.getItem('faqSection'), sessionStorage.getItem('faqQuestion'));
-                }
                 // Check if the Customer is already in an active chat. If yes, redirect to the chat page; else, do nothing.
                 socket.emit('utils:verify-activechat', customerSessionIdentifier, (chatExistanceReq) => {
                     if (chatExistanceReq.exist) {
                         navigate(`/chat?caseID=${chatExistanceReq.caseID}`);
                     }
                 });
+                socket.emit('customer:join', customerSessionIdentifier, sessionStorage.getItem('faqSection'), sessionStorage.getItem('faqQuestion'));
             }
         });
     }
@@ -98,29 +73,31 @@ export default function InitialiseChat() {
         if (!(sessionStorage.getItem('faqQuestion') || sessionStorage.getItem('faqSection'))) {
             // TODO: Handle nothing saved
         }
-
-        socket.on('connect', handleConnection);
-        socket.on('disconnect', handleDisconnection);
-
-        // Handle Utility Events
+        // Listener for queue updates
         socket.on('utils:waiting-time', (time) => {
             console.log(`Queue position: ${time}`);
             setWaitingTime(time);
-        })
+            sessionStorage.setItem('queueNumber', time);
+        });
 
+        // Listener for joining chat
         socket.on('utils:joined-chat', (caseID, staffName) => {
-             navigate(`/chat?caseID=${caseID}`, {
-                state: {
-                    staffName: staffName
-                }
-             });
-        })
+            navigate(`/chat?caseID=${caseID}`, {
+                state: { staffName },
+            });
+        });
 
-        return () => {
-            socket.off('connect', handleConnection);
-            socket.off('disconnect', handleDisconnection);
-        }
+        socket.on('queue:length', (length) => {
+            console.log(`Queue length: ${length}`);
+            setQueueLength(length);
+            sessionStorage.setItem('queueLength', length);
+        });
+    
+        socket.on('connect', handleConnection);
+    
+        socket.on('disconnect', handleDisconnection);
     }, []);
+
 
     // Handle the display of the Suggest Appointment button
     useEffect(() => {
@@ -155,9 +132,17 @@ export default function InitialiseChat() {
             <div className="flex-grow overflow-hidden flex items-center justify-center">
               <div className="flex flex-col items-center justify-center p-10 bg-white drop-shadow-[0_0px_4px_rgba(0,0,0,.15)]">
                 <p className="text-xl font-medium text-gray-800 mb-2">Please hold while we connect you to an agent.</p>
-                <div className="w-8 h-8 border-4 border-t-4 border-gray-300 rounded-full animate-spin mb-2" style={{ borderTopColor: "#8b3d58" }}></div>
                 <p className="text-lg text-gray-500">People ahead of you:</p>
-                <p className="text-3xl font-semibold text-ocbcred">{waitingTime}</p>
+                <p className="text-4xl font-semibold text-ocbcred pt-2 pb-3">{waitingTime === 0 ? "You're Next!" : waitingTime}</p>
+                <div className="w-full bg-gray-200 rounded-full h-6 mb-4 relative">
+                <div
+                    className="bg-ocbcred h-6 rounded-full text-center text-white font-semibold"
+                    style={{ width: `${((queueLength - waitingTime) / queueLength) * 100}%` }}
+                >
+                    <span className="absolute left-0 right-0 text-center">
+                    </span>
+                </div>
+                </div>
                 <button
                   className="mt-4 px-4 py-2 bg-ocbcred text-white rounded hover:bg-ocbcdarkred focus:outline-none"
                   onClick={handleDisconnectionButton}

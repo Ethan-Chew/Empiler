@@ -79,6 +79,11 @@ export const retrieveWaitingCustomers = async (db) => {
     return rows.map(row => ({ ...row, socketIDs: JSON.parse(row.socketIDs) }));
 };
 
+export const retrieveQueueLength = async (db) => {
+    const result = await db.get('SELECT COUNT(*) as queueLength FROM waitingCustomers');
+    return result.queueLength || 0;
+};
+
 export const removeWaitingCustomer = async (db, customerSessionIdentifier) => {
     const customer = await searchForWaitingCustomer(db, customerSessionIdentifier);
     if (customer) {

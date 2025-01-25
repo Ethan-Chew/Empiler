@@ -1,7 +1,7 @@
 import { retrieveWaitingCustomers, addAvailStaff, searchForWaitingCustomer, searchForAvailStaff, removeWaitingCustomer, startActiveChat, getActiveChatsForStaff } from "../utils/sqliteDB.js";
 import crypto from "crypto";
 
-import { getCustomersAhead } from "./customerHandler.js";
+import { getCustomersAhead, getQueueLength } from "./customerHandler.js";
 
 export async function notifyForWaitingCustomers(db, io) {
     const waitingCustomers = await retrieveWaitingCustomers(db);
@@ -72,6 +72,7 @@ export default function (io, db, socket) {
         // Remove the Customer from the Waiting List
         await removeWaitingCustomer(db, customerSessionIdentifier);
         await getCustomersAhead(db, io);
+        await getQueueLength(db, socket);
 
         // Broadcast caseID to Customer (notify that connection has been made successfully)
         io.to(customerSessionIdentifier).emit('utils:joined-chat', caseID, staff.name);
