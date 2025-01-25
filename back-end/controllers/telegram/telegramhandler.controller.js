@@ -129,7 +129,7 @@ const verifyTelegramLinked = async (req, res) => {
         if (telegramInfo == null) {
             return res.status(404).json({
                 status: "error",
-                message: "Account not linked"
+                message: "You need to link your account before you can view upcoming appointments"
             });
         }
 

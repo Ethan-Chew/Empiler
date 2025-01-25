@@ -157,7 +157,7 @@ export default function UserSettingsPopup({ closePopup, userId }) {
                     ) : linkingState.startLinking ? (
                         <div className="my-2">
                             <p className="text-xl font-bold">Telegram Handle</p>
-                            <p className="text-neutral-700">Input your Telegram Handle, excluding the '@'.</p>
+                            <p className="text-neutral-700">Input your Telegram Handle (in proper case-sensitivity!), excluding the '@'.</p>
                             <div className="flex items-center border border-neutral-400 rounded-lg w-full md:w-[30vw] my-2">
                                 <input
                                     className="flex-grow focus:outline-none py-2 px-3 text-sm placeholder:text-neutral-400 border-r-0 rounded-l-lg"

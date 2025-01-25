@@ -10,7 +10,6 @@ const upcomingController = async (ctx: MyContext) => {
     try {
         // Check if the user has linked their account
         const checkAccountLinked = await axios.get(`http://localhost:8080/api/telegram/verify/tele/${ctx.from?.id}`);
-        console.log(checkAccountLinked)
         if (checkAccountLinked.status !== 200) {
             await ctx.reply("You need to link your account before you can view upcoming appointments.");
             return;
@@ -56,6 +55,7 @@ const upcomingController = async (ctx: MyContext) => {
         ctx.session.lastManageApptMsg = response.message_id;
     } catch (error) {
             if (error instanceof AxiosError) {
+                console.log(error);
                 if (error.response?.data.message) {
                     await ctx.reply(`Error: ${error.response.data.message}`);
                     return;
