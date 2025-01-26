@@ -25,6 +25,7 @@ import BookingDetails from './pages/Customer/BookingDetails';
 import StaffLandingPage from './pages/Staff/StaffLandingPage';
 import StaffChats from './pages/Staff/StaffChats';
 import ViewBranchAppointments from './pages/Staff/ViewBranchAppointments';
+import StaffTicket from './pages/Staff/StaffTicket';
 
 // Customer Routes
 import AppointmentBooking from './pages/Customer/AppointmentBooking';
@@ -61,6 +62,7 @@ root.render(
       <Route path="/staff/home" element={<ProtectedRoute Component={StaffLandingPage} role="staff" />} />
       <Route path="/staff/chats" element={<ProtectedRoute Component={StaffChats} role="staff" />} />
       <Route path="/staff/branches" element={<ProtectedRoute Component={ViewBranchAppointments} role="staff" />} />
+      <Route path="/staff/stafftickets" element={<ProtectedRoute Component={StaffTicket} role="staff" />} />
 
       {/* Protected Routes (Customer) */}
       <Route path="/customer/home" element={<ProtectedRoute Component={CustomerLandingPage} role="customer" />} />
