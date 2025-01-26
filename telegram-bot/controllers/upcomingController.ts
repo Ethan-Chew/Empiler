@@ -55,6 +55,7 @@ const upcomingController = async (ctx: MyContext) => {
         ctx.session.lastManageApptMsg = response.message_id;
     } catch (error) {
             if (error instanceof AxiosError) {
+                console.log(error);
                 if (error.response?.data.message) {
                     await ctx.reply(`Error: ${error.response.data.message}`);
                     return;

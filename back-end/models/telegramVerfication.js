@@ -82,6 +82,10 @@ export default class telegramVerification {
             .eq('telegramId', teleId)
             .single();
 
+        if (data === null) {
+            return data;
+        }
+
         if (error) {
             throw new Error(error.message);
         }

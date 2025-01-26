@@ -7,16 +7,21 @@ dotenv.config();
 // Controllers
 import { startController } from "./controllers/startController";
 import { linkController } from "./controllers/linkController";
-import { helpController } from "./controllers/helpController";
+import { unlinkController } from "./controllers/unlinkController";
 import { upcomingController } from "./controllers/upcomingController";
 /// Context Query Controllers
 import { cqManageAppointments } from "./controllers/callbackQuery/manageAppointments";
 import { cqManageAppointmentSelection } from "./controllers/callbackQuery/manage-appointment/manageAppointmentSelection";
 import { cqRescheduleAppointment } from "./controllers/callbackQuery/manage-appointment/rescheduleAppointment";
 import { cqCancelAppointment } from "./controllers/callbackQuery/manage-appointment/cancelAppointment";
-import { cqManageReminderTime } from "./controllers/callbackQuery/manage-appointment/reminder/manageReminder";
+import { cqManageReminderTime } from "./controllers/callbackQuery/manage-appointment/reminder/manageReminderTime";
 import { cqSelectReminderType } from "./controllers/callbackQuery/manage-appointment/reminder/selectReminderType";
 import { cqConfirmSetReminder } from "./controllers/callbackQuery/manage-appointment/reminder/confirmSetReminder";
+import { cqManageReminder } from "./controllers/callbackQuery/manage-appointment/reminder/manageReminder";
+import { cqSelectCancelReminder } from "./controllers/callbackQuery/manage-appointment/reminder/selectCancelReminder";
+import { cqCancelReminder } from "./controllers/callbackQuery/manage-appointment/reminder/cancelReminder";
+/// CRON to send Auto Notification
+import autoNotification from "./utils/autoNotification";
 
 // Handle Telegram Bot Local Session
 interface SessionData {
@@ -43,7 +48,7 @@ bot.use(session({ initial: initial }));
 // Command Handling
 bot.command("start", startController)
 bot.command("link", linkController);
-bot.command("help", helpController);
+bot.command("unlink", unlinkController);
 bot.command("upcoming", upcomingController);
 
 // Handle Inline Keyboard Clicks
@@ -52,12 +57,15 @@ bot.callbackQuery("manage-appointments", cqManageAppointments);
 //// Manage Appointment Options (Reschedule, Cancel, Manage Reminder)
 bot.callbackQuery("reschedule-appt", cqRescheduleAppointment);
 bot.callbackQuery("cancel-appt", cqCancelAppointment);
-bot.callbackQuery("manage-reminder-appt", cqManageReminderTime);
+bot.callbackQuery("manage-reminder-appt", cqManageReminder);
+///// Manage Reminder Options (Create, Cancel)
+bot.callbackQuery("create-appt-reminder", cqManageReminderTime);
+bot.callbackQuery("cancel-appt-reminder", cqSelectCancelReminder);
 /// Back Button Handlers
 bot.callbackQuery("back-to-manage-appt", cqManageAppointments);
-bot.callbackQuery("back-to-manage-appt-optns", cqManageAppointmentSelection);
+bot.callbackQuery("back-to-manage-appt-optns", cqManageReminder);
+bot.callbackQuery("back-to-manage-reminder-optns", cqManageReminder);
 bot.callbackQuery("back-to-reminder-time", cqManageReminderTime);
-
 /// Catch-All for Callback Queries
 bot.on("callback_query:data", async (ctx) => {
   const callbackData = ctx.callbackQuery.data;
@@ -76,6 +84,10 @@ bot.on("callback_query:data", async (ctx) => {
   if (callbackData.startsWith("reminder-area-")) {
     cqConfirmSetReminder(ctx, callbackData.replace("reminder-area-", ""));
   }
+  // Cancellation of Reminder
+  if (callbackData.startsWith("reminder-type-")) {
+    cqCancelReminder(ctx, callbackData.replace("reminder-type-", ""));
+  }
   // await ctx.answerCallbackQuery(); // remove loading animation
 });
 
@@ -92,6 +104,9 @@ bot.catch((err) => {
       console.error("Unknown error:", e);
     }
 });
+
+// Handle Auto Notification CRON Job
+autoNotification(bot);
 
 // Start the Bot
 console.log("Telegram Bot Started");

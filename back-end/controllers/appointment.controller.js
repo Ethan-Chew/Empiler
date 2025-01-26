@@ -36,6 +36,23 @@ const bookAppointment = async (req, res) => {
     }
 }
 
+const getAppointment = async (req, res) => {
+    const { appointmentId } = req.params;
+
+    try {
+        const appointments = await Appointment.getAppointment(appointmentId);
+
+        if (!appointments || appointments.length === 0) {
+            return res.status(404).json({ error: "No appointment found" });
+        }
+
+        res.status(200).json(appointments);
+    } catch (error) {
+        console.error("Error in getAppointment:", error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+}
+
 const getAllAppointments = async (req, res) => {
     const { userId } = req.body;
 
@@ -102,15 +119,35 @@ const getAppointmentReminderTypes = async (req, res) => {
     }
 }
 
+const getAllAppointmentReminders = async (req, res) => {
+    try {
+        const { type } = req.params;
+
+        if (!type) {
+            return res.status(400).json({ error: 'Missing required fields' });
+        }
+
+        const reminders = await Appointment.getAllAppointmentReminders(type);
+        if (reminders.error) {
+            return res.status(404).json({ error: reminders.error });
+        }
+
+        res.status(200).json(reminders);
+    } catch (error) {
+        console.error("Error in all reminders:", error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+}
+
 const getAppointmentReminders = async (req, res) => {
     try {
         const { id } = req.params;
 
-        if (!userId) {
+        if (!id) {
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
-        const reminders = await Appointment.getAppointmentReminder(id);
+        const reminders = await Appointment.getAppointmentReminders(id);
 
         if (reminders.error) {
             return res.status(404).json({ error: reminders.error });
@@ -173,19 +210,15 @@ const updateAppointmentReminder = async (req, res) => {
     }
 }
 
-const deleteAppointmentReminder = async (req, res) => {
+const deleteAppointmentReminders = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { reminderIds } = req.body;
 
-        if (!userId) {
+        if (!reminderIds) {
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
-        const reminders = await Appointment.deleteAppointmentReminder(id);
-
-        if (reminders.error) {
-            return res.status(404).json({ error: reminders.error });
-        }
+        const reminders = await Appointment.deleteAppointmentReminders(reminderIds);
 
         res.status(200).json({ status: "success" });
     } catch (error) {
@@ -248,13 +281,20 @@ export default {
     filterAppointments,
     bookAppointment,
     getAllAppointments,
+    getAppointment,
     updateAppointment,
     deleteAppointment,
     getAppointmentReminderTypes,
+    getAllAppointmentReminders,
     getAppointmentReminders,
     setAppointmentReminder,
     updateAppointmentReminder,
+<<<<<<< HEAD
     deleteAppointmentReminder,
     getOpeningHours,
     getFilteredTimeslots
+=======
+    deleteAppointmentReminders,
+    getOpeningHours
+>>>>>>> 615ea7e97f2646d249dfe19c47047e8ff66546e0
 };

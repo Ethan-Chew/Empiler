@@ -82,10 +82,9 @@ export default class Appointment {
         try {
             const { data, error } = await supabase
                 .from("branch_appointments")
-                .select(`*, appointment_timeslots(timeslot)`)
+                .select(`*, appointment_timeslots(timeslot), reminders:appointment_reminder!appointmentId (reminderId, type, reminderTime, area)`)
                 .eq("id", appointmentId)
                 .single();
-
             if (error) {
                 console.error(error);
                 return null;
@@ -216,22 +215,31 @@ export default class Appointment {
         }
     }
 
-    static async getAppointmentReminders({ type }) {
+    static async getAllAppointmentReminders({ type }) {
 
         try {
             let query = supabase
-                .from('appointment_reminder')
+                .from('branch_appointments')
                 .select(`
                     *,
-                    branchappt:branch_appointments!appointmentId (
+                    timeslot:appointment_timeslots!id (
+                        timeslot
+                    ),
+                    user:user!id (
                         id,
-                        branchName,
-                        userId,
-                        date,
-                        timeslot:appointment_timeslots!timeslotId (
-                            id,
-                            timeslot
+                        email,
+                        name,
+                        telegram:telegram_verification!id (
+                            telegramId
                         )
+                    ),
+                    reminders:appointment_reminder!appointmentId (
+                        reminderId,
+                        type:appointment_reminder_type!type (
+                            hours
+                        ),
+                        reminderTime,
+                        area
                     )
                 `);
 
@@ -247,7 +255,10 @@ export default class Appointment {
                 return { error: "Error retrieving reminders" };
             }
 
-            return data;
+            // Filter out appointments that don't have reminders
+            const filteredData = data.filter((appt) => appt.reminders.length > 0);
+
+            return filteredData;
         } catch (error) {
             console.error(error);
             return { error: "Error retrieving reminders" };
@@ -293,7 +304,7 @@ export default class Appointment {
         }
     }
 
-    static async getAppointmentReminder(userId) {
+    static async getAppointmentReminders(userId) {
         try {
             const { data, error } = await supabase
                 .from('branch_appointments')
@@ -320,25 +331,25 @@ export default class Appointment {
         }
     }
 
-    static async deleteAppointmentReminder(appointmentIds) {
+    static async deleteAppointmentReminders(reminderIds) {
         try {
             // If it's a single ID, convert it into an array for consistency
-            const idsToDelete = Array.isArray(appointmentIds) ? appointmentIds : [appointmentIds];
+            const idsToDelete = Array.isArray(reminderIds) ? reminderIds : [reminderIds];
 
             const { data, error } = await supabase
                 .from('appointment_reminder')
                 .delete()
-                .in('appointmentId', idsToDelete);
+                .in('reminderId', idsToDelete);
             
             if (error) {
                 console.error(error);
-                return { error: "Error retrieving reminders" };
+                return { error: "Error deleting reminders" };
             }
 
             return data;
         } catch (error) {
             console.error(error);
-            return { error: "Error retrieving reminders" };
+            return { error: "Error deleting reminders" };
         }
     }
 

@@ -119,7 +119,7 @@ export default function UserSettingsPopup({ closePopup, userId }) {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
                 onClick={(e) => e.stopPropagation()}
-                className="p-5 rounded-lg bg-white md:min-w-[60vw]"
+                className="p-5 m-10 rounded-lg bg-white md:min-w-[60vw]"
             >
                 {/* Header */}
                 <div className="flex flex-row justify-between mb-3">
@@ -148,7 +148,7 @@ export default function UserSettingsPopup({ closePopup, userId }) {
                                 {convertUnixToDate(telegramInfo.verifiedDate)}
                             </p>
                             <button
-                                className="mt-2 p-3 px-5 bg-neutral-400 text-neutral-900 rounded-lg"
+                                className="mt-2 p-3 px-5 bg-ocbcred hover:bg-ocbcdarkred text-white duration-150 rounded-lg"
                                 onClick={handleUnlinkTelegram}
                             >
                                 Unlink Account
@@ -157,7 +157,7 @@ export default function UserSettingsPopup({ closePopup, userId }) {
                     ) : linkingState.startLinking ? (
                         <div className="my-2">
                             <p className="text-xl font-bold">Telegram Handle</p>
-                            <p className="text-neutral-700">Input your Telegram Handle, excluding the '@'.</p>
+                            <p className="text-neutral-700">Input your Telegram Handle (in proper case-sensitivity!), excluding the '@'.</p>
                             <div className="flex items-center border border-neutral-400 rounded-lg w-full md:w-[30vw] my-2">
                                 <input
                                     className="flex-grow focus:outline-none py-2 px-3 text-sm placeholder:text-neutral-400 border-r-0 rounded-l-lg"
@@ -192,18 +192,21 @@ export default function UserSettingsPopup({ closePopup, userId }) {
 
                     {/* Pending Message */}
                     {linkingState.linkPending && (
-                        <p className="mt-3">
-                            Link In-Progress! To complete the linking process, start talking to it{" "}
-                            <a
-                                href={`https://t.me/ocbc_empiler_bot?start=${verificationCode}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-500 underline"
-                            >
-                                here
-                            </a>{" "}
-                            or enter this Verification Code ({verificationCode}) into the Telegram Bot.
-                        </p>
+                        <>
+                            <p className="mt-3">
+                                Link In-Progress! To complete the linking process, start talking to it{" "}
+                                <a
+                                    href={`https://t.me/ocbc_empiler_bot?start=${verificationCode}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-500 underline"
+                                >
+                                    here
+                                </a>{" "}
+                                or enter this Verification Code (<span className="text-ocbcdarkred">{verificationCode}</span>) into the Telegram Bot.
+                            </p>
+                            <p>After linking, do refresh this page to verify that your account has been linked!</p>
+                        </>
                     )}
                 </div>
             </motion.div>
