@@ -289,12 +289,7 @@ export default {
     getAppointmentReminders,
     setAppointmentReminder,
     updateAppointmentReminder,
-<<<<<<< HEAD
-    deleteAppointmentReminder,
+    deleteAppointmentReminders,
     getOpeningHours,
     getFilteredTimeslots
-=======
-    deleteAppointmentReminders,
-    getOpeningHours
->>>>>>> 615ea7e97f2646d249dfe19c47047e8ff66546e0
 };
