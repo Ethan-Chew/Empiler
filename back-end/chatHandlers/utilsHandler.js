@@ -1,4 +1,3 @@
-import { get } from "http";
 import { appendCustSIDToActiveChat, searchCustomerInActiveChat, searchForWaitingCustomer, saveMessages, retrieveChatMessages, addSocketIdToAvailStaff, getChatIdsForStaff, endActiveChat, searchForAvailStaff, retrieveWaitingCustomers } from "../utils/sqliteDB.js";
 
 export default function (io, db, socket) {

@@ -134,13 +134,19 @@ export default function InitialiseChat() {
                 <p className="text-lg text-gray-500">People ahead of you:</p>
                 <p className="text-4xl font-semibold text-ocbcred pt-2 pb-3">{waitingTime === 0 ? "You're Next!" : waitingTime}</p>
                 <div className="w-full bg-gray-200 rounded-full h-6 mb-4 relative">
-                <div
-                    className="bg-ocbcred h-6 rounded-full text-center text-white font-semibold"
-                    style={{ width: `${((queueLength - waitingTime) / queueLength) * 100}%` }}
-                >
-                    <span className="absolute left-0 right-0 text-center">
-                    </span>
-                </div>
+                     {/* Filled Section */}
+                    <div
+                        className="absolute top-0 left-0 h-6 bg-ocbcred rounded-full transition-all duration-1000 ease-in-out"
+                        style={{ width: `${((queueLength - waitingTime) / queueLength) * 100}%`}}
+                    ></div>
+
+                    {/* Moving Indicator */}
+                    <div
+                        className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2  w-8 h-8 bg-white rounded-full border-2 shadow-md flex items-center justify-center"
+                        style={{ left: `${((queueLength - waitingTime) / queueLength) * 100}%` }}
+                    >
+                        <div className="w-4 h-4 bg-white rounded-full"></div>
+                    </div>
                 </div>
                 <button
                   className="mt-4 px-4 py-2 bg-ocbcred text-white rounded hover:bg-ocbcdarkred focus:outline-none"
