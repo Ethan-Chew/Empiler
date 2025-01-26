@@ -35,7 +35,7 @@ export default function StaffChats() {
     const [ error, setError ] = useState({
         title: "Authentication",
         description: "An error occured with making a secure connection with the server.",
-        isShown: true,
+        isShown: false,
         type: "error"
     })
 

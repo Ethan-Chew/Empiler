@@ -1,4 +1,4 @@
-import { appendCustSIDToActiveChat, searchCustomerInActiveChat, searchForWaitingCustomer, saveMessages, retrieveChatMessages, addSocketIdToAvailStaff, getChatIdsForStaff, endActiveChat, searchForAvailStaff } from "../utils/sqliteDB.js";
+import { appendCustSIDToActiveChat, searchCustomerInActiveChat, searchForWaitingCustomer, saveMessages, retrieveChatMessages, addSocketIdToAvailStaff, getChatIdsForStaff, endActiveChat, searchForAvailStaff, retrieveWaitingCustomers } from "../utils/sqliteDB.js";
 
 export default function (io, db, socket) {
     /*
@@ -11,6 +11,7 @@ export default function (io, db, socket) {
         sessionIdentifier: "customerSessionIdentifier / staffID"
     }
     */
+
     socket.on("utils:send-msg", async (msg) => {
         if (msg.sender === "staff") {
             msg["sessionIdentifier"] = socket.user.id;
@@ -20,7 +21,7 @@ export default function (io, db, socket) {
     });
     
     // Using a sessionIdentifier (customer / staff), add the new Socket ID to the Active Chat
-    socket.on("utils:add-socket", async (sessionIdentifier, role, callback) => {
+    socket.on("utils:add-socket", async (sessionIdentifier, role) => {  
         if (role === "customer") {
             const searchActiveChat = await searchCustomerInActiveChat(db, sessionIdentifier);
 
@@ -38,7 +39,6 @@ export default function (io, db, socket) {
                 io.sockets.sockets.get(socket.id).join(chat.caseID);
             }
         }
-        callback(true);
     })
 
     socket.on("utils:verify-waitinglist", async (customerSessionIdentifier, callback) => {
@@ -56,8 +56,6 @@ export default function (io, db, socket) {
         if (searchActiveChat) {
             const chatHistory = await retrieveChatMessages(db, searchActiveChat.caseID);
             const staffInformation = await searchForAvailStaff(db, searchActiveChat.staffID);
-            io.to(customerSessionIdentifier).emit("utils:waiting-time", Math.floor(Math.random() * 5) + 1); // TODO: Random Number lolxd
-            console.log(`Re-joining ${searchActiveChat.caseID} by ${socket.id}`);
             callback({
                 exist: true,
                 caseID: searchActiveChat.caseID,

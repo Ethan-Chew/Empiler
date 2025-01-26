@@ -177,8 +177,25 @@ export default function CustomerChat() {
     }, [isConnected]);
 
     useEffect(() => {
-        socket.emit("utils:request-public-key", caseID);
-        console.log("Requesting Public Key from Staff");
+        // Set a timer, and request every second if the RSA Public Key is not received
+        let counter = 0;
+        const interval = setInterval(() => {
+            if (receiverRSAPublicKey === null) {
+                socket.emit("utils:request-public-key", caseID);
+                console.log("Requesting Public Key from Staff");
+                counter++;
+            } else {
+                clearInterval(interval);
+            }
+
+            if (counter >= 10) {
+                clearInterval(interval);
+            }
+        }, 2000);
+
+        if (receiverRSAPublicKey) {
+            clearInterval(interval);
+        }
     }, [receiverRSAPublicKey])
 
     async function sendMessage(fileUrl) {

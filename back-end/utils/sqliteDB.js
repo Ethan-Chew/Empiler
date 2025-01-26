@@ -20,7 +20,8 @@ export const initialiseDB = async () => {
             faqSection TEXT,
             faqQuestion TEXT,
             userID TEXT,
-            timeConnected INTEGER
+            timeConnected INTEGER,
+            queuePosition INTEGER
         );
         CREATE TABLE IF NOT EXISTS availStaff (
             staffID TEXT PRIMARY KEY,
@@ -59,22 +60,44 @@ export const addWaitingCustomers = async (db, customerData) => {
     if (customerProfile) {
         const socketIDs = JSON.parse(customerProfile.socketIDs);
         socketIDs.push(customerData.socketId);
-        await db.run('UPDATE waitingCustomers SET socketIDs = ? WHERE customerSessionIdentifier = ?', JSON.stringify(socketIDs), customerData.customerSessionIdentifier);
+        await db.run(
+            'UPDATE waitingCustomers SET socketIDs = ? WHERE customerSessionIdentifier = ?',
+            JSON.stringify(socketIDs),
+            customerData.customerSessionIdentifier
+        );
     } else {
+        const maxPosition = await db.get('SELECT MAX(queuePosition) as maxPos FROM waitingCustomers');
         customerData.socketIDs = JSON.stringify([customerData.socketId]);
-        delete customerData.socketId;
-        await db.run('INSERT INTO waitingCustomers (customerSessionIdentifier, socketIDs, faqSection, faqQuestion, userID, timeConnected) VALUES (?, ?, ?, ?, ?, ?)', 
-            customerData.customerSessionIdentifier, customerData.socketIDs, customerData.faqSection, customerData.faqQuestion, customerData.userID, customerData.timeConnected);
+        customerData.queuePosition = (maxPosition?.maxPos ?? -1) + 1;
+
+        await db.run(
+            'INSERT INTO waitingCustomers (customerSessionIdentifier, socketIDs, faqSection, faqQuestion, userID, timeConnected, queuePosition) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            customerData.customerSessionIdentifier,customerData.socketIDs,customerData.faqSection,customerData.faqQuestion,customerData.userID,customerData.timeConnected,customerData.queuePosition
+        );
     }
 };
 
 export const retrieveWaitingCustomers = async (db) => {
-    const rows = await db.all('SELECT * FROM waitingCustomers');
+    const rows = await db.all('SELECT * FROM waitingCustomers ORDER BY queuePosition ASC');
     return rows.map(row => ({ ...row, socketIDs: JSON.parse(row.socketIDs) }));
 };
 
+export const retrieveQueueLength = async (db) => {
+    const result = await db.get('SELECT COUNT(*) as queueLength FROM waitingCustomers');
+    return result.queueLength || 0;
+};
+
 export const removeWaitingCustomer = async (db, customerSessionIdentifier) => {
-    await db.run('DELETE FROM waitingCustomers WHERE customerSessionIdentifier = ?', customerSessionIdentifier);
+    const customer = await searchForWaitingCustomer(db, customerSessionIdentifier);
+    if (customer) {
+        const currentPos = customer.queuePosition;
+
+        await db.run('DELETE FROM waitingCustomers WHERE customerSessionIdentifier = ?', customerSessionIdentifier);
+        await db.run(
+            'UPDATE waitingCustomers SET queuePosition = queuePosition - 1 WHERE queuePosition > ?',
+            currentPos
+        );
+    }
 };
 
 export const searchForWaitingCustomer = async (db, customerSessionIdentifier) => {
