@@ -3,6 +3,7 @@ import Appointment from "../models/appointment.js";
 const filterAppointments = async (req, res) => {
     try {
         const { date, branchName } = req.params;
+        console.log(date, branchName);
 
         // Call the refactored method to get available timeslots
         const availableTimeslots = await Appointment.getAvailableTimeslots(date, branchName);
@@ -196,6 +197,7 @@ const deleteAppointmentReminder = async (req, res) => {
 const getOpeningHours = async (req, res) => {
     try {
         const { openingHours } = req.query; // Adjust to req.body or req.params if needed
+        console.log(openingHours);
 
         if (!openingHours) {
             return res.status(400).json({ error: 'openingHours parameter is required' });
@@ -210,6 +212,38 @@ const getOpeningHours = async (req, res) => {
     }
 };
 
+const getFilteredTimeslots = async (req, res) => {
+    try {
+        // Extract parameters from request
+        const { date, branchName } = req.query;
+        const openingHours = req.body.openingHours; // Assume opening hours are passed in the body
+        console.log(date, branchName, openingHours);
+
+        // Validate required inputs
+        if (!date || !branchName || !openingHours) {
+            return res.status(400).json({ error: "Missing required parameters: date, branchName, or openingHours" });
+        }
+
+        // Call the service function to get filtered timeslots
+        const filteredTimeslots = await Appointment.getAvailableTimeslotsWithinOpeningHours(
+            date,
+            branchName,
+            openingHours
+        );
+
+        // Handle errors returned by the service
+        if (filteredTimeslots.error) {
+            return res.status(500).json({ error: filteredTimeslots.error });
+        }
+
+        // Return the filtered timeslots in the response
+        return res.status(200).json({ timeslots: filteredTimeslots });
+    } catch (error) {
+        console.error("Error in getFilteredTimeslots controller:", error);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+};
+
 export default {
     filterAppointments,
     bookAppointment,
@@ -221,5 +255,6 @@ export default {
     setAppointmentReminder,
     updateAppointmentReminder,
     deleteAppointmentReminder,
-    getOpeningHours
+    getOpeningHours,
+    getFilteredTimeslots
 };

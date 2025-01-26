@@ -32,6 +32,9 @@ router.route('/reminders')
 router.route('/openingHours')
     .get(AppointmentController.getOpeningHours);
 
+router.route('/filteredTimeslots')
+    .post(AppointmentController.getFilteredTimeslots);
+
 router.route("/")
 
 export default router;

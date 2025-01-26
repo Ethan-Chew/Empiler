@@ -363,5 +363,72 @@ export default class Appointment {
             return "Error getting opening hours";
         }
     }
+
+    static async getAvailableTimeslotsWithinOpeningHours(date, branchName, openingHours) {
+        try {
+            // Step 1: Get the available timeslots
+            const availableTimeslots = await this.getAvailableTimeslots(date, branchName);
+    
+            if (availableTimeslots.error) {
+                return availableTimeslots; // Return error if no data found
+            }
+    
+            // Step 2: Get the opening hours for the day
+            const openingHoursToday = await this.getOpeningHours(openingHours);
+    
+            if (openingHoursToday === "Closed") {
+                return []; // If the branch is closed, no timeslots are available
+            }
+    
+            if (openingHoursToday.start && openingHoursToday.end) {
+                const { start, end } = openingHoursToday;
+    
+                // Convert times to 24-hour format for easier comparison
+                const convertTo24Hour = (time) => {
+                    time = time.trim().toLowerCase();
+                    if (time.indexOf('.') > -1) {
+                        time = time.replace('.', ':');
+                    }
+                
+                    const match = time.match(/^(\d{1,2}):(\d{2})([ap]m)$/);
+                    
+                    if (match) {
+                        // If the time matches the am/pm format, convert it
+                        const [, hourStr, minuteStr, period] = match;
+                        let hours = Number(hourStr);
+                        let minutes = Number(minuteStr);
+                        if (period === 'pm' && hours !== 12) {
+                            hours += 12;
+                        } else if (period === 'am' && hours === 12) {
+                            hours = 0;
+                        }
+                        return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+                    } else {
+                        // Return the time unchanged if it does not have an am/pm suffix
+                        return time;
+                    }
+                };
+    
+                const openingStartMinutes = convertTo24Hour(start);
+                const openingEndMinutes = convertTo24Hour(end);
+    
+                // Step 3: Filter timeslots based on opening hours
+                const filteredTimeslots = availableTimeslots.filter((timeslot) => {
+                    const timeslotRange = timeslot.timeslot.split('-');  // Split time range
+                    const timeslotStart = convertTo24Hour(timeslotRange[0]);
+                    const timeslotEnd = convertTo24Hour(timeslotRange[1]);
+                
+                    return timeslotStart >= openingStartMinutes && timeslotEnd <= openingEndMinutes;
+                });
+    
+                return filteredTimeslots;
+            } else {
+                return { error: "Invalid opening hours data" };
+            }
+        } catch (error) {
+            console.error(error);
+            return { error: "Error filtering timeslots within opening hours" };
+        }
+    }
     
 }
