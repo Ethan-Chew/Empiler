@@ -6,7 +6,6 @@ import * as CryptoJS from 'crypto-js';
 // Components
 import Navbar from '../../components/Navbar';
 import { BsCalendarCheck } from "react-icons/bs";
-import { time } from 'framer-motion';
 
 export default function InitialiseChat() {
     const navigate = useNavigate();

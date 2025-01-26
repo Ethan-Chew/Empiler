@@ -33,21 +33,21 @@ export default function (io, db, socket) {
         const customer = await searchForWaitingCustomer(db, customerSessionIdentifier);
         const queueLength = await retrieveQueueLength(db);
 
-            if (customer) {
-                // Update the customer's socketId in the database
-                const updatedSocketID = [socket.id];
-                await db.run(
-                    'UPDATE waitingCustomers SET socketIDs = ? WHERE customerSessionIdentifier = ?',
-                    JSON.stringify(updatedSocketID),
-                    customerSessionIdentifier
-                );
+        if (customer) {
+            // Update the customer's socketId in the database
+            const updatedSocketID = [socket.id];
+            await db.run(
+                'UPDATE waitingCustomers SET socketIDs = ? WHERE customerSessionIdentifier = ?',
+                JSON.stringify(updatedSocketID),
+                customerSessionIdentifier
+            );
 
-                console.log(`Customer reconnected: ${customerSessionIdentifier}, new socketId: ${socket.id}`);
+            console.log(`Customer reconnected: ${customerSessionIdentifier}, new socketId: ${socket.id}`);
 
-                // Emit current queue position to the reconnected customer
-                socket.emit('utils:waiting-time', customer.queuePosition);
-                socket.emit('queue:length', queueLength);
-            }
+            // Emit current queue position to the reconnected customer
+            socket.emit('utils:waiting-time', customer.queuePosition);
+            socket.emit('queue:length', queueLength);
+        }
     });
 
     socket.on("customer:join", async (customerSessionIdentifier, section, question) => {

@@ -34,11 +34,7 @@ export default function AwaitChatContainer({ joinChat, hideAwaitCustomerList, wa
             }
         };
       
-        // document.addEventListener('mousedown', handleClickOutside);
         fetchFaqs();
-        // return () => {
-        //     document.removeEventListener('mousedown', handleClickOutside);
-        // };
     }, []);
 
     return (

@@ -39,12 +39,15 @@ export const initialiseDB = async () => {
             staffID TEXT
         );
         CREATE TABLE IF NOT EXISTS chatHistory (
+            id TEXT,
             caseID TEXT,
             sessionIdentifier TEXT,
             timestamp INTEGER,
             message TEXT,
             fileUrl TEXT,
             sender TEXT,
+            key TEXT,
+            iv TEXT,
             PRIMARY KEY (caseID, timestamp, sender)
         );
     `);
@@ -194,8 +197,8 @@ export const appendCustSIDToActiveChat = async (db, caseID, socketID) => {
 
 // Save Chat Messages
 export const saveMessages = async (db, msg) => {
-    await db.run('INSERT INTO chatHistory (caseID, sessionIdentifier, timestamp, message, fileUrl, sender) VALUES (?, ?, ?, ?, ?, ?)', 
-        msg.case, msg.sessionIdentifier, msg.timestamp, msg.message, msg.fileUrl, msg.sender);
+    await db.run('INSERT INTO chatHistory (id, caseID, sessionIdentifier, timestamp, message, fileUrl, sender, key, iv) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', 
+        msg.id, msg.case, msg.sessionIdentifier, msg.timestamp, msg.message, msg.fileUrl, msg.sender, msg.key, msg.iv);
 }
 export const retrieveChatMessages = async (db, caseID) => {
     const rows = await db.all('SELECT * FROM chatHistory WHERE caseID = ?', caseID);
