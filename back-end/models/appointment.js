@@ -1,4 +1,5 @@
 import supabase from "../utils/supabase.js";
+import cron from 'node-cron';
 
 export default class Appointment {
     constructor(id, userId, date, timeslotId, branchName) {
@@ -41,6 +42,7 @@ export default class Appointment {
         try {
             const timeslots = await Appointment.getTimeslots();
             const appointments = await Appointment.getExistingAppointments(date, branchName);
+            console.log(appointments);
 
             if (!timeslots || !appointments) {
                 return { error: "No data found for the provided date or branch" };
@@ -441,5 +443,47 @@ export default class Appointment {
             return { error: "Error filtering timeslots within opening hours" };
         }
     }
+
+    static async deletePastAppointments() {
+        try {
+            const { data, error } = await supabase
+                .from('branch_appointments')
+                .delete()
+                .lt('date', new Date().toISOString().split('T')[0]);
+
+            if (error) {
+                console.error(error);
+                return { error: "Error deleting past appointments" };
+            }
+
+            return data;
+        } catch (error) {
+            console.error(error);
+            return { error: "Error deleting past appointments" };
+        }
+    }
+
     
 }
+
+// Run `deletePastAppointments` once when the backend starts
+(async () => {
+    console.log('Running initial deletion of past appointments...');
+    try {
+        await Appointment.deletePastAppointments();
+        console.log('Initial deletion completed.');
+    } catch (error) {
+        console.error('Error during initial deletion:', error);
+    }
+})();
+
+// Schedule the cron job directly in this module
+cron.schedule('0 0 * * *', async () => {
+    console.log('Running cron job: Deleting past appointments');
+    try {
+        await Appointment.deletePastAppointments();
+    } catch (error) {
+        console.error('Error in cron job:', error);
+    }
+});
+console.log('Cron job scheduled to run daily at midnight.');
