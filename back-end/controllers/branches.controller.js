@@ -53,7 +53,7 @@ async function getSpecificOCBCBranch(req, res) {
 
         return res.status(200).json({
             status: "Success",
-            branch: branch[0],
+            branch: branch,
         });
     } catch (err) {
         return res.status(500).json({
