@@ -23,7 +23,7 @@ const cqManageAppointments = async (ctx: MyContext) => {
     const appointmentDateTime = [];
     for (let appointment of appointments) {
         const text = `${appointment.date} ${appointment.timeslot.timeslot.split("-")[0]}`;
-        appointmentDateTime.push([text, `manage-appt-${appointment.id}`]);
+        appointmentDateTime.push([text, `manage-appt-${appointment.id}:${appointment.branchName}`]);
     }
     
     // Create Inline Keyboard for User to Choose Appointment

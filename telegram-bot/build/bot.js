@@ -43,7 +43,7 @@ if (process.env.ENVIRONMENT === "development") {
 }
 // Return Initial Session Data
 function initial() {
-    return { lastManageApptMsg: null, selectedAppt: null, selectedReminderType: null, userId: null, displayApptDateOffset: 0 };
+    return { lastManageApptMsg: null, selectedAppt: null, selectedReminderType: null, userId: null, displayApptDateOffset: 0, selectedBranch: null };
 }
 bot.use((0, grammy_1.session)({ initial: initial }));
 // Command Handling
@@ -72,7 +72,9 @@ bot.on("callback_query:data", (ctx) => __awaiter(void 0, void 0, void 0, functio
     const callbackData = ctx.callbackQuery.data;
     // Selection of Appointment (Manage Appointment)
     if (callbackData.startsWith("manage-appt-")) {
-        ctx.session.selectedAppt = callbackData.replace("manage-appt-", "");
+        const data = callbackData.replace("manage-appt-", "").split(":");
+        ctx.session.selectedAppt = data[0];
+        ctx.session.selectedBranch = data[1];
         (0, manageAppointmentSelection_1.cqManageAppointmentSelection)(ctx);
     }
     // Selection of Reminder Time Slot

@@ -6,23 +6,22 @@ import { cqRescheduleAppointment } from "./rescheduleAppointment";
 // Retrieve the available dates for this location
 const cqChooseRescheduleTime = async (ctx: MyContext, date: string) => {
     try {
-        if (ctx.session.selectedAppt === null || ctx.session.lastManageApptMsg === null) {
+        if (ctx.session.selectedAppt === null || ctx.session.lastManageApptMsg === null || ctx.session.selectedBranch === null) {
             return;
         }
 
-        // Retrieve the Appointment
-        const appointmentRequest = await axios.get(`http://localhost:8080/api/appointments/viewbooking/${ctx.session.selectedAppt}`);
-        const appointment = await appointmentRequest.data;
+        // // Retrieve the Appointment
+        // const appointmentRequest = await axios.get(`http://localhost:8080/api/appointments/viewbooking/${ctx.session.selectedAppt}`);
+        // const appointment = await appointmentRequest.data;
 
-        // Retrieve the Branch Details from the Appointment
-        const branchDetailsRequest = await axios.get(`http://localhost:8080/api/branch?landmark=${appointment.branchName}`);
-        const branchDetails = await branchDetailsRequest.data.branch;
+        // // Retrieve the Branch Details from the Appointment
+        // const branchDetailsRequest = await axios.get(`http://localhost:8080/api/branch?landmark=${appointment.branchName}`);
+        // const branchDetails = await branchDetailsRequest.data.branch;
         
         // Retrieve the available timeslots for the selected date
         const availableTimeslotsRequest = await axios.post(`http://localhost:8080/api/appointments/filteredTimeslots`, {
             date: date,
-            branchName: branchDetails.landmark,
-            openingHours: branchDetails.openingHours,
+            branchName: ctx.session.selectedBranch,
         }, {
             headers: {
                 "Content-Type": "application/json"

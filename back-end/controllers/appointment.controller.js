@@ -1,9 +1,9 @@
 import Appointment from "../models/appointment.js";
+import Branches from "../models/branches.js";
 
 const filterAppointments = async (req, res) => {
     try {
         const { date, branchName } = req.params;
-        console.log(date, branchName);
 
         // Call the refactored method to get available timeslots
         const availableTimeslots = await Appointment.getAvailableTimeslots(date, branchName);
@@ -248,19 +248,22 @@ const getOpeningHours = async (req, res) => {
 const getFilteredTimeslots = async (req, res) => {
     try {
         // Extract parameters from request
-        const {openingHours, date, branchName} = req.body
-        console.log(date, branchName, openingHours);
+        const {date, branchName} = req.body
+        console.log(date, branchName);
 
         // Validate required inputs
-        if (!date || !branchName || !openingHours) {
+        if (!date || !branchName) {
             return res.status(400).json({ error: "Missing required parameters: date, branchName, or openingHours" });
         }
+
+        // Get the opening hours for the branch
+        const branch = await Branches.getSpecificOCBCBranch(branchName);
 
         // Call the service function to get filtered timeslots
         const filteredTimeslots = await Appointment.getAvailableTimeslotsWithinOpeningHours(
             date,
             branchName,
-            openingHours
+            branch.openingHours
         );
 
         // Handle errors returned by the service

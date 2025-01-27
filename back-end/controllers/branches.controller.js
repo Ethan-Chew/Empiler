@@ -1,26 +1,4 @@
-import fs from 'fs';
-import path from 'path';
-import dotenv from 'dotenv';
-dotenv.config();
-
-function degreesToRadians(degrees) {
-    return degrees * Math.PI / 180;
-}
-  
-function distanceBtwnCoordinates(lat1, lon1, lat2, lon2) {
-    var earthRadiusKm = 6371;
-
-    var dLat = degreesToRadians(lat2-lat1);
-    var dLon = degreesToRadians(lon2-lon1);
-
-    lat1 = degreesToRadians(lat1);
-    lat2 = degreesToRadians(lat2);
-
-    var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-            Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2); 
-    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
-    return earthRadiusKm * c;
-}
+import Branches from "../models/branches.js";
 
 async function getOCBCBranches(req, res) {
     // tbh, idk how to make it so that we are able to continuously get data from OCBC's API lol.
@@ -39,25 +17,11 @@ async function getOCBCBranches(req, res) {
             });
         }
 
-        const filePath = path.join(process.cwd(), "utils", "data", 'branches.json');
-        const jsonData = fs.readFileSync(filePath, 'utf-8'); 
-        const branches = JSON.parse(jsonData);
-
-        const nearestBranches = branches.map(branch => {
-            const distance = distanceBtwnCoordinates(lat, lon, branch.latitude, branch.longitude);
-            return {
-                ...branch,
-                "distance": distance,
-            }
-        });
-        nearestBranches.sort((a, b) => a.distance - b.distance);
-
-        // Slice the nearestBranches for pagination
-        const paginatedBranches = nearestBranches.slice(page * 10, (page + 1) * 10);
+        const branches = await Branches.getOCBCBranches(lat, lon, page);
 
         return res.status(200).json({
             status: "Success",
-            branches: paginatedBranches,
+            branches: branches,
         });
     } catch (err) {
         return res.status(500).json({
@@ -78,11 +42,7 @@ async function getSpecificOCBCBranch(req, res) {
             });
         }
 
-        const filePath = path.join(process.cwd(), "utils", "data", 'branches.json');
-        const jsonData = fs.readFileSync(filePath, 'utf-8'); 
-        const branches = JSON.parse(jsonData);     
-        
-        const branch = branches.filter((branch) => branch.landmark === landmark);
+        const branch = await Branches.getSpecificOCBCBranch(landmark);
 
         if (branch.length === 0) {
             return res.status(404).json({

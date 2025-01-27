@@ -27,11 +27,12 @@ import autoNotification from "./utils/autoNotification";
 
 // Handle Telegram Bot Local Session
 interface SessionData {
-  lastManageApptMsg: number | null;
-  selectedAppt: string | null;
-  selectedReminderType: string | null;
-  userId: string | null,
-  displayApptDateOffset: number;
+  lastManageApptMsg: number | null
+  selectedAppt: string | null
+  selectedReminderType: string | null
+  userId: string | null
+  displayApptDateOffset: number
+  selectedBranch: string | null
 }
 
 export type MyContext = Context & SessionFlavor<SessionData>;
@@ -44,7 +45,7 @@ if (process.env.ENVIRONMENT === "development") {
 
 // Return Initial Session Data
 function initial(): SessionData {
-  return { lastManageApptMsg: null, selectedAppt: null, selectedReminderType: null, userId: null, displayApptDateOffset: 0 };
+  return { lastManageApptMsg: null, selectedAppt: null, selectedReminderType: null, userId: null, displayApptDateOffset: 0, selectedBranch: null };
 }
 bot.use(session({ initial: initial }));
 
@@ -76,7 +77,9 @@ bot.on("callback_query:data", async (ctx) => {
 
   // Selection of Appointment (Manage Appointment)
   if (callbackData.startsWith("manage-appt-")) {
-    ctx.session.selectedAppt = callbackData.replace("manage-appt-", "");
+    const data = callbackData.replace("manage-appt-", "").split(":");
+    ctx.session.selectedAppt = data[0];
+    ctx.session.selectedBranch = data[1];
     cqManageAppointmentSelection(ctx);
   }
   // Selection of Reminder Time Slot
