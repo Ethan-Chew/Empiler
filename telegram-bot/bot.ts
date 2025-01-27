@@ -12,7 +12,7 @@ import { upcomingController } from "./controllers/upcomingController";
 /// Context Query Controllers
 import { cqManageAppointments } from "./controllers/callbackQuery/manageAppointments";
 import { cqManageAppointmentSelection } from "./controllers/callbackQuery/manage-appointment/manageAppointmentSelection";
-import { cqRescheduleAppointment } from "./controllers/callbackQuery/manage-appointment/rescheduleAppointment";
+import { cqRescheduleAppointment } from "./controllers/callbackQuery/manage-appointment/reschedule/rescheduleAppointment";
 import { cqCancelAppointment } from "./controllers/callbackQuery/manage-appointment/cancelAppointment";
 import { cqManageReminderTime } from "./controllers/callbackQuery/manage-appointment/reminder/manageReminderTime";
 import { cqSelectReminderType } from "./controllers/callbackQuery/manage-appointment/reminder/selectReminderType";
@@ -20,6 +20,8 @@ import { cqConfirmSetReminder } from "./controllers/callbackQuery/manage-appoint
 import { cqManageReminder } from "./controllers/callbackQuery/manage-appointment/reminder/manageReminder";
 import { cqSelectCancelReminder } from "./controllers/callbackQuery/manage-appointment/reminder/selectCancelReminder";
 import { cqCancelReminder } from "./controllers/callbackQuery/manage-appointment/reminder/cancelReminder";
+import { cqChooseRescheduleTime } from "./controllers/callbackQuery/manage-appointment/reschedule/chooseRescheduleTime";
+import { cqConfirmRescheduleAppointment } from "./controllers/callbackQuery/manage-appointment/reschedule/confirmRescheduleAppointment";
 /// CRON to send Auto Notification
 import autoNotification from "./utils/autoNotification";
 
@@ -28,7 +30,8 @@ interface SessionData {
   lastManageApptMsg: number | null;
   selectedAppt: string | null;
   selectedReminderType: string | null;
-  userId: string | null
+  userId: string | null,
+  displayApptDateOffset: number;
 }
 
 export type MyContext = Context & SessionFlavor<SessionData>;
@@ -41,7 +44,7 @@ if (process.env.ENVIRONMENT === "development") {
 
 // Return Initial Session Data
 function initial(): SessionData {
-  return { lastManageApptMsg: null, selectedAppt: null, selectedReminderType: null, userId: null };
+  return { lastManageApptMsg: null, selectedAppt: null, selectedReminderType: null, userId: null, displayApptDateOffset: 0 };
 }
 bot.use(session({ initial: initial }));
 
@@ -66,6 +69,7 @@ bot.callbackQuery("back-to-manage-appt", cqManageAppointments);
 bot.callbackQuery("back-to-manage-appt-optns", cqManageReminder);
 bot.callbackQuery("back-to-manage-reminder-optns", cqManageReminder);
 bot.callbackQuery("back-to-reminder-time", cqManageReminderTime);
+bot.callbackQuery("back-to-reschedule-appt", cqRescheduleAppointment);
 /// Catch-All for Callback Queries
 bot.on("callback_query:data", async (ctx) => {
   const callbackData = ctx.callbackQuery.data;
@@ -87,6 +91,28 @@ bot.on("callback_query:data", async (ctx) => {
   // Cancellation of Reminder
   if (callbackData.startsWith("reminder-type-")) {
     cqCancelReminder(ctx, callbackData.replace("reminder-type-", ""));
+  }
+
+  // Handle Appointment Reschedule
+  if (callbackData.startsWith("reschedule-appt-")) {
+    // Handle Date Navigation
+    if (callbackData === "reschedule-appt-previous-5-days") {
+      ctx.session.displayApptDateOffset -= 1;
+      cqRescheduleAppointment(ctx);
+    } else if (callbackData === "reschedule-appt-next-5-days") {
+      ctx.session.displayApptDateOffset += 1;
+      cqRescheduleAppointment(ctx);
+    } else if (callbackData.startsWith("reschedule-appt-datetime")) {
+      // Confirm Reschedule
+      const datetime = callbackData.replace("reschedule-appt-datetime-", "");
+      const separatorIndex = datetime.lastIndexOf('-');
+      const date = datetime.substring(0, separatorIndex);
+      const timeslotId = datetime.substring(separatorIndex + 1);
+      cqConfirmRescheduleAppointment(ctx, date, parseInt(timeslotId));
+    } else {
+      // Handle Date Selection
+      cqChooseRescheduleTime(ctx, callbackData.replace("reschedule-appt-", ""));
+    }
   }
   // await ctx.answerCallbackQuery(); // remove loading animation
 });

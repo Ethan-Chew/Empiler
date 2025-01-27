@@ -126,13 +126,13 @@ export default class Appointment {
         }
     }
 
-    static async updateAppointments(id, date, timeslotId, branchName, newDate, newTimeslotId, newBranchName) {
+    static async updateAppointments(id, newDate, newTimeslotId, newBranchName) {
         try {
             // Perform the update without returning updated data
             const { count, error } = await supabase
                 .from("branch_appointments")
                 .update({ date: newDate, timeslotId: newTimeslotId, branchName: newBranchName })
-                .match({ id, date, timeslotId, branchName });
+                .eq("id", id);
     
             // Check if there was an error
             if (error) {

@@ -15,15 +15,19 @@ const cqManageReminderTime = async (ctx: MyContext) => {
     
     const appointmentReminderTypes = await appointmentReminderTypeReq.data;
     // Update Original Message to include Inline Keyboard to Choose Reminder Time
-    const reminderTimeKVP = [];
-    for (const reminderType of appointmentReminderTypes) {
-        reminderTimeKVP.push([
-            reminderType.type,
-            `appt-reminder-type-${reminderType.type}`
-        ])
+    // const reminderTimeKVP = [];
+    const inlineKeyboard = new InlineKeyboard();
+    for (let i = 0; i < appointmentReminderTypes.length; i++) {
+        inlineKeyboard.text(
+            appointmentReminderTypes[i].type,
+            `appt-reminder-type-${appointmentReminderTypes[i].type}`
+        );
+        // Add a Row after every 3 types
+        if ((i + 1) % 3 === 0) {
+            inlineKeyboard.row();
+        }
     }
-    const reminderTimeButtons = reminderTimeKVP.map(([label, data]) => InlineKeyboard.text(label, data));
-    const inlineKeyboard = InlineKeyboard.from([reminderTimeButtons]).row().text("<< Back", "back-to-manage-appt-optns");
+    inlineKeyboard.row().text("<< Back", "back-to-manage-appt-optns");
 
     await ctx.api.editMessageReplyMarkup(ctx.chat!.id, ctx.session.lastManageApptMsg, { reply_markup: inlineKeyboard });
 }

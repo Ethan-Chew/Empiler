@@ -71,10 +71,10 @@ const getAllAppointments = async (req, res) => {
 }
 
 const updateAppointment = async (req, res) => {
-    const { id, date, timeslotId, branchName, newDate, newTimeslotId, newBranchName } = req.body;
+    const { id, newDate, newTimeslotId, newBranchName } = req.body;
 
     try {
-        const appointment = await Appointment.updateAppointments(id, date, timeslotId, branchName, newDate, newTimeslotId, newBranchName);
+        const appointment = await Appointment.updateAppointments(id, newDate, newTimeslotId, newBranchName);
 
         if (appointment.error) {
             return res.status(400).json({ error: appointment.error });
@@ -248,8 +248,7 @@ const getOpeningHours = async (req, res) => {
 const getFilteredTimeslots = async (req, res) => {
     try {
         // Extract parameters from request
-        const { date, branchName } = req.query;
-        const openingHours = req.body.openingHours; // Assume opening hours are passed in the body
+        const {openingHours, date, branchName} = req.body
         console.log(date, branchName, openingHours);
 
         // Validate required inputs

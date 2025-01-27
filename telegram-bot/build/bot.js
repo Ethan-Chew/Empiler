@@ -24,7 +24,7 @@ const upcomingController_1 = require("./controllers/upcomingController");
 /// Context Query Controllers
 const manageAppointments_1 = require("./controllers/callbackQuery/manageAppointments");
 const manageAppointmentSelection_1 = require("./controllers/callbackQuery/manage-appointment/manageAppointmentSelection");
-const rescheduleAppointment_1 = require("./controllers/callbackQuery/manage-appointment/rescheduleAppointment");
+const rescheduleAppointment_1 = require("./controllers/callbackQuery/manage-appointment/reschedule/rescheduleAppointment");
 const cancelAppointment_1 = require("./controllers/callbackQuery/manage-appointment/cancelAppointment");
 const manageReminderTime_1 = require("./controllers/callbackQuery/manage-appointment/reminder/manageReminderTime");
 const selectReminderType_1 = require("./controllers/callbackQuery/manage-appointment/reminder/selectReminderType");
@@ -32,6 +32,8 @@ const confirmSetReminder_1 = require("./controllers/callbackQuery/manage-appoint
 const manageReminder_1 = require("./controllers/callbackQuery/manage-appointment/reminder/manageReminder");
 const selectCancelReminder_1 = require("./controllers/callbackQuery/manage-appointment/reminder/selectCancelReminder");
 const cancelReminder_1 = require("./controllers/callbackQuery/manage-appointment/reminder/cancelReminder");
+const chooseRescheduleTime_1 = require("./controllers/callbackQuery/manage-appointment/reschedule/chooseRescheduleTime");
+const confirmRescheduleAppointment_1 = require("./controllers/callbackQuery/manage-appointment/reschedule/confirmRescheduleAppointment");
 /// CRON to send Auto Notification
 const autoNotification_1 = __importDefault(require("./utils/autoNotification"));
 const token = process.env.TELEGRAM_API_KEY || "";
@@ -41,7 +43,7 @@ if (process.env.ENVIRONMENT === "development") {
 }
 // Return Initial Session Data
 function initial() {
-    return { lastManageApptMsg: null, selectedAppt: null, selectedReminderType: null, userId: null };
+    return { lastManageApptMsg: null, selectedAppt: null, selectedReminderType: null, userId: null, displayApptDateOffset: 0 };
 }
 bot.use((0, grammy_1.session)({ initial: initial }));
 // Command Handling
@@ -64,6 +66,7 @@ bot.callbackQuery("back-to-manage-appt", manageAppointments_1.cqManageAppointmen
 bot.callbackQuery("back-to-manage-appt-optns", manageReminder_1.cqManageReminder);
 bot.callbackQuery("back-to-manage-reminder-optns", manageReminder_1.cqManageReminder);
 bot.callbackQuery("back-to-reminder-time", manageReminderTime_1.cqManageReminderTime);
+bot.callbackQuery("back-to-reschedule-appt", rescheduleAppointment_1.cqRescheduleAppointment);
 /// Catch-All for Callback Queries
 bot.on("callback_query:data", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     const callbackData = ctx.callbackQuery.data;
@@ -84,6 +87,30 @@ bot.on("callback_query:data", (ctx) => __awaiter(void 0, void 0, void 0, functio
     // Cancellation of Reminder
     if (callbackData.startsWith("reminder-type-")) {
         (0, cancelReminder_1.cqCancelReminder)(ctx, callbackData.replace("reminder-type-", ""));
+    }
+    // Handle Appointment Reschedule
+    if (callbackData.startsWith("reschedule-appt-")) {
+        // Handle Date Navigation
+        if (callbackData === "reschedule-appt-previous-5-days") {
+            ctx.session.displayApptDateOffset -= 1;
+            (0, rescheduleAppointment_1.cqRescheduleAppointment)(ctx);
+        }
+        else if (callbackData === "reschedule-appt-next-5-days") {
+            ctx.session.displayApptDateOffset += 1;
+            (0, rescheduleAppointment_1.cqRescheduleAppointment)(ctx);
+        }
+        else if (callbackData.startsWith("reschedule-appt-datetime")) {
+            // Confirm Reschedule
+            const datetime = callbackData.replace("reschedule-appt-datetime-", "");
+            const separatorIndex = datetime.lastIndexOf('-');
+            const date = datetime.substring(0, separatorIndex);
+            const timeslotId = datetime.substring(separatorIndex + 1);
+            (0, confirmRescheduleAppointment_1.cqConfirmRescheduleAppointment)(ctx, date, parseInt(timeslotId));
+        }
+        else {
+            // Handle Date Selection
+            (0, chooseRescheduleTime_1.cqChooseRescheduleTime)(ctx, callbackData.replace("reschedule-appt-", ""));
+        }
     }
     // await ctx.answerCallbackQuery(); // remove loading animation
 }));

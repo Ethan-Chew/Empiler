@@ -2,7 +2,7 @@ import { Context, InlineKeyboard } from "grammy";
 import axios, { AxiosError } from "axios";
 import bot, { MyContext } from "../bot";
 
-function escapeMarkdownV2(text: String) {
+function escapeMarkdown(text: String) {
     return text.replace(/[_*[\]()~`>#+\-=|{}.!\\]/g, '\\$&');
 }
 
@@ -44,7 +44,7 @@ const upcomingController = async (ctx: MyContext) => {
                 reminders.push(`\\- Reminder ${reminder.type} before over _${reminder.area}_ \\(${new Date(reminder.reminderTime).toLocaleString("en-SG")}\\)`);
             }
             const reminderType = reminders.join("\n");
-            formattedAppointments.push(`*Appointment ${i}*\nDate: ${escapeMarkdownV2(appointment.date)}\nTime: ${escapeMarkdownV2(appointment.timeslot.timeslot)}\nLocation: ${appointment.branchName}\n${reminderType}\n`);
+            formattedAppointments.push(`*Appointment ${i}*\nDate: ${escapeMarkdown(appointment.date)}\nTime: ${escapeMarkdown(appointment.timeslot.timeslot)}\nLocation: ${appointment.branchName}\n${reminderType}\n`);
         }
         formattedAppointments.join("\n\n");
         const response = await ctx.reply(
@@ -55,13 +55,15 @@ const upcomingController = async (ctx: MyContext) => {
         ctx.session.lastManageApptMsg = response.message_id;
     } catch (error) {
             if (error instanceof AxiosError) {
-                console.log(error);
+                if (error.status === 404) {
+                    await ctx.reply("You have no upcoming appointments.");
+                    return;
+                }
                 if (error.response?.data.message) {
                     await ctx.reply(`Error: ${error.response.data.message}`);
                     return;
                 }
             }
-            console.error(error);
             await ctx.reply("An error occurred while retrieving your upcoming appointments.");
         }
 }

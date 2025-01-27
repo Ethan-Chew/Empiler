@@ -29,6 +29,9 @@ const retrieveRemindersForTeleUser = async (req, res) => {
         }
 
         const filteredData = data.filter(item => item.user.appointments.length > 0);
+        if (filteredData.length === 0) {
+            return res.status(404).json({ error: 'No reminders found for Telegram User' });
+        }
         res.status(200).json({
             status: 'success',
             data: filteredData[0].user.appointments

@@ -19,10 +19,8 @@ const cqCancelAppointment = async (ctx: MyContext) => {
         await ctx.reply("An error occurred while cancelling the appointment.");
         return;
     }
-    await ctx.reply("Appointment has been successfully cancelled.");
 
-    // Clear the Inline Keyboard for the previous message
-    await ctx.api.editMessageReplyMarkup(ctx.chat!.id, ctx.session.lastManageApptMsg, { reply_markup: new InlineKeyboard() });
+    await ctx.api.editMessageText(ctx.chat!.id, ctx.session.lastManageApptMsg, "Your Appointment has been successfully cancelled.");
 }
 
 export { cqCancelAppointment };
