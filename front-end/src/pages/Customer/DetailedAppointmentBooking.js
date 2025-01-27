@@ -59,6 +59,7 @@ export default function DetailedAppointmentBooking() {
     };
 
     const getEarliestAvailableTime = (openingHours) => {
+        console.log(openingHours);
         const today = new Date();
         const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
         const todayName = dayNames[today.getDay()];
