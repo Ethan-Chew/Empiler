@@ -20,6 +20,7 @@ import appointment from './routes/appointment.route.js';
 import telegram from './routes/telegramhandler.route.js';
 import telegramAppointments from './routes/telegramappointment.route.js';
 import branches from './controllers/branches.controller.js';
+import otp from './routes/otp.route.js';
 
 // Socket.IO Event Handlers
 import chatAttachments from './routes/chatAttachments.route.js';
@@ -58,6 +59,7 @@ app.use("/api/chat/upload", chatAttachments);
 app.use("/api/translate", translate);
 app.use("/api/telegram", telegram);
 app.use("/api/telegram/appointments", telegramAppointments);
+app.use("/api/otp", otp);
 
 // Handle Socket.IO Connection
 const server = createServer(app);

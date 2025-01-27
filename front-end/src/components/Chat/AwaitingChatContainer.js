@@ -34,11 +34,7 @@ export default function AwaitChatContainer({ joinChat, hideAwaitCustomerList, wa
             }
         };
       
-        // document.addEventListener('mousedown', handleClickOutside);
         fetchFaqs();
-        // return () => {
-        //     document.removeEventListener('mousedown', handleClickOutside);
-        // };
     }, []);
 
     return (
@@ -50,7 +46,7 @@ export default function AwaitChatContainer({ joinChat, hideAwaitCustomerList, wa
                         <BsDashSquareFill className="fill-chatred hover:fill-red-500 text-xl" />
                     </button>
                 </div>
-                <a className="text-neutral-600">Customers who have requested a live chat; Join and Manage up to 7 Live Chats simultaneously.</a>
+                <a className="text-neutral-600">Customers who have requested a live chat; Join and Manage up to 5 Live Chats simultaneously.</a>
 
                 <div className="flex flex-row justify-between mt-5 gap-3">
                     <div id="search-bar" className="z-20 w-1/2 flex flex-row items-center gap-2 py-1 px-3 rounded-md border-2 border-neutral-400">
