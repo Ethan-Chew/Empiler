@@ -38,21 +38,10 @@ export default function MessageContainer({ isSender, message, fileUrl, timestamp
         }
 
         // DEV: pls comment this out else credits go byebye
-        verifyLocalisation();
+        // verifyLocalisation();
     }, []);
 
-    const isAppointmentMessage = message && message.includes('appointment');
-    function HandleAppointmentRender(isSender) {
-        return (
-        <div className={`message ${isSender ? 'sent' : 'received'}`}>
-            {msg && (
-                <div
-                    dangerouslySetInnerHTML={{ __html: msg }}
-                />
-            )}
-        </div>
-            )
-    }
+    const isAppointmentMessage = fileUrl && fileUrl === 'appointment';
 
     const handleMessageTranslation = async () => {
         if (translated) {
@@ -85,7 +74,7 @@ export default function MessageContainer({ isSender, message, fileUrl, timestamp
         <div className={`${isSender && "ml-auto"} flex flex-col max-w-sm md:max-w-xl`}>
             <div className="flex flex-col gap-1">
                 <div className={`${isSender ? "bg-chatred" : "bg-gray-500"} ${msg ? "p-2" : "p-5"} rounded-lg`}>
-                    {fileUrl ? (<ImageViewer fileUrl={fileUrl} />) : isAppointmentMessage ? (<AppointmentRecommendation />) : <p className="text-white">{msg}</p>}
+                    { fileUrl ? (isAppointmentMessage ? <AppointmentRecommendation /> : <ImageViewer fileUrl={fileUrl} />) : <p className="text-white">{msg}</p> }
                 </div>
             </div>
             <div className="flex flex-row">

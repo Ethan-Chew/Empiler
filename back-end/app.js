@@ -17,8 +17,11 @@ import faq from './routes/faq.route.js';
 import auth from './routes/auth.route.js';
 import translate from './routes/translate.route.js';
 import appointment from './routes/appointment.route.js';
+import telegram from './routes/telegramhandler.route.js';
+import telegramAppointments from './routes/telegramappointment.route.js';
 import branches from './controllers/branches.controller.js';
 import ticket from './routes/ticket.route.js';
+import otp from './routes/otp.route.js';
 
 // Socket.IO Event Handlers
 import chatAttachments from './routes/chatAttachments.route.js';
@@ -55,7 +58,13 @@ app.get("/api/branch", branches.getSpecificOCBCBranch);
 app.use("/api/appointments", appointment);
 app.use("/api/chat/upload", chatAttachments);
 app.use("/api/translate", translate);
+<<<<<<< HEAD
 app.use("/api/tickets", ticket);
+=======
+app.use("/api/telegram", telegram);
+app.use("/api/telegram/appointments", telegramAppointments);
+app.use("/api/otp", otp);
+>>>>>>> 4b223c7457e2d775d603e2e9551893d82d9c990c
 
 // Handle Socket.IO Connection
 const server = createServer(app);
