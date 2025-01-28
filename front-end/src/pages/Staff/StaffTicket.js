@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function StaffTicket() {
     const [tickets, setTickets] = useState([]);
+    const [ticketStatusTab, setTicketStatusTab] = useState("Open");
     const [selectedTicket, setSelectedTicket] = useState(null);
     const [showViewPopup, setShowViewPopup] = useState(false);
     const [reply, setReply] = useState("");
@@ -35,19 +36,27 @@ export default function StaffTicket() {
     }
 
     const filteredAndSortedTickets = tickets
-    .filter((ticket) => filterCategory === "All" || ticket.category === filterCategory)
-    .sort((a, b) => {
-        const dateA = new Date(a.createdAt); // Adjust for your date field
-        const dateB = new Date(b.createdAt);
-        return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
-    });
+        .filter(
+            (ticket) =>
+                (filterCategory === "All" || ticket.category === filterCategory) &&
+                ticket.status === ticketStatusTab // Filter by Open/Closed
+        )
+        .sort((a, b) => {
+            const dateA = new Date(a.createdAt);
+            const dateB = new Date(b.createdAt);
+            return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
+        });
+
+    const handleTabChange = (status) => {
+        setTicketStatusTab(status);
+    };
 
 
     useEffect(() => {
         // Fetch tickets from API
         async function fetchTickets() {
             try{
-                const response = await fetch("http://localhost:8080/api/tickets/open");
+                const response = await fetch("http://localhost:8080/api/tickets/tickets");
                 const data = await response.json();
                 if (Array.isArray(data)) {
                     setTickets(data);
@@ -145,6 +154,40 @@ export default function StaffTicket() {
             <StaffNavigationBar />
             <div className="p-6">
                 <h1 className="text-2xl font-semibold mb-6">Staff Ticket Management</h1>
+
+                {/* Tab Navigation */}
+                <div className="flex space-x-4 mb-4">
+                    <button
+                        className={`px-4 py-2 rounded-lg font-semibold ${
+                            ticketStatusTab === "Open"
+                                ? "bg-blue-500 text-white"
+                                : "bg-gray-200 text-gray-700"
+                        }`}
+                        onClick={() => handleTabChange("Open")}
+                    >
+                        Open Tickets
+                    </button>
+                    <button
+                        className={`px-4 py-2 rounded-lg font-semibold ${
+                            ticketStatusTab === "Closed"
+                                ? "bg-blue-500 text-white"
+                                : "bg-gray-200 text-gray-700"
+                        }`}
+                        onClick={() => handleTabChange("Closed")}
+                    >
+                        Closed Tickets
+                    </button>
+                    <button
+                        className={`px-4 py-2 rounded-lg font-semibold ${
+                            ticketStatusTab === "Cancelled"
+                                ? "bg-blue-500 text-white"
+                                : "bg-gray-200 text-gray-700"
+                        }`}
+                        onClick={() => handleTabChange("Cancelled")}
+                    >
+                        Cancelled Tickets
+                    </button>
+                </div>
                 
                 <div className="flex justify-between items-center mb-4">
                     {/* Category Filter */}

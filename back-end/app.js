@@ -58,13 +58,10 @@ app.get("/api/branch", branches.getSpecificOCBCBranch);
 app.use("/api/appointments", appointment);
 app.use("/api/chat/upload", chatAttachments);
 app.use("/api/translate", translate);
-<<<<<<< HEAD
 app.use("/api/tickets", ticket);
-=======
 app.use("/api/telegram", telegram);
 app.use("/api/telegram/appointments", telegramAppointments);
 app.use("/api/otp", otp);
->>>>>>> 4b223c7457e2d775d603e2e9551893d82d9c990c
 
 // Handle Socket.IO Connection
 const server = createServer(app);
