@@ -44,7 +44,7 @@ const upcomingController = async (ctx: MyContext) => {
                 reminders.push(`\\- Reminder ${reminder.type} before over _${reminder.area}_ \\(${new Date(reminder.reminderTime).toLocaleString("en-SG")}\\)`);
             }
             const reminderType = reminders.join("\n");
-            formattedAppointments.push(`*Appointment ${i}*\nDate: ${escapeMarkdown(appointment.date)}\nTime: ${escapeMarkdown(appointment.timeslot.timeslot)}\nLocation: ${appointment.branchName}\n${reminderType}\n`);
+            formattedAppointments.push(`*Appointment ${i}*\nDate: ${escapeMarkdown(appointment.date)}\nTime: ${escapeMarkdown(appointment.timeslot.timeslot)}\nLocation: ${appointment.branchName}\n${reminderType}\n\n`);
         }
         formattedAppointments.join("\n\n");
         const response = await ctx.reply(
