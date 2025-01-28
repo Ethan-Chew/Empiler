@@ -281,7 +281,7 @@ export default function UserSettingsPopup({ closePopup, userId }) {
                         </>
                     )}
                 </div>
-                {twofaIsOpen && <TwofaPopup isOpen={twofaIsOpen} setIsOpen={setTwofaIsOpen} on2faComplete={() => {setIsTwofaDisabled(false);}} />}
+                {twofaIsOpen && <TwofaPopup isOpen={twofaIsOpen} setIsOpen={setTwofaIsOpen} on2faComplete={() => {setIsTwofaDisabled(true);}} />}
             </motion.div>
         </div>
     );
