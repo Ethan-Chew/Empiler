@@ -290,6 +290,15 @@ export default function StaffTicket() {
                         <p className="mb-4">
                             <strong>Details:</strong> {selectedTicket.detail}
                         </p>
+                        <p className="mb-4">
+                            <strong>Reply:</strong> {selectedTicket.reply || "N/A"}
+                        </p>
+                        <p className="mb-4">
+                            <strong>Updated At:</strong> {selectedTicket.updatedAt || "N/A"}
+                        </p>
+                        <p className="mb-4">
+                            <strong>Admin ID:</strong> {selectedTicket.adminId || "N/A"}
+                        </p>
                         <div className="mb-4">
                             <label className="block text-gray-700 font-semibold mb-2">
                                 Reply

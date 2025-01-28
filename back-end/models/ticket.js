@@ -1,4 +1,6 @@
 import supabase from "../utils/supabase.js";
+import TicketEmail from "../utils/ticketEmail.js";
+import User from "./user.js";
 
 export default class Ticket {
     constructor (ticketId, dateCreated, detail, category, custId, reply, adminId, dateUpdated, status) {
@@ -120,6 +122,17 @@ export default class Ticket {
         if (error) {
             throw new Error(error.message);
         }
+
+        // Retrieve updated ticket
+        const updatedTicket = await Ticket.getTicketById(ticketId);
+
+        // Retrieve customer email
+        const customer = await User.getUserWithId(updatedTicket.custId);
+        //const customerEmail = customer.email;
+
+        // Send email notification
+        const customerEmail = 'anyhowrain@gmail.com';
+        await TicketEmail.sendTicketEmail(ticket, customerEmail);
 
         return data;
     }
