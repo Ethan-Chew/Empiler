@@ -20,9 +20,18 @@ const CustomerLandingPage = (props) => {
         const checkExistingOtp = async () => {
             try {
                 const userSession = JSON.parse(sessionStorage.getItem('userDetails'));
-                const response = await fetch(`http://localhost:8080/api/otp/get/${userSession.email}`);
+                const response = await fetch(`http://localhost:8080/api/otp/get`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({email: userSession.email}),
+                });
                 const data = await response.json();
-                if (data !== false) {
+                console.log(data);
+                if (data == false) {
+                    setIsTwofaDisabled(true);
+                } else if (data.otpEnabled == true) {
                     setIsTwofaDisabled(true);
                 } else {
                     setIsTwofaDisabled(false);
