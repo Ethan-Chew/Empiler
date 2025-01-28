@@ -4,13 +4,14 @@ import handleFileUpload from "../../utils/handleFileUpload";
 import { formatTimestamp } from "../../utils/formatTimestamp";
 import { useNavigate } from 'react-router-dom';
 
-
 // Components
 import AwaitChatContainer from "../../components/Chat/AwaitingChatContainer";
 import StaffNavigationBar from "../../components/StaffNavbar";
 import MessageContainer from "../../components/Chat/MessageContainer";
 import ToastMessage from "../../components/ToastMessage";
 import MessageTextField from "../../components/Chat/MessageTextField";
+import RSAHandler from "../../utils/KeyHandlers/RSAHandler";
+import AESHandler from "../../utils/KeyHandlers/AESHandler";
 
 export default function StaffChats() {
     const navigate = useNavigate();
@@ -27,6 +28,17 @@ export default function StaffChats() {
     const [disconnectedChats, setDisconnectedChats] = useState([]);
     const [toastVisiblities, setToastVisibilities] = useState([]);
 
+    // E2E Encryption Status
+    const [ rsaPublicKeys, setRsaPublicKeys ] = useState([]);
+
+    // Error
+    const [ error, setError ] = useState({
+        title: "Authentication",
+        description: "An error occured with making a secure connection with the server.",
+        isShown: false,
+        type: "error"
+    })
+
     // Setter Functions
     const joinChat = async (customerSessionIdentifier) => {    
         if (connectedChats.length >= 5) {
@@ -36,15 +48,30 @@ export default function StaffChats() {
         try {
             const response = await new Promise((resolve, reject) => {
                 socket.emit("staff:join", customerSessionIdentifier, (response) => {
-                    response.status === "Success" ? resolve(response) : reject(new Error("Failed to Join Chat"));
+                    response.status === "Success" ? resolve(response) : reject(new Error("Failed to Join Chat"));// Emit the User's RSA Public Key
                 });
             });
+
+            // Set a timer, and request every second if the RSA Public Key is not received
+            let counter = 0;
+            const interval = setInterval(() => {
+                if (rsaPublicKeys.filter((key) => key.caseId === response.chat.caseID).length === 0) {
+                    socket.emit("utils:request-public-key", response.chat.caseID);
+                    counter++;
+                } else {
+                    clearInterval(interval);
+                }
+
+                if (counter >= 10) {
+                    clearInterval(interval);
+                }
+            }, 2000);
 
             const formattedChat = {
                 ...response.chat,
                 messages: []
             };
-    
+
             setConnectedChats((prev) => [...prev, formattedChat]);
             setSelectedChatId(formattedChat.caseID);
     
@@ -61,28 +88,59 @@ export default function StaffChats() {
         setDisplayAwaitCustomerList(true);
     }
 
-    const sendMessage = (fileUrl) => {
+    const sendMessage = async (fileUrl) => {
         if (sentMessage === "" && fileUrl === null) return;
-        const formattedMsg = {
+        
+        const isFile = Boolean(fileUrl);
+        const currentTimestamp = Date.now();
+
+        const messageObject = {
+            id: crypto.randomUUID(),
             case: connectedChats.filter((chat) => chat.caseID === selectedChatId)[0].caseID,
-            message: fileUrl ? "" : sentMessage,
-            fileUrl: fileUrl ? fileUrl : null,
-            timestamp: Date.now(),
+            message: isFile ? null : sentMessage,
+            fileUrl: isFile ? fileUrl : null,
+            timestamp: currentTimestamp,
             sender: "staff",
         }
-        socket.emit("utils:send-msg", formattedMsg);
-        setSentMessage("");
-    }
 
-    const sendAppointment = () => {
-        const formattedMsg = {
-            case: connectedChats.filter((chat) => chat.caseID === selectedChatId)[0].caseID,
-            message: "appointment",
-            timestamp: Date.now(),
-            sender: "staff",
-        };
-        socket.emit("utils:send-msg", formattedMsg);
-        setSentMessage("");
+        try {
+            // Encrypt the message with the Customer's RSA Public Key
+            const aesKey = await AESHandler.generateAESKey();
+
+            const customerRSAPublic = rsaPublicKeys.filter((key) => key.caseId === selectedChatId)[0].key;
+            const encryptedMessage = await AESHandler.encryptDataWithAESKey(isFile ? fileUrl : sentMessage, aesKey);
+            const encryptedKey = await RSAHandler.encryptDataWithRSAPublic(aesKey, customerRSAPublic);
+
+            // Prepare the formatted message
+            const encrypedMessageObject = JSON.parse(JSON.stringify(messageObject));
+            encrypedMessageObject.message = isFile ? null : encryptedMessage.data;
+            encrypedMessageObject.fileUrl = isFile ? encryptedMessage.data : null;
+            encrypedMessageObject.key = encryptedKey;
+            encrypedMessageObject.iv = encryptedMessage.iv;
+
+            // Save the AES Key, IV and ID to the IndexedDB
+            await AESHandler.saveAESKeyWithMessageId(aesKey, encryptedMessage.iv, messageObject.id);
+            
+            socket.emit("utils:send-msg", encrypedMessageObject);
+            setSentMessage("");
+
+            // Update Message Locally
+            setConnectedChats((prevChats) => {
+                const updatedChats = prevChats.map((chat) => {
+                    if (chat.caseID === messageObject.case) {
+                        return {
+                            ...chat,
+                            messages: [...chat.messages, messageObject],
+                        };
+                    }
+                    return chat;
+                });
+                
+                return updatedChats; 
+            });
+        } catch (err) {
+            console.error('Error: ', err);
+        }
     }
 
     const handleEndChat = () => {        
@@ -104,7 +162,7 @@ export default function StaffChats() {
 
     async function handleAppointmentClick() {
         try {
-            sendAppointment();
+            sendMessage("appointment");
         } catch (err) {
             console.error('Error: ', err);
         }
@@ -123,6 +181,9 @@ export default function StaffChats() {
     }
 
     useEffect(() => {  
+        // Generate RSA Key Pair for the Staff
+        RSAHandler.generateRSAKeyPair();
+
         const handleConnection = (params) => {
             setIsConnected(true);
             socket.emit('staff:avail'); 
@@ -132,7 +193,14 @@ export default function StaffChats() {
             setIsConnected(false);
         }
 
-        const handleReceiveMessage = (msg) => {
+        const handleReceiveMessage = async (msg) => {
+            const decryptedAESKey = await RSAHandler.decryptDataWithRSAPrivate(msg.key);
+            const decryptedMessage = await AESHandler.decryptDataWithAESKey(decryptedAESKey, msg.iv, msg.fileUrl ? msg.fileUrl : msg.message);
+            if (msg.fileUrl) {
+                msg.fileUrl = decryptedMessage;
+            } else {
+                msg.message = decryptedMessage;
+            }
             setConnectedChats((prevChats) => {
                 const updatedChats = prevChats.map((chat) => {
                     if (chat.caseID === msg.case) {
@@ -169,18 +237,63 @@ export default function StaffChats() {
             });
         }
 
-        const handleReconnectAddChats = (chats) => {
+        const handleReconnectAddChats = async (chats) => {
+            await chats.map(async (chat) => {
+                for (const msg of chat.messages) {
+                    let decryptedKey, decryptedMessage;
+                    if (msg.sender === "staff") {
+                        // AES Key is stored in IndexedDB -> Retrieve and Decrypt
+                        const key = await AESHandler.retrieveAESKeyWithMessageId(msg.id);
+                        decryptedMessage = await AESHandler.decryptDataWithAESKey(key.key, key.iv, msg.fileUrl || msg.message);
+                    } else {
+                        // Key was sent by the Customer, so decrypt with Staff's RSA Private Key, before decrypting message
+                        decryptedKey = await RSAHandler.decryptDataWithRSAPrivate(msg.key);
+                        decryptedMessage = await AESHandler.decryptDataWithAESKey(decryptedKey, msg.iv, msg.fileUrl || msg.message);
+                    }
+                    msg.message = decryptedMessage;
+                }
+            });
             setConnectedChats(chats);
-            socket.emit("utils:add-socket", null, "staff");
+            socket.emit("utils:add-socket", null, "staff", (res) => {});
+            for (const chat of chats) {
+                socket.emit("utils:request-public-key", chat.caseID);
+            }
+        }
+
+        const handleReceiveRSAPublicKey = (res) => {
+            console.log(`Received Key from ${res.case}`)
+            setRsaPublicKeys((prev) => [...prev, {
+                key: res.key,
+                caseId: res.case,
+            }]);
+        }
+
+        const sendRSAPublicKey = (obj) => {
+            RSAHandler.retrieveRSAKeyPair("rsa-public").then((res) => {
+                console.log(`Sending Key to ${obj}`)
+                socket.emit("utils:share-keys", {
+                    key: res.key,
+                    case: obj
+                });
+            });
+
         }
 
         // Handle Event Listeners
-        socket.on("connect", handleConnection);
+        socket.on("connect", (ctx) => {
+            const initialGetTimeout = setTimeout(() => {
+                console.log("Initial Connection Timeout");
+                handleConnection(ctx);
+                clearTimeout(initialGetTimeout);
+            }, 1000);
+        });
         socket.on("disconnect", handleDisconnection);
         socket.on("staff:avail-chats", handleSetWaitingCustomers)
         socket.on("utils:receive-msg", handleReceiveMessage);
         socket.on("utils:chat-ended", handleChatEnded);
         socket.on("staff:active-chats", handleReconnectAddChats);
+        socket.on("utils:receive-keys", handleReceiveRSAPublicKey);
+        socket.on("utils:request-public-key", sendRSAPublicKey); 
         socket.on("error", (err) => console.error(err));
         
         return () => {
@@ -191,6 +304,8 @@ export default function StaffChats() {
             socket.off("utils:receive-msg", handleReceiveMessage);
             socket.off("utils:chat-ended", handleChatEnded);
             socket.off("staff:active-chats", handleReconnectAddChats);
+            socket.off("utils:receive-keys", handleReceiveRSAPublicKey);
+            socket.off("utils:request-public-key", sendRSAPublicKey); 
         }
     }, []);
 
@@ -317,6 +432,16 @@ export default function StaffChats() {
                     />
                 ))}
             </div>
+
+            { error.isShown && (
+                <ToastMessage
+                    title="Authentication"
+                    description="An error occured with making a secure connection with the server."
+                    isShown={error.isShown}
+                    hideToast={() => setError({ ...error, isShown: false })}
+                    type="error"
+                />
+            )}
         </div>
     )
 }

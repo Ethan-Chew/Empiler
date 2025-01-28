@@ -6,10 +6,12 @@ import TwofaPopup from '../../components/2FA/TwofaPopup';
 import { useState } from 'react';
 import { PiChats, PiCalendarBlank } from "react-icons/pi";
 import { MdEditCalendar } from "react-icons/md";
-import { IoMdSettings } from "react-icons/io";
+import { FaGear } from "react-icons/fa6";
+import UserSettingsPopup from '../../components/User/UserSettingsPopup';
 
-const CustomerLandingPage = () => {
+const CustomerLandingPage = (props) => {
     const [isOpen, setIsOpen] = useState(false);
+    const [custSettingsPopup, setCustSettingsPopup] = useState(false);
     const [twofaIsOpen, setTwofaIsOpen] = useState(false); 
     const [isTwofaDisabled, setIsTwofaDisabled] = useState(true);
     const [settingsIsOpen, setSettingsIsOpen] = useState(false);
@@ -39,11 +41,11 @@ const CustomerLandingPage = () => {
 
             <div className="text-left mt-6 px-4 lg:px-8">
                 <div className='flex flex-row'>
-                    <h1 className="text-[48px] text-[#343434]">Good Afternoon, John Customer!</h1>
+                    <h1 className="text-[48px] text-[#343434] mr-auto">Good Afternoon, John Customer!</h1>
                     <button
-                        onClick={() => setSettingsIsOpen(true)}
+                        onClick={() => setCustSettingsPopup(true)}
                     >
-                        <IoMdSettings className="ml-auto w-10 h-10 object-contain fill-ocbcred" />
+                        <FaGear className="w-8 h-8" />
                     </button>
                 </div>
                 <p className="text-[20px] text-[#999999] mt-2">What would you like to do today?</p>
@@ -112,6 +114,10 @@ const CustomerLandingPage = () => {
 
             {/* Footer */}
             <Footer />
+
+            { custSettingsPopup && (
+                <UserSettingsPopup closePopup={() => setCustSettingsPopup(false)} userId={props.userId} />
+            ) }
         </div>
     );
 }
