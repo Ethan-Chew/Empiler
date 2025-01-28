@@ -9,9 +9,6 @@ Agents manage multiple chats through a dedicated portal, receiving AI-driven rec
 
 All of these are done while ensuring the upmost security of the customer's personal data.
 
-## Description of Features
-For a full list and description of features, do visit the [./docs/features.md](./docs/features.md) file.
-
 ## Tech Stack
 - React.js for Front-End
 - TailwindCSS for Styling
@@ -22,14 +19,35 @@ For a full list and description of features, do visit the [./docs/features.md](.
 
 ## Local Development and Testing
 This project is **currently NOT deployed**. The only way to test it is by running it locally.
-1. There are TWO main `.env` files, in `/back-end` and `/front-end`. Populate your own `.env` file based on the environment variables in `.env.example`.
+1. There are THREE main `.env` files, in `/back-end`, `/front-end` and `/telegram-bot`. Populate your own `.env` file based on the environment variables in `.env.example`.
 2. Install required dependencies using `npm i`.
-    - Dependency installation has to be done in the respective folders. Hence, it is recommended to have 2 Terminal Windows open, one for managing the Front End, and one for the Back End.
+    - Dependency installation has to be done in the respective folders. Hence, it is recommended to have 3 Terminal Windows open, one for managing the Front End, one for the Back End, and one for the Telegram Bot (if required).
         - `./front-end` for Front-End
         - `./back-end` for Back-End
+        - `/telegram-bot` for Telegram Bot
 3. You can now start the Local Servers. Similar to installing dependencies, both Front and Back Ends have different startup procedures
     - On the **Back-End**, run ```node .``` to start the Server. It should now be running on [localhost:8080](http://localhost:8080).
     - On the **Front-End**, run ```npm start``` to start the Server. It should now be running on [localhost:3000](http://localhost:3000).
+    - On the **Telegram Bot**, run ```npm run start``` to start the Bot. Once you see 'Telegram Bot Started' in your terminal, you may now use the Bot through Telegram.
     - NOTE: Should the Back-End go down at any point, the behaviour of the Front-End Website may become unstable. Ensure that both Servers are fully running before commencing any tests.
+
+### Telegram Bot
+To retrieve your own Telegram Bot API Token, text `@BotFather` on telegram, with the command `/newbot`. Follow the instructions given by BotFather to obtain your API Token. This API Token should then be placed into the `.env` file in the Telegram Bot directory. For more information, visit the Documentation provided by Telegram [here](https://core.telegram.org/bots/tutorial).
+
+## List of Core Features and Contributors
+1. Front-End User Interfaces -- Goh Jun Kai, Ethan Chew, Hervin Sie, Jefferson Low
+2. Live Chat Implementation via Socket.IO -- Ethan Chew
+    - End-to-End Encryption -- Ethan Chew
+    - Request Appointment Booking -- Hervin Sie
+    - Text-to-Speech -- Ethan Chew
+    - Message Language Translation -- Ethan Chew
+    - Staff Rating System -- Ethan Chew
+    - Dynamic Queue System -- Hervin Sie
+3. Appointment Booking System -- Jefferson Low
+4. Ticket Based System -- Jefferson Low
+5. AI-Enhanced FAQ Page -- Hervin Sie
+6. 2-Factor Authentication -- Hervin Sie
+7. Staff Statistics -- Goh Jun Kai
+8. Email and Telegram Reminders -- Ethan Chew
 
 ###### Ethan Chew, Jefferson Low, Hervin Sie, Goh Jun Kai, Lim Tzi
