@@ -67,7 +67,7 @@ bot.callbackQuery("create-appt-reminder", cqManageReminderTime);
 bot.callbackQuery("cancel-appt-reminder", cqSelectCancelReminder);
 /// Back Button Handlers
 bot.callbackQuery("back-to-manage-appt", cqManageAppointments);
-bot.callbackQuery("back-to-manage-appt-optns", cqManageReminder);
+bot.callbackQuery("back-to-manage-appt-selection", cqManageAppointmentSelection);
 bot.callbackQuery("back-to-manage-reminder-optns", cqManageReminder);
 bot.callbackQuery("back-to-reminder-time", cqManageReminderTime);
 bot.callbackQuery("back-to-reschedule-appt", cqRescheduleAppointment);

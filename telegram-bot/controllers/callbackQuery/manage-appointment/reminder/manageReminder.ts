@@ -24,7 +24,7 @@ const cqManageReminder = async (ctx: MyContext) => {
     }
 
     const reminderTimeButtons = manageReminderKVP.map(([label, data]) => InlineKeyboard.text(label, data));
-    const inlineKeyboard = InlineKeyboard.from([reminderTimeButtons]).row().text("<< Back", "back-to-manage-appt-optns");
+    const inlineKeyboard = InlineKeyboard.from([reminderTimeButtons]).row().text("<< Back", "back-to-manage-appt-selection");
 
     // // Edit the Original Message to include the new inlineKeyboard
     await ctx.api.editMessageReplyMarkup(ctx.chat!.id, ctx.session.lastManageApptMsg, { reply_markup: inlineKeyboard });

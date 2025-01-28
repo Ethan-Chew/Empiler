@@ -3,8 +3,8 @@ import axios, { AxiosError } from "axios";
 import validateUUID from "../utils/validateUUID";
 
 const startController = async (ctx: Context) => {
-    await ctx.reply(`__*OCBC Support Bot*__\nHi, I am the 'official' Support Bot for OCBC, here to help you with your queries.\n*Commands*\n- \`/start\` - Start the bot\n- \`/help\` - Get help\n- \`/link\` - Relink the bot to your OCBC Account`, { 
-        parse_mode: "Markdown",
+    await ctx.reply(`__*OCBC Support Bot*__\nHi, I am the 'official' Support Bot for OCBC, here to help you with your queries.\n*Commands*\n- \`/start\` - Start the bot\n- \`/link\` - Link the bot to your OCBC Account.\n- \`/unlink\` - Unlink the bot from your OCBC Account \(you will not be able to access services until you re-link it.\)\n- \`/upcoming\` - View all Upcoming Appointments.`, { 
+        parse_mode: "MarkdownV2",
         reply_parameters: { message_id: ctx.msg!.message_id },
     });
 
