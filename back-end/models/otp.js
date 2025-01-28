@@ -86,14 +86,15 @@ export default class otp {
     }
 
     static async deleteOtp(email) {
+        console.log('Deleting OTP for email:');
+        console.log(email);
         const { data, error } = await supabase
             .from('2faSecret')
             .delete()
             .eq('email', email);
 
         if (error) {
-            console.log(error);
-            return null;
+            throw error;
         }
 
         return data;

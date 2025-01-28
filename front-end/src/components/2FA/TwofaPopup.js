@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { IoMdClose } from "react-icons/io";
 const qrcode = require('qrcode');
 
-function TwoFactorPopup({ isOpen, setIsOpen }) {
+function TwoFactorPopup({ isOpen, setIsOpen, on2faComplete }) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [otp, setOtp] = useState('');
   const [secret, setSecret] = useState('');
@@ -49,8 +49,10 @@ function TwoFactorPopup({ isOpen, setIsOpen }) {
       if (data.status === true) {
         alert('OTP verified successfully!');
         enableOtp();
+        if (on2faComplete) {
+          on2faComplete();
+        }
         setIsOpen(false);
-        window.location.reload();
       } else {
         alert('Invalid OTP. Please try again.');
       }

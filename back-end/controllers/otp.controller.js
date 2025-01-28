@@ -109,16 +109,16 @@ const deleteOtp = async (req, res) => {
         const data = await otp.deleteOtp(email);
 
         if (!data) {
-            return res.status(404).json({
-                status: 'Error',
-                message: 'OTP not deleted.'
+            return res.status(200).json({
+                status: 'Success',
+                message: 'OTP deleted successfully.'
             });
         }
-
-        res.status(200).json({
-            status: 'Success',
-            message: 'OTP deleted successfully.'
+        res.status(404).json({
+            status: 'Error',
+            message: 'OTP not deleted.'
         });
+        
     } catch (error) {
         console.error(error);
         res.status(500).json({
