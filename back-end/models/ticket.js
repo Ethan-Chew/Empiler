@@ -128,10 +128,9 @@ export default class Ticket {
 
         // Retrieve customer email
         const customer = await User.getUserWithId(updatedTicket.custId);
-        //const customerEmail = customer.email;
+        const customerEmail = customer.email;
 
         // Send email notification
-        const customerEmail = 'anyhowrain@gmail.com';
         await TicketEmail.sendTicketEmail(ticket, customerEmail);
 
         return data;
