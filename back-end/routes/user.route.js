@@ -13,4 +13,7 @@ router.route("/", authoriseJWT)
 router.route("/monthly-chat-counts")
     .get(authoriseJWT, UserController.getMonthlyChatCounts);
 
+router.route("/staff/average-waiting-time")
+    .get(authoriseJWT, UserController.getAverageWaitingTime);
+
 export default router

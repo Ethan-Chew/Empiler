@@ -26,6 +26,7 @@ const CustomerSupportStatistics = () => {
     const [monthlyChats, setMonthlyChats] = useState(0);
     const [staffId, setStaffId] = useState(null);
     const [personalRating, setPersonalRating] = useState(null);
+    const [averageWaitingTime, setAverageWaitingTime] = useState(0);
 
     useEffect(() => {
         const fetchMonthlyFeedback = async () => {
@@ -108,6 +109,29 @@ const CustomerSupportStatistics = () => {
 
         fetchMonthlyChats();
     }, [selectedMonth]);
+
+    useEffect(() => {
+        const fetchAverageWaitingTime = async () => {
+            try {
+                const response = await fetch('/api/user/staff/average-waiting-time', {
+                    method: 'GET',
+                    credentials: 'include',
+                });
+
+                if (!response.ok) {
+                    console.error('Error fetching average waiting time:', response.statusText);
+                    return;
+                }
+
+                const data = await response.json();
+                setAverageWaitingTime(data.averageWaitingTime);
+            } catch (error) {
+                console.error('Error fetching average waiting time:', error);
+            }
+        };
+
+        fetchAverageWaitingTime();
+    }, []);
 
     const handleMonthChange = (event) => {
         setSelectedMonth(event.target.value);
@@ -230,9 +254,8 @@ const CustomerSupportStatistics = () => {
 
             <div className="px-8 mt-6 grid grid-cols-2 gap-4">
                 <div className="bg-gray-100 rounded-lg p-6 flex flex-col justify-center">
-                    <div className="text-[#000000] text-[18px] font-bold">Average Customer Waiting Time</div>
-                    <div className="text-[#7F7F7F] text-[14px]">Data from {selectedMonth}</div>
-                    <div className="text-[72px] text-[#D00E35] font-bold mt-4 flex-grow flex items-center justify-center">5 minutes</div>
+                    <div className="text-[16px] text-[#767676]">Average Waiting Time (mins)</div>
+                    <div className="text-[20px] text-[#0F172A]">{averageWaitingTime} minutes</div>
                 </div>
 
                 <div className="bg-gray-100 rounded-lg p-6 flex flex-col">
@@ -269,9 +292,7 @@ const CustomerSupportStatistics = () => {
                         </div>
                     </div>
 
-                    <button className="mt-4 bg-[#D00E35] text-white font-medium py-2 px-4 rounded-lg w-full">
-                        View More Feedback
-                    </button>
+                   
                 </div>
             </div>
 

@@ -205,3 +205,25 @@ export const addSocketIdToAvailStaff = async (db, staffID, socketID) => {
     socketIDs.push(socketID);
     await db.run('UPDATE availStaff SET socketIDs = ? WHERE staffID = ?', JSON.stringify(socketIDs), staffID);
 }
+
+export const getAverageWaitingTimeForStaff = async (db, staffID) => {
+    const activeChats = await db.all('SELECT * FROM activeChats WHERE staffID = ?', staffID);
+
+    if (activeChats.length === 0) {
+        return 0;
+    }
+
+    let totalWaitingTime = 0;
+    let customerCount = 0;
+
+    for (let chat of activeChats) {
+        const customer = await db.get('SELECT * FROM waitingCustomers WHERE customerSessionIdentifier = ?', chat.customerSessionIdentifier);
+
+        if (customer) {
+            totalWaitingTime += customer.queuePosition;
+            customerCount++;
+        }
+    }
+
+    return customerCount > 0 ? totalWaitingTime / customerCount : 0;
+};

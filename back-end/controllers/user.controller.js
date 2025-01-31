@@ -60,6 +60,34 @@ const getMonthlyChatCounts = async (req, res) => {
     }
 };
 
+const getAverageWaitingTime = async (req, res) => {
+    const staffId = req.user.id;
+
+    try {
+        const { data, error } = await supabase
+            .from("chat_history")
+            .select("waitTime") // Assuming `waitTime` is a field in the chat history that stores the waiting time for each chat
+            .eq("staffId", staffId);
+
+        if (error) {
+            console.error("Supabase error:", error);
+            return res.status(500).json({ message: error.message });
+        }
+
+        if (!data || data.length === 0) {
+            return res.status(404).json({ message: "No waiting time data found for this staff." });
+        }
+
+        const totalWaitTime = data.reduce((total, record) => total + (record.waitTime || 0), 0);
+        const averageWaitTime = totalWaitTime / data.length;
+
+        return res.status(200).json({ averageWaitingTime: averageWaitTime.toFixed(2) });
+    } catch (error) {
+        console.error('Error fetching average waiting time:', error);
+        res.status(500).json({ message: "An unexpected error occurred." });
+    }
+};
+
 
 const getStaffFeedback = async (req, res) => {
     try {
@@ -118,4 +146,5 @@ export default {
     getUser,
     getStaffFeedback,
     getMonthlyChatCounts,
+    getAverageWaitingTime,
 }
