@@ -10,6 +10,8 @@ import Login from './pages/login';
 import InitisaliseChat from './pages/Customer/InitialiseChat';
 import CustomerChat from './pages/Customer/CustomerChat';
 
+import CustomerSupportStatistics from './pages/Staff/CustomerSupportStatistics';
+
 import ViewDetailedAppointments from './pages/ViewDetailedAppointments';
 import ChatRating from './pages/Customer/ChatRating';
 import ViewUpcomingAppointments from './pages/ViewUpcomingAppointments';
@@ -43,6 +45,11 @@ root.render(
       <Route path="/view-detailed-upcoming-appointments" element={<ViewDetailedUpcomingAppointments />} />
       <Route path="/faqlistpage" element={<FAQListPage />} />
       <Route path="/individualfaqpage" element={<IndividualFAQPage />} />
+
+            <Route
+                path="/staff/customer-support-statistics"
+                element={<ProtectedRoute Component={CustomerSupportStatistics} role="staff" />}
+            />
 
       {/* FAQ Routes */}
 

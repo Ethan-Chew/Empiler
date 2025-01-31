@@ -37,13 +37,13 @@ export default class User {
 
     static async getStaffStatistics(staffID) {
         const queryRequest = await supabase
-        .from("chat_history")
-        .select(`
+            .from("chat_history")
+            .select(`
             count(caseId) as numOfTotalChats, 
             avg(rating) as averageRating
           `)
-        .eq("staff_id", staffID)
-        .single();
+            .eq("staff_id", staffID)
+            .single();
 
         if (queryRequest.error) {
             return null;
@@ -55,7 +55,7 @@ export default class User {
                 averageRating: null
             };
         }
-    
+
         return queryRequest.data;
     }
 }
