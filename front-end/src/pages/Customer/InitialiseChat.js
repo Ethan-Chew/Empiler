@@ -24,7 +24,7 @@ export default function InitialiseChat() {
 
         // Generate a Unique Identifier for this Customer Session
         let customerSessionIdentifier = sessionStorage.getItem('customerSessionIdentifier');
-    
+
         if (!customerSessionIdentifier) {
             customerSessionIdentifier = CryptoJS.lib.WordArray.random(16).toString(CryptoJS.enc.Hex);
             sessionStorage.setItem('customerSessionIdentifier', customerSessionIdentifier);
@@ -70,11 +70,11 @@ export default function InitialiseChat() {
         })
 
         socket.on('utils:joined-chat', (caseID, staffName) => {
-             navigate(`/chat?caseID=${caseID}`, {
+            navigate(`/chat?caseID=${caseID}`, {
                 state: {
                     staffName: staffName
                 }
-             });
+            });
         })
 
         return () => {
@@ -109,38 +109,38 @@ export default function InitialiseChat() {
 
     return (
         <div className="flex flex-col h-screen">
-          <><Navbar />
-            <div className="w-full bg-ocbcred text-white py-3 px-5">
-              <h1 className="text-2xl font-semibold">OCBC Support | Live Chat</h1>
-            </div>
-            <div className="flex-grow overflow-hidden flex items-center justify-center">
-              <div className="flex flex-col items-center justify-center p-10 bg-white drop-shadow-[0_0px_4px_rgba(0,0,0,.15)]">
-                <p className="text-xl font-medium text-gray-800 mb-2">Please hold while we connect you to an agent.</p>
-                <div className="w-8 h-8 border-4 border-t-4 border-gray-300 rounded-full animate-spin mb-2" style={{ borderTopColor: "#8b3d58" }}></div>
-                <p>Estimated Waiting Time: <span className="font-bold">{connectionErr ? "Loading queue information..." : `${waitingTime} minutes`}</span></p>
-                <button
-                  className="mt-4 px-4 py-2 bg-ocbcred text-white rounded hover:bg-ocbcdarkred focus:outline-none"
-                  onClick={handleDisconnectionButton}
-                >
-                  Cancel Chat
-                </button>
-
-                {/* Suggest Appointment */}
-                <div className={`border-t-2 border-neutral-200 py-2 mt-5`}>
-                    <p className='font-semibold mb-3'>Cannot wait? Consider making an appointment instead.</p>
-                    <button
-                        className='w-full py-2 px-4 flex flex-row rounded-xl bg-white drop-shadow-[0_0px_3px_rgba(0,0,0,.15)] items-center gap-3 text-ocbcred hover:text-ocbcdarkred'
-                        onClick={() => navigate('/appointments/branches')}
-                    >
-                        <div className='w-10 h-10 rounded-full bg-ocbcred/10 flex justify-center items-center'>
-                            <BsCalendarCheck className='text-xl' />
-                        </div>
-                        <p className='text-lg font-medium'>Make an Appointment</p>
-                    </button>
+            <><Navbar />
+                <div className="w-full bg-ocbcred text-white py-3 px-5">
+                    <h1 className="text-2xl font-semibold">OCBC Support | Live Chat</h1>
                 </div>
-              </div>
-            </div>
-          </>
+                <div className="flex-grow overflow-hidden flex items-center justify-center">
+                    <div className="flex flex-col items-center justify-center p-10 bg-white drop-shadow-[0_0px_4px_rgba(0,0,0,.15)]">
+                        <p className="text-xl font-medium text-gray-800 mb-2">Please hold while we connect you to an agent.</p>
+                        <div className="w-8 h-8 border-4 border-t-4 border-gray-300 rounded-full animate-spin mb-2" style={{ borderTopColor: "#8b3d58" }}></div>
+                        <p>Estimated Waiting Time: <span className="font-bold">{connectionErr ? "Loading queue information..." : `${waitingTime} minutes`}</span></p>
+                        <button
+                            className="mt-4 px-4 py-2 bg-ocbcred text-white rounded hover:bg-ocbcdarkred focus:outline-none"
+                            onClick={handleDisconnectionButton}
+                        >
+                            Cancel Chat
+                        </button>
+
+                        {/* Suggest Appointment */}
+                        <div className={`border-t-2 border-neutral-200 py-2 mt-5`}>
+                            <p className='font-semibold mb-3'>Cannot wait? Consider making an appointment instead.</p>
+                            <button
+                                className='w-full py-2 px-4 flex flex-row rounded-xl bg-white drop-shadow-[0_0px_3px_rgba(0,0,0,.15)] items-center gap-3 text-ocbcred hover:text-ocbcdarkred'
+                                onClick={() => navigate('/appointments/branches')}
+                            >
+                                <div className='w-10 h-10 rounded-full bg-ocbcred/10 flex justify-center items-center'>
+                                    <BsCalendarCheck className='text-xl' />
+                                </div>
+                                <p className='text-lg font-medium'>Make an Appointment</p>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </>
         </div>
     )
 }

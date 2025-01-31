@@ -25,6 +25,7 @@ const CustomerSupportStatistics = () => {
     });
     const [monthlyChats, setMonthlyChats] = useState(0);
     const [staffId, setStaffId] = useState(null);
+    const [personalRating, setPersonalRating] = useState(null);
 
     useEffect(() => {
         const fetchMonthlyFeedback = async () => {
@@ -44,14 +45,15 @@ const CustomerSupportStatistics = () => {
                 }
 
                 const statsData = await response.json();
-                setRatings({
+                const newRatings = {
                     excellent: statsData.excellentPercentage,
                     good: statsData.goodPercentage,
                     mediocre: statsData.mediocrePercentage,
                     poor: statsData.poorPercentage,
-                });
-
+                };
+                setRatings(newRatings);
                 setTotalChats(statsData.totalRatings);
+                setPersonalRating(determineMostCommonRating(newRatings));
             } catch (error) {
                 console.error("Error fetching feedback data:", error);
             }
@@ -128,6 +130,19 @@ const CustomerSupportStatistics = () => {
 
     const totalRatings = totalChats;
 
+    const determineMostCommonRating = (ratings) => {
+        const ratingLabels = ["Excellent", "Good", "Mediocre", "Poor"];
+        const ratingValues = [
+            ratings.excellent,
+            ratings.good,
+            ratings.mediocre,
+            ratings.poor,
+        ];
+
+        const maxIndex = ratingValues.indexOf(Math.max(...ratingValues));
+        return ratingLabels[maxIndex];
+    };
+
     // percentage calculator
     const excellentPercentage = totalRatings > 0 ? ((ratings.excellent / totalRatings) * 100).toFixed(2) : 0;
     const goodPercentage = totalRatings > 0 ? ((ratings.good / totalRatings) * 100).toFixed(2) : 0;
@@ -162,12 +177,25 @@ const CustomerSupportStatistics = () => {
 
                 <div>
                     <h1 className="text-[30px] text-[#343434] font-bold">Customer Support Statistics</h1>
-                    <p className="text-[16px] text-[#7F7F7F]">
-                        For the month of:{" "}
+                </div>
+            </div>
+
+            <hr className="border-t-[2px] border-[#DCD6D6] mt-4" />
+
+            <div className="px-8 mt-6 grid grid-cols-2 gap-4">
+                <div className="bg-gray-100 rounded-lg p-4 flex justify-between items-center">
+                    <div className="text-[#7F7F7F] text-[18px] font-medium">
+                        Personal Rating: {personalRating || "No Data"}
+                    </div>
+                </div>
+
+                <div className="bg-gray-100 rounded-lg p-4 flex justify-between items-center">
+                    <div className="flex items-center space-x-2 text-[#7F7F7F] text-[18px] font-medium">
+                        <span>Chats Answered for the Month of</span>
                         <select
                             value={selectedMonth}
                             onChange={handleMonthChange}
-                            className="text-[#D00E35] bg-transparent border-none outline-none"
+                            className="text-[#D00E35] bg-transparent border-none outline-none cursor-pointer"
                         >
                             {Array.from({ length: 24 }, (_, i) => {
                                 const date = new Date();
@@ -180,25 +208,12 @@ const CustomerSupportStatistics = () => {
                                 );
                             })}
                         </select>
-                    </p>
-                </div>
-            </div>
-
-            <hr className="border-t-[2px] border-[#DCD6D6] mt-4" />
-
-            <div className="px-8 mt-6 grid grid-cols-2 gap-4">
-                <div className="bg-gray-100 rounded-lg p-4 flex justify-between items-center">
-                    <div className="text-[#7F7F7F] text-[18px] font-medium">Personal Rating: 89%</div>
-                    <div className="text-[#23C552] text-[16px] font-medium flex items-center">
-                        +12% <FaChevronUp className="ml-1" />
+                        <span>:</span>
+                        <span className="text-[#343434] font-bold">{monthlyChats}</span>
                     </div>
-                </div>
 
-                <div className="bg-gray-100 rounded-lg p-4 flex justify-between items-center">
-                    <div className="text-[#7F7F7F] text-[18px] font-medium">Chats Answered: {monthlyChats}</div>
                     <div
-                        className={`text-[16px] font-medium flex items-center ${percentageChange >= 0 ? "text-[#23C552]" : "text-[#EF6461]"
-                            }`}
+                        className={`text-[16px] font-medium flex items-center ${percentageChange >= 0 ? "text-[#23C552]" : "text-[#EF6461]"}`}
                     >
                         {percentageChange >= 0 ? (
                             <>
