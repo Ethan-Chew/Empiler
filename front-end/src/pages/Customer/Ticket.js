@@ -12,6 +12,8 @@ export default function Ticket() {
     const [showViewPopup, setShowViewPopup] = useState(false);
     const [filterStatus, setFilterStatus] = useState(""); // Filter status (Open, Closed, etc.)
     const [sortCriteria, setSortCriteria] = useState("createdAt"); // Sort criteria (createdAt, status, etc.)
+    const [errorMessage, setErrorMessage] = useState(""); // State for error message
+
 
     const getUserIdFromSession = () => {
         const user = JSON.parse(sessionStorage.getItem("userDetails"));
@@ -71,6 +73,22 @@ export default function Ticket() {
         if (!custId) {
             console.error("User ID not found in session storage");
             return;
+        }
+
+        // Check if category is selected
+        if (!selectedCategory) {
+            setErrorMessage("Please select a category for the ticket.");
+            return;
+        } else {
+            setErrorMessage(""); // Clear error message if category is selected
+        }
+
+        // Check if ticket detail is empty
+        if (!ticketDetail) {
+            setErrorMessage("Please enter a detail for the ticket.");
+            return;
+        } else {
+            setErrorMessage(""); // Clear error message if ticket detail is entered
         }
 
         const ticket = {
@@ -200,6 +218,8 @@ export default function Ticket() {
                         </div>
                     </div>
 
+
+
                     {/* Ticket Cards */}
                     <div className="mt-4">
                         {sortedTickets.length > 0 ? (
@@ -295,6 +315,10 @@ export default function Ticket() {
                                     maxLength={maxCharacters}
                                 ></textarea>
                                 <p className="text-right text-gray-500">{ticketDetail.length}/{maxCharacters}</p>
+                                {/* Error Message */}
+                                {errorMessage && (
+                                    <div className="text-red-500 text-sm mb-4">{errorMessage}</div>
+                                )}
                             </div>
                             <div className="flex justify-end">
                                 <button
