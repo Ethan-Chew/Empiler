@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { IoMdClose } from "react-icons/io";
 const qrcode = require('qrcode');
 
-function TwoFactorPopup({ isOpen, setIsOpen, setIsTwofaDisabled }) {
+function TwoFactorPopup({ isOpen, setIsOpen, on2faComplete }) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [otp, setOtp] = useState('');
   const [secret, setSecret] = useState('');
@@ -48,9 +48,11 @@ function TwoFactorPopup({ isOpen, setIsOpen, setIsTwofaDisabled }) {
       const data = await response.json();
       if (data.status === true) {
         alert('OTP verified successfully!');
+        enableOtp();
+        if (on2faComplete) {
+          on2faComplete();
+        }
         setIsOpen(false);
-        setIsTwofaDisabled(false);
-        
       } else {
         alert('Invalid OTP. Please try again.');
       }
@@ -58,6 +60,24 @@ function TwoFactorPopup({ isOpen, setIsOpen, setIsTwofaDisabled }) {
       console.error('Error verifying OTP:', error);
     }
   };
+
+  const enableOtp = async () => {
+    try {
+      const response = await fetch('http://localhost:8080/api/otp/enable', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: currentUser.email,
+          status: true
+        })
+      });
+      const data = await response.json();
+    } catch (error) {
+      console.error('Error enabling OTP:', error);
+    }
+  }
 
   useEffect(() => {
     const fetchCurrentUser = async () => {
