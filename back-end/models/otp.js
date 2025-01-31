@@ -11,15 +11,37 @@ export default class otp {
     static async getOtp(email) {
         const {data, error} = await supabase
             .from('2faSecret')
-            .select('secretkey')
+            .select('secretkey, otpenabled')
             .eq('email', email);
         if (error) {
             throw error;
         }
         const secretKey = data[0].secretkey;
+        console.log(data);
+        const otpEnabled = data[0].otpenabled;
+        console.log(otpEnabled);
         const otpURI = otplib.authenticator.keyuri(email, 'OCBC', secretKey);
 
-        return { secretKey, otpURI };
+        return { secretKey, otpURI, otpEnabled };
+    }
+
+    static async enableOtp(email, status) {
+        try {
+
+            const { data, error } = await supabase
+                .from('2faSecret')
+                .update([{ otpenabled: status }])
+                .eq('email', email);
+
+            if (error) {
+                throw error;
+            }
+
+            return { data };
+        } catch (error) {
+            console.error('Error enabling OTP:', error);
+            return null;
+        }
     }
 
     static async createOtp(email) {
@@ -28,7 +50,7 @@ export default class otp {
             const otpURI = otplib.authenticator.keyuri(email, 'OCBC', secretkey);
             const { data, error } = await supabase
                 .from('2faSecret')
-                .insert([{ email, secretkey }])
+                .insert([{ email, secretkey, otpenabled: false }])
                 .single();
 
             if (error) {
@@ -64,14 +86,15 @@ export default class otp {
     }
 
     static async deleteOtp(email) {
+        console.log('Deleting OTP for email:');
+        console.log(email);
         const { data, error } = await supabase
             .from('2faSecret')
             .delete()
             .eq('email', email);
 
         if (error) {
-            console.log(error);
-            return null;
+            throw error;
         }
 
         return data;

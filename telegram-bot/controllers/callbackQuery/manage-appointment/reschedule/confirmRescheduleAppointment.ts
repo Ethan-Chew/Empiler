@@ -33,7 +33,7 @@ const cqConfirmRescheduleAppointment = async (ctx: MyContext, date: string, time
         const updatedAppointmentRequest = await axios.get(`http://localhost:8080/api/appointments/viewbooking/${ctx.session.selectedAppt}`);
         const updatedAppointment = await updatedAppointmentRequest.data;
 
-        await ctx.api.editMessageText(ctx.chat!.id, ctx.session.lastManageApptMsg, `Your appointment has been successfully rescheduled\\!\n*Updated Appointment*\nDate: ${escapeMarkdown(updatedAppointment.date)}\nTime: ${escapeMarkdown(updatedAppointment.appointment_timeslots.timeslot)}\nLocation: ${updatedAppointment.branchName}\n\nIf you need any further assistance, please use the _/upcoming_ command again\\!`, { parse_mode: "MarkdownV2" });
+        await ctx.api.editMessageText(ctx.chat!.id, ctx.session.lastManageApptMsg, `Your appointment has been successfully rescheduled\\!\n\n*Updated Appointment*\nDate: ${escapeMarkdown(updatedAppointment.date)}\nTime: ${escapeMarkdown(updatedAppointment.appointment_timeslots.timeslot)}\nLocation: ${updatedAppointment.branchName}\n\nIf you need any further assistance, please use the _/upcoming_ command again\\!`, { parse_mode: "MarkdownV2" });
     } catch (error) {
         console.error(error);
         await ctx.reply("Failed to retrieve available timeslots. Please try again!")

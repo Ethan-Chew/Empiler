@@ -27,7 +27,7 @@ const cqManageReminderTime = async (ctx: MyContext) => {
             inlineKeyboard.row();
         }
     }
-    inlineKeyboard.row().text("<< Back", "back-to-manage-appt-optns");
+    inlineKeyboard.row().text("<< Back", "back-to-manage-reminder-optns");
 
     await ctx.api.editMessageReplyMarkup(ctx.chat!.id, ctx.session.lastManageApptMsg, { reply_markup: inlineKeyboard });
 }

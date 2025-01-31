@@ -22,12 +22,12 @@ const cqRescheduleAppointment = async (ctx: MyContext) => {
 
         // Add Options to go -5 days or +5 days, but if the first date is already today, disable the -5 days option
         if (ctx.session.displayApptDateOffset !== 0) {
-            inlineKeyboard.row().text("<< -5 Days", "reschedule-appt-previous-5-days");
+            inlineKeyboard.row().text("< Prev 5 Days", "reschedule-appt-previous-5-days");
         }
-        inlineKeyboard.text("+5 Days >>", "reschedule-appt-next-5-days");
+        inlineKeyboard.text("Next 5 Days >", "reschedule-appt-next-5-days");
 
         // Add Option to go back to manage appointment options
-        inlineKeyboard.row().text("<< Back", "back-to-manage-appt");
+        inlineKeyboard.row().text("<< Back", "back-to-manage-appt-selection");
 
         await ctx.api.editMessageReplyMarkup(ctx.chat!.id, ctx.session.lastManageApptMsg, { reply_markup: inlineKeyboard });
     } catch (error) {

@@ -7,7 +7,7 @@ const linkController = async (ctx: Context) => {
         // Verify that a UUID Payload is attached
         const payload = ctx.match;
         if (!payload) {
-            await ctx.reply("You need to provide a verification code to link your account.");
+            await ctx.reply("You need to provide a verification code to link your account. Run the command in the format of '\\link <verification_code>'");
             return;
         }
 

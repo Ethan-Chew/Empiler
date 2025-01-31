@@ -3,6 +3,10 @@ import { useEffect, useState } from "react";
 import { FaXmark } from "react-icons/fa6";
 import { CiCirclePlus } from "react-icons/ci";
 import convertUnixToDate from "../../utils/unixMsToDate";
+import React from "react";
+import { PiCalendarBlank } from "react-icons/pi";
+import TwofaPopup from "../2FA/TwofaPopup";
+import Footer from "../Footer";
 
 export default function UserSettingsPopup({ closePopup, userId }) {
     // State
@@ -10,6 +14,8 @@ export default function UserSettingsPopup({ closePopup, userId }) {
     const [telegramInfo, setTelegramInfo] = useState(null);
     const [inputtedTelegramUsername, setInputtedTelegramUsername] = useState("");
     const [verificationCode, setVerificationCode] = useState(null);
+    const [twofaIsOpen, setTwofaIsOpen] = useState(false); 
+    const [isTwofaDisabled, setIsTwofaDisabled] = useState(true);
     const [linkingState, setLinkingState] = useState({
         startLinking: false,
         linkPending: false,
@@ -104,8 +110,60 @@ export default function UserSettingsPopup({ closePopup, userId }) {
         }
     };
 
+    const disable2fa = async () => {
+        try {
+            const userSession = JSON.parse(sessionStorage.getItem('userDetails'));
+            console.log(userSession.email);
+            const response = await fetch(`http://localhost:8080/api/otp/delete`, {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ email: userSession.email }),
+            });
+            const data = await response.json();
+            console.log(data);
+            if (data.status === "Success") {
+                alert("2FA disabled successfully!");
+                setIsTwofaDisabled(true);
+            } else {
+                alert("Failed to disable 2FA. Please try again later.");
+            }
+        } catch (error) {
+            console.error("Error disabling 2FA:", error);
+        }
+    }
+
+    const checkExistingOtp = async () => {
+        try {
+            const userSession = JSON.parse(sessionStorage.getItem('userDetails'));
+            const response = await fetch(`http://localhost:8080/api/otp/get`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({email: userSession.email}),
+            });
+            const data = await response.json();
+            if (data == false) {
+                setIsTwofaDisabled(true);
+            } else if (data.otpEnabled == true) {
+                setIsTwofaDisabled(true);
+            } else {
+                setIsTwofaDisabled(false);
+            }
+        } catch (error) {
+            console.error('Error checking existing OTP:', error);
+        }
+    };
+
+    const enable2fa = async () => {
+        setTwofaIsOpen(true);
+    }
+
     useEffect(() => {
         verifyTelegramLinked();
+        checkExistingOtp();
     }, []);
 
     return (
@@ -129,7 +187,7 @@ export default function UserSettingsPopup({ closePopup, userId }) {
                     </button>
                 </div>
                 <hr />
-                <div className="py-3">
+                <div className="py-3 border border-gray-200 shadow-md rounded-xl p-6 mt-10 w-full h-full transition-shadow duration-300 mb-8">
                     {/* Telegram Section */}
                     <p className="mt-2 text-2xl font-semibold">OCBC Support Telegram Bot</p>
                     <p className="max-w-[70%] text-neutral-600">
@@ -137,7 +195,7 @@ export default function UserSettingsPopup({ closePopup, userId }) {
                         receive appointments through the bot.
                     </p>
                     {telegramLinked ? (
-                        <div className="mt-2">
+                        <div className="mt-2 pb-3">
                             <p className="text-xl font-semibold mb-2">Account Linked!</p>
                             <p>
                                 <span className="font-bold">Telegram Username: </span>
@@ -209,6 +267,21 @@ export default function UserSettingsPopup({ closePopup, userId }) {
                         </>
                     )}
                 </div>
+                <div className="py-3 border border-gray-200 shadow-md rounded-xl p-6 mt-10 w-full h-full transition-shadow duration-300 mb-8">
+                    <h3 className="text-2xl font-semibold">Two-Factor Authentication (2FA)</h3>
+                    {!isTwofaDisabled ? (
+                        <>
+                            <p className="text-500 mt-2">2FA is currently disabled.</p>
+                            <button className={`mt-2 p-3 px-5 bg-ocbcred hover:bg-ocbcdarkred text-white duration-150 rounded-lg`} onClick={enable2fa}>Enable 2FA</button>
+                        </>
+                    ) : (
+                        <>
+                            <p className="text-500 mt-2">2FA is currently enabled.</p>
+                            <button className={`mt-2 p-3 px-5 bg-ocbcred hover:bg-ocbcdarkred text-white duration-150 rounded-lg`} onClick={disable2fa}>Disable 2FA</button>
+                        </>
+                    )}
+                </div>
+                {twofaIsOpen && <TwofaPopup isOpen={twofaIsOpen} setIsOpen={setTwofaIsOpen} on2faComplete={() => {setIsTwofaDisabled(true);}} />}
             </motion.div>
         </div>
     );

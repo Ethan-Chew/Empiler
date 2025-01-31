@@ -15,4 +15,7 @@ router.route('/verify')
 router.route('/delete')
     .delete(otpController.deleteOtp);
 
+router.route('/enable')
+    .post(otpController.enableOtp);
+
 export default router;
