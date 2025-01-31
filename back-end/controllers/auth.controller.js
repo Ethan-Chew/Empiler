@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import User from '../models/user.js';
 import dotenv from 'dotenv';
+import e from 'express';
 
 dotenv.config();
 
@@ -59,6 +60,7 @@ const authLoginUser = async (req, res) => {
             message: "Login Successful",
             accountId: user.id,
             role: user.role,
+            email: user.email
         });
     } catch (err) {
         console.error(err);

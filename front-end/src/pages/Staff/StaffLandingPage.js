@@ -4,6 +4,7 @@ import { PiChats } from "react-icons/pi";
 import { BsCalendarCheck } from "react-icons/bs";
 import { RiSettings4Line } from "react-icons/ri";
 import { MdOutlinePersonOutline } from "react-icons/md";
+import { LuTicket } from "react-icons/lu";
 import { useState, useEffect } from 'react';
 
 const StaffLandingPage = () => {
@@ -39,13 +40,21 @@ const StaffLandingPage = () => {
                     <div className="w-[200px] h-[8px] bg-[#D00E35]" />
                 </div>
 
-                <div className="flex justify-between space-x-8 mt-8 mx-12">
+                <div className="flex space-x-8 mt-8 mx-12">
 
                     <a className="border border-gray-200 bg-white shadow-md rounded-xl p-6 w-[400px] h-[250px] hover:shadow-xl transition-shadow duration-300" href='chats'>
                         <PiChats className="w-12 h-12 object-contain fill-ocbcred mb-4" />
                         <h3 className="text-[24px] font-semibold text-left">Staff Support Chat</h3>
                         <p className="text-[18px] font-light text-left text-gray-500 mt-2">
                             Manage your chat activity
+                        </p>
+                    </a>
+
+                    <a className="border border-gray-200 bg-white shadow-md rounded-xl p-6 w-[400px] h-[250px] hover:shadow-lg transition-shadow duration-300" href="stafftickets">
+                        <LuTicket className="w-12 h-12 object-contain fill-ocbcred mb-4" />
+                        <h3 className="text-[24px] font-semibold text-left">View Tickets</h3>
+                        <p className="text-[18px] font-light text-left text-gray-500 mt-2">
+                            View tickets submitted by customers
                         </p>
                     </a>
 

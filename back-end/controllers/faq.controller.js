@@ -55,7 +55,6 @@ const getAllFaqs = async (req, res) => {
 
 const getFaqByTitle = async (req, res) => {
     const { title } = req.params;
-    console.log("getFaqByTitle");
     try {
         const faq = await FreqAskedQns.getFaqByTitle(title);
 

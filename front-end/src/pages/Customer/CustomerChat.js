@@ -7,12 +7,17 @@ import { useSearchParams } from "react-router-dom";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import MessageTextField from "../../components/Chat/MessageTextField";
+import RSAHandler from "../../utils/KeyHandlers/RSAHandler";
+import ToastMessage from "../../components/ToastMessage";
+import AESHandler from "../../utils/KeyHandlers/AESHandler";
+import { useInactivity } from "../../hooks/useInactivity";
+import indexedDB from "../../utils/KeyHandlers/indexedDB";
 
 export default function CustomerChat() {
     const navigate = useNavigate();
     const location = useLocation();
 
-    const [isConnected, setIsConnected] = useState(false);
+    const [isConnected, setIsConnected] = useState(socket.connected);
     const [searchParams] = useSearchParams();
     const caseID = searchParams.get("caseID");
 
@@ -22,56 +27,24 @@ export default function CustomerChat() {
     const [sentMessage, setSentMessage] = useState("");
     const [staffName, setStaffName] = useState("[insert name]");
 
-    // User Inactivity States
-    const [inactivityTimer, setInactivityTimer] = useState(0);
-    const [userInactive, setUserInactive] = useState(false);
-    const [userDisconnected, setUserDisconnect] = useState(false);
-    const inactivityLimit = 3;
-    const disconnectLimit = 4;
+    // E2E Encryption States
+    const [ receiverRSAPublicKey, setReceiverRSAPublicKey ] = useState(null);
+
+    // Error
+    const [ error, setError ] = useState({
+        title: "Authentication",
+        description: "An error occured with making a secure connection with the server.",
+        isShown: true,
+        type: "error"
+    })
 
     // Helper Function to handle Window's Visibility Change. When inactive for 3 minutes, show warning. When inactive for 4 minutes, disconnect
-    useEffect(() => {
-        const handleUserActivity = () => {
-            setInactivityTimer(0);
-            setUserInactive(false);
-        };
-        const handleVisibilityChange = () => {
-            if (document.visibilityState === "visible") {
-                setInactivityTimer(0);
-                setUserInactive(false);
-            }
-        }
-
-        // Increment inactivity time every minute
-        const interval = setInterval(() => {
-            setInactivityTimer(prev => prev + 1);
-
-            if (inactivityTimer >= inactivityLimit) {
-                setUserInactive(true);
-            }
-
-            if (inactivityTimer >= disconnectLimit) {
-                setUserDisconnect(true);
-                socket.emit("utils:end-chat", caseID, true);
-            }
-        }, 60000);
-
-        // Set up event listeners
-        window.addEventListener('mousemove', handleUserActivity);
-        window.addEventListener('keypress', handleUserActivity);
-        window.addEventListener('click', handleUserActivity);
-        window.addEventListener('touchstart', handleUserActivity);
-        document.addEventListener("visibilitychange", handleVisibilityChange);
-
-        return () => {
-            window.removeEventListener('mousemove', handleUserActivity);
-            window.removeEventListener('keypress', handleUserActivity);
-            window.removeEventListener('click', handleUserActivity);
-            window.removeEventListener('touchstart', handleUserActivity);
-            document.removeEventListener('visibilitychange', handleVisibilityChange);
-            clearInterval(interval);
-        };
-    }, [inactivityTimer]);
+    const { userInactive, userDisconnected, resetInactivityTimer } = useInactivity({
+        inactivityLimit: 3,
+        disconnectLimit: 4,
+        onDisconnect: () => socket.emit("utils:end-chat", caseID, true),
+    });
+    
 
     useEffect(() => {
         // If there is no Case ID, redirect the Customer back to the Landing Page
@@ -84,6 +57,9 @@ export default function CustomerChat() {
             setStaffName(location.state.staffName);
         }
 
+        // Generate the RSA Key Pair for the Customer
+        RSAHandler.generateRSAKeyPair();
+
         // Socket.IO Event Handlers
         const handleConnection = () => {
             setIsConnected(true);
@@ -93,11 +69,44 @@ export default function CustomerChat() {
                 navigateHome();
             }
 
-            socket.emit("utils:verify-activechat", customerSessionIdentifier, (chatExistanceReq) => {
+            socket.emit("utils:verify-activechat", customerSessionIdentifier, async (chatExistanceReq) => {
                 setStaffName(chatExistanceReq.staffName);
                 if (chatExistanceReq.exist && chatExistanceReq.caseID === caseID) {
-                    socket.emit("utils:add-socket", customerSessionIdentifier, "customer");
-                    setMessages(chatExistanceReq.chatHistory);
+                    // Add the new Socket to the Room
+                    socket.emit("utils:add-socket", customerSessionIdentifier, "customer", async (res) => {
+                        if (res) {
+                            // Request for Staff's Public RSA Key
+                            socket.emit("utils:request-public-key", caseID);
+                            console.log("Requesting Public Key from Staff");
+                        }
+                    });
+
+                    // Decrypt the Chat History
+                    const decryptedChatHistory = [];
+                    for (const msg of chatExistanceReq.chatHistory) {
+                        let decryptedKey, decryptedMessage;
+                        if (msg.sender === "customer") {
+                            // AES Key is stored in IndexedDB -> Retrieve and Decrypt
+                            const key = await AESHandler.retrieveAESKeyWithMessageId(msg.id);
+                            decryptedMessage = await AESHandler.decryptDataWithAESKey(key.key, key.iv, msg.fileUrl || msg.message);
+                        } else {
+                            // Key was sent by the Staff, so decrypt with Customer's RSA Private Key, before decrypting message
+                            decryptedKey = await RSAHandler.decryptDataWithRSAPrivate(msg.key);
+                            decryptedMessage = await AESHandler.decryptDataWithAESKey(decryptedKey, msg.iv, msg.fileUrl || msg.message);
+                        }
+
+                        if (msg.fileUrl) {
+                            msg.fileUrl = decryptedMessage;
+                        } else {
+                            msg.message = decryptedMessage;
+                        }
+
+                        decryptedChatHistory.push(msg);
+                    }
+
+                    // Sort Chat History by Timestamp
+                    decryptedChatHistory.sort((a, b) => a.timestamp - b.timestamp);
+                    setMessages(decryptedChatHistory);
                 } else {
                     navigateHome();
                 }
@@ -108,7 +117,15 @@ export default function CustomerChat() {
             setIsConnected(false);
         }
 
-        const handleReceiveMessage = (msg) => {
+        const handleReceiveMessage = async (msg) => {
+            const decryptedAESKey = await RSAHandler.decryptDataWithRSAPrivate(msg.key);
+            const decryptedMessage = await AESHandler.decryptDataWithAESKey(decryptedAESKey, msg.iv, msg.fileUrl ? msg.fileUrl : msg.message);
+            if (msg.fileUrl) {
+                msg.fileUrl = decryptedMessage;
+            } else {
+                msg.message = decryptedMessage;
+            }
+
             setMessages(prev => [...prev, msg]);
         }
 
@@ -116,36 +133,127 @@ export default function CustomerChat() {
             setStaffEndedChat(true);
             setChatEnded(true);
             sessionStorage.removeItem("customerSessionIdentifier");
-            socket.disconnect();
+            indexedDB.clearObjectStore("aes-keys");
         }
 
-        socket.on("connect", handleConnection);
+        const sendRSAPublicKey = async (obj) => {
+            RSAHandler.retrieveRSAKeyPair("rsa-public").then((res) => {
+                console.log("Sending RSA Public Key to Server");
+                socket.emit("utils:share-keys", {
+                    key: res.key,
+                    case: obj
+                });
+            });
+        }
+
+        const handleReceiveRSAPublicKey = (res) => {
+            console.log("Received RSA Public Key from Staff");
+            setReceiverRSAPublicKey(res.key);
+            setError({ ...error, isShown: false });
+        }
+
+        socket.on("connect", (ctx) => {
+            const initialGetTimeout = setTimeout(() => {
+                console.log("Initial Connection Timeout");
+                handleConnection(ctx);
+                clearTimeout(initialGetTimeout);
+            }, 1000);
+        });
+        // socket.on("connect", handleConnection);
         socket.on("disconnect", handleDisconnection);
         socket.on("utils:receive-msg", handleReceiveMessage);
         socket.on("utils:chat-ended", handleChatClosure);
+        socket.on("utils:receive-keys", handleReceiveRSAPublicKey)
+        socket.on("utils:request-public-key", sendRSAPublicKey); 
 
         return () => {
             socket.off("connect", handleConnection);
             socket.off("disconnect", handleDisconnection);
             socket.off("utils:receive-msg", handleReceiveMessage);
-            socket.off("utils:chat-ended", handleChatClosure);
+            socket.off("utils:chat-ended", handleChatClosure)
+            socket.off("utils:request-public-key", sendRSAPublicKey); 
+            socket.off("utils:receive-keys", handleReceiveRSAPublicKey)
         }
-    }, []);
+    }, [isConnected]);
 
-    function sendMessage(fileUrl) {
-        if (sentMessage === "" && fileUrl === null) return;
-        const formattedMsg = {
+    useEffect(() => {
+        // Set a timer, and request every second if the RSA Public Key is not received
+        let counter = 0;
+        const interval = setInterval(() => {
+            if (receiverRSAPublicKey === null) {
+                socket.emit("utils:request-public-key", caseID);
+                console.log("Requesting Public Key from Staff");
+                counter++;
+            } else {
+                clearInterval(interval);
+            }
+
+            if (counter >= 10) {
+                clearInterval(interval);
+            }
+        }, 2000);
+
+        if (receiverRSAPublicKey) {
+            clearInterval(interval);
+        }
+    }, [receiverRSAPublicKey])
+
+    async function sendMessage(fileUrl) {
+        if (!sentMessage && !fileUrl) return;
+    
+        const isFile = Boolean(fileUrl);
+        const currentTimestamp = Date.now();
+        const sessionIdentifier = sessionStorage.getItem("customerSessionIdentifier");
+
+        const messageObject = {
+            id: crypto.randomUUID(),
             case: caseID,
-            message: fileUrl ? "" : sentMessage,
-            fileUrl: fileUrl ? fileUrl : null,
-            timestamp: Date.now(),
+            message: isFile ? null : sentMessage,
+            fileUrl: isFile ? fileUrl : null,
+            timestamp: currentTimestamp,
             sender: "customer",
-            sessionIdentifier: sessionStorage.getItem("customerSessionIdentifier"),
+            sessionIdentifier,
         }
+    
+        try {
+            // Encrypt the content
+            const aesKey = await AESHandler.generateAESKey();
 
-        socket.emit("utils:send-msg", formattedMsg);
-        setSentMessage("");
-    }
+            const contentToEncrypt = isFile ? fileUrl : sentMessage;
+            const encryptedContent = await AESHandler.encryptDataWithAESKey(contentToEncrypt, aesKey);
+            const encryptedKey = await RSAHandler.encryptDataWithRSAPublic(aesKey, receiverRSAPublicKey);
+    
+            // Prepare the formatted message
+            const encryptedMessage = JSON.parse(JSON.stringify(messageObject));
+            encryptedMessage.message = isFile ? null : encryptedContent.data;
+            encryptedMessage.fileUrl = isFile ? encryptedContent.data : null;
+            encryptedMessage.key = encryptedKey;
+            encryptedMessage.iv = encryptedContent.iv;
+
+            // Save the AES Key, IV and ID to the IndexedDB
+            await AESHandler.saveAESKeyWithMessageId(aesKey, encryptedContent.iv, messageObject.id);
+    
+            // Send the message to the server via socket
+            socket.emit("utils:send-msg", encryptedMessage);
+    
+            // Clear the input message state
+            setSentMessage("");
+
+            // Add message locally
+            setMessages((prev) => [
+                ...prev,
+                messageObject
+            ]);
+        } catch (error) {
+            console.error("Failed to send message:", error);
+            setError({
+                title: "Message Sending",
+                description: "An error occured while sending the message. Please try again.",
+                isShown: true,
+                type: "error"
+            })
+        }
+    }    
 
     async function onUploadClick() {
         try {
@@ -159,6 +267,7 @@ export default function CustomerChat() {
 
     function handleEndChat() {
         socket.emit("utils:end-chat", caseID, false);
+        indexedDB.clearObjectStore("aes-keys");
         navigateRating();
     }
 
@@ -171,6 +280,8 @@ export default function CustomerChat() {
         navigate("/chat/rating", { state: { caseID: caseID, staffName: staffName } });
         sessionStorage.removeItem("customerSessionIdentifier");
     }
+
+    if (!isConnected) return <><p>failed to connect.</p></>
 
     return (
         <div className="flex flex-col min-h-screen max-h-screen">
@@ -219,15 +330,32 @@ export default function CustomerChat() {
                 </div>
             </div>
 
-            <div id="inactivity-popup" className={`${userInactive ? "" : "hidden"} fixed top-0 left-0 h-screen w-screen bg-neutral-900/20 backdrop-blur-sm flex items-center justify-center duration-200 z-10`}>
-                <div className="p-5 bg-white flex flex-col items-center justify-center">
-                    <h2 className="font-semibold text-2xl mb-2">Looks like you've been inactive for awhile.</h2>
-                    <p className="text-lg">{ userDisconnected ? "You have been disconnected from the Live Chat." : "Please interact with the window to continue." }</p>
-                    <button className="mt-3 px-4 py-2 bg-ocbcred hover:bg-ocbcdarkred rounded-lg text-white" onClick={navigateRating}>
-                        Continue
-                    </button>
-                </div>
-            </div>
+            <InactivityPopup userInactive={userInactive} userDisconnected={userDisconnected} navigateRating={navigateRating} />
+
+            { error.isShown && (
+                <ToastMessage
+                    title="Authentication"
+                    description="An error occured with making a secure connection with the server."
+                    isShown={error.isShown}
+                    hideToast={() => setError({ ...error, isShown: false })}
+                    type="error"
+                />
+            )}
         </div>
     );
+}
+
+const InactivityPopup = ({ userInactive, userDisconnected, navigateRating }) => {
+    if (!userInactive) return null;
+    return (
+        <div id="inactivity-popup" className={`${userInactive ? "" : "hidden"} fixed top-0 left-0 h-screen w-screen bg-neutral-900/20 backdrop-blur-sm flex items-center justify-center duration-200 z-10`}>
+            <div className="p-5 bg-white flex flex-col items-center justify-center">
+                <h2 className="font-semibold text-2xl mb-2">Looks like you've been inactive for awhile.</h2>
+                <p className="text-lg">{ userDisconnected ? "You have been disconnected from the Live Chat." : "Please interact with the window to continue." }</p>
+                <button className="mt-3 px-4 py-2 bg-ocbcred hover:bg-ocbcdarkred rounded-lg text-white" onClick={navigateRating}>
+                    Continue
+                </button>
+            </div>
+        </div>
+    )
 }

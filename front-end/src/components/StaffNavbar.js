@@ -5,8 +5,9 @@ export default function StaffNavigationBar() {
                 <img src="/ocbc.png"/>
             </a>
             <div className="ml-auto text-lg flex flex-row gap-4">
-                <a>Home</a>
-                <a>Chats</a>
+                <a href="/staff/home">Home</a>
+                <a href="/staff/chats">Chats</a>
+                <a href="/staff/stafftickets">Tickets</a>
             </div>
         </div>
     );

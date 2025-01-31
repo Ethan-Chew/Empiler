@@ -9,6 +9,19 @@ export default class User {
         this.role = role;
     }
 
+    static async getUserWithId(id) {
+        const queryRequest = await supabase
+            .from('user')
+            .select('*')
+            .eq('id', id);
+
+        if (queryRequest.error || queryRequest.data.length === 0) {
+            return null;
+        }
+    
+        return queryRequest.data[0];
+    }
+
     static async getUserWithUsername(username) {
         const queryRequest = await supabase
             .from('user')

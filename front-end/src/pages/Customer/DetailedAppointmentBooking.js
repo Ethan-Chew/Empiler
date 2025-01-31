@@ -59,6 +59,7 @@ export default function DetailedAppointmentBooking() {
     };
 
     const getEarliestAvailableTime = (openingHours) => {
+        console.log(openingHours);
         const today = new Date();
         const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
         const todayName = dayNames[today.getDay()];
@@ -229,15 +230,17 @@ export default function DetailedAppointmentBooking() {
         setShowModal(true); // Show the modal to confirm details
     };
 
+
     const handleFinalBooking = async () => {
         try {
+            console.log(bookingDetails);
             const response = await fetch('http://localhost:8080/api/appointments/book', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    name: bookingDetails.name,
+                    userId: bookingDetails.name,
                     date: bookingDetails.date,
                     timeSlotId: selectedAppointment.id,
                     branchName: bookingDetails.branch
