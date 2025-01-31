@@ -25,10 +25,12 @@ import BookingDetails from './pages/Customer/BookingDetails';
 import StaffLandingPage from './pages/Staff/StaffLandingPage';
 import StaffChats from './pages/Staff/StaffChats';
 import ViewBranchAppointments from './pages/Staff/ViewBranchAppointments';
+import StaffTicket from './pages/Staff/StaffTicket';
 
 // Customer Routes
 import AppointmentBooking from './pages/Customer/AppointmentBooking';
 import DetailedAppointmentBooking from './pages/Customer/DetailedAppointmentBooking';
+import Ticket from './pages/Customer/Ticket';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -60,6 +62,7 @@ root.render(
       <Route path="/staff/home" element={<ProtectedRoute Component={StaffLandingPage} role="staff" />} />
       <Route path="/staff/chats" element={<ProtectedRoute Component={StaffChats} role="staff" />} />
       <Route path="/staff/branches" element={<ProtectedRoute Component={ViewBranchAppointments} role="staff" />} />
+      <Route path="/staff/stafftickets" element={<ProtectedRoute Component={StaffTicket} role="staff" />} />
 
       {/* Protected Routes (Customer) */}
       <Route path="/customer/home" element={<ProtectedRoute Component={CustomerLandingPage} role="customer" />} />
@@ -67,6 +70,7 @@ root.render(
       <Route path="/appointments/timeslots" element={<ProtectedRoute Component={DetailedAppointmentBooking} role="customer" />} />
       <Route path="/appointments/viewBooking" element={<ProtectedRoute Component={viewCustomerBookings} role="customer" />} />
       <Route path="/appointments/booking/details" element={<ProtectedRoute Component={BookingDetails} role="customer" />} />
+      <Route path="/tickets" element={<ProtectedRoute Component={Ticket} role="customer" />} />
     </Routes>
   </BrowserRouter>
 );

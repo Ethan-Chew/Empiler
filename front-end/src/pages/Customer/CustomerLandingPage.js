@@ -5,6 +5,7 @@ import LiveChatPopup from '../../components/Chat/LiveChatPopup';
 import TwofaPopup from '../../components/2FA/TwofaPopup';
 import { useState } from 'react';
 import { PiChats, PiCalendarBlank } from "react-icons/pi";
+import { LuTicket } from "react-icons/lu";
 import { MdEditCalendar } from "react-icons/md";
 import { FaGear } from "react-icons/fa6";
 import UserSettingsPopup from '../../components/User/UserSettingsPopup';
@@ -85,6 +86,14 @@ const CustomerLandingPage = (props) => {
                                 Start a live chat session for any queries you might have
                             </p>
                         </div>
+
+                        <a className="border border-gray-200 bg-white shadow-md rounded-xl p-6 w-[400px] h-[250px] hover:shadow-lg transition-shadow duration-300 mb-8" href="/tickets">
+                            <LuTicket className="w-12 h-12 object-contain fill-ocbcred mb-4" />
+                            <h3 className="text-[24px] font-semibold text-left">View Tickets</h3>
+                            <p className="text-[18px] font-light text-left text-gray-500 mt-2">
+                                View or create a ticket for any issues you might have
+                            </p>
+                        </a>
                     </div>
 
                     <div className="flex justify-center items-center space-x-6 mt-4">
