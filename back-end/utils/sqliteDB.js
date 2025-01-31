@@ -115,7 +115,7 @@ export const addAvailStaff = async (db, staffData) => {
         await db.run('UPDATE availStaff SET socketIDs = ? WHERE staffID = ?', JSON.stringify(socketIDs), staffData.staffID);
     } else {
         staffData.socketIDs = JSON.stringify(staffData.socketIDs);
-        await db.run('INSERT INTO availStaff (socketIDs, staffID, name) VALUES (?, ?, ?)', 
+        await db.run('INSERT INTO availStaff (socketIDs, staffID, name) VALUES (?, ?, ?)',
             staffData.socketIDs, staffData.staffID, staffData.name);
     }
 };
@@ -136,7 +136,7 @@ export const searchForAvailStaff = async (db, staffID) => {
 export const startActiveChat = async (db, activeChat) => {
     activeChat.customer.socketIDs = JSON.stringify(activeChat.customer.socketIDs);
     activeChat.staff.socketIDs = JSON.stringify(activeChat.staff.socketIDs);
-    await db.run('INSERT INTO activeChats (caseID, customerSessionIdentifier, customerSocketIDs, faqSection, faqQuestion, userID, timeConnected, staffID) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', 
+    await db.run('INSERT INTO activeChats (caseID, customerSessionIdentifier, customerSocketIDs, faqSection, faqQuestion, userID, timeConnected, staffID) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
         activeChat.caseID, activeChat.customer.customerSessionIdentifier, activeChat.customer.socketIDs, activeChat.customer.faqSection, activeChat.customer.faqQuestion, activeChat.customer.userID, activeChat.customer.timeConnected, activeChat.staff.staffID);
 };
 
@@ -164,7 +164,7 @@ export const endActiveChat = async (db, caseID, isCustomerDisconnect) => {
 
 export const getActiveChatsForStaff = async (db, staffID) => {
     const chats = await db.all('SELECT * FROM activeChats WHERE staffID = ?', staffID);
-    
+
     const formattedChats = await Promise.all(chats.map(async (chat) => {
         const chatMessages = await retrieveChatMessages(db, chat.caseID);
 
@@ -231,3 +231,25 @@ export const addSocketIdToAvailStaff = async (db, staffID, socketID) => {
     socketIDs.push(socketID);
     await db.run('UPDATE availStaff SET socketIDs = ? WHERE staffID = ?', JSON.stringify(socketIDs), staffID);
 }
+
+export const getAverageWaitingTimeForStaff = async (db, staffID) => {
+    const activeChats = await db.all('SELECT * FROM activeChats WHERE staffID = ?', staffID);
+
+    if (activeChats.length === 0) {
+        return 0;
+    }
+
+    let totalWaitingTime = 0;
+    let customerCount = 0;
+
+    for (let chat of activeChats) {
+        const customer = await db.get('SELECT * FROM waitingCustomers WHERE customerSessionIdentifier = ?', chat.customerSessionIdentifier);
+
+        if (customer) {
+            totalWaitingTime += customer.queuePosition;
+            customerCount++;
+        }
+    }
+
+    return customerCount > 0 ? totalWaitingTime / customerCount : 0;
+};
