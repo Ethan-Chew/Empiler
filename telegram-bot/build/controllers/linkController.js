@@ -55,7 +55,7 @@ const linkController = (ctx) => __awaiter(void 0, void 0, void 0, function* () {
         // Verify that a UUID Payload is attached
         const payload = ctx.match;
         if (!payload) {
-            yield ctx.reply("You need to provide a verification code to link your account. Run the command in the format of '\\link <verification_code>'");
+            yield ctx.reply("You need to provide a verification code to link your account. Run the command in the format of '/link <verification_code>'");
             return;
         }
         if (!(0, validateUUID_1.default)(payload)) {

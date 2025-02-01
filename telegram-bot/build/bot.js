@@ -137,8 +137,6 @@ bot.catch((err) => {
 bot.api.setMyCommands([
     { command: "start", description: "Start the bot" },
     { command: "link", description: "Link the bot to your OCBC Account" },
-    { command: "unlink", description: "Unlink the bot from your OCBC Account (you will not be able to access services until you re-link it.)" },
-    { command: "upcoming", description: "View all Upcoming Appointments" }
 ]);
 // Start the Bot
 console.log("Telegram Bot Started");

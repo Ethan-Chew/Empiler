@@ -4,11 +4,12 @@ import { FaXmark } from "react-icons/fa6";
 import { CiCirclePlus } from "react-icons/ci";
 import convertUnixToDate from "../../utils/unixMsToDate";
 import React from "react";
-import { PiCalendarBlank } from "react-icons/pi";
 import TwofaPopup from "../2FA/TwofaPopup";
-import Footer from "../Footer";
+import { useNavigate } from "react-router-dom";
 
 export default function UserSettingsPopup({ closePopup, userId }) {
+    const navigate = useNavigate();
+
     // State
     const [telegramLinked, setTelegramLinked] = useState(false);
     const [telegramInfo, setTelegramInfo] = useState(null);
@@ -101,6 +102,7 @@ export default function UserSettingsPopup({ closePopup, userId }) {
                 alert("Account successfully unlinked!");
                 setTelegramLinked(false);
                 setTelegramInfo(null);
+                navigate(0);
             } else {
                 alert("Failed to unlink the account. Please try again later.");
             }
@@ -264,6 +266,12 @@ export default function UserSettingsPopup({ closePopup, userId }) {
                                 or enter this Verification Code (<span className="text-ocbcdarkred">{verificationCode}</span>) into the Telegram Bot.
                             </p>
                             <p>After linking, do refresh this page to verify that your account has been linked!</p>
+                            <button
+                                className="mt-2 p-3 px-5 bg-ocbcred hover:bg-ocbcdarkred rounded-lg text-white font-semibold"
+                                onClick={handleUnlinkTelegram}
+                            >
+                                Reset Linking
+                            </button>
                         </>
                     )}
                 </div>

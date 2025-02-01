@@ -22,6 +22,7 @@ const unlinkController = async (ctx: Context) => {
 
         await bot.api.setMyCommands([
             { command: "start", description: "Start the bot" },
+            { command: "link", description: "Link the bot to your OCBC Account" },
         ]);          
     } catch (error) {
         console.log(error);

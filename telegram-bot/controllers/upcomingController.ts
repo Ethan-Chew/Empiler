@@ -10,10 +10,6 @@ const upcomingController = async (ctx: MyContext) => {
     try {
         // Check if the user has linked their account
         const checkAccountLinked = await axios.get(`http://localhost:8080/api/telegram/verify/tele/${ctx.from?.id}`);
-        if (checkAccountLinked.status !== 200) {
-            await ctx.reply("You need to link your account before you can view upcoming appointments.");
-            return;
-        }
 
         // Save the Telegram User's OCBC User Id to the Session
         ctx.session.userId = checkAccountLinked.data.data.userId;
