@@ -7,8 +7,8 @@ const router = express.Router()
 router.route("/staff-feedback")
     .get(authoriseJWT, UserController.getStaffFeedback);
 
-router.route("/:id", authoriseJWT)
-    .get(UserController.getUserWithId)
+router.route("/", authoriseJWT)
+    .get(UserController.getUser)
 
 router.route("/monthly-chat-counts")
     .get(authoriseJWT, UserController.getMonthlyChatCounts);

@@ -18,7 +18,7 @@ export default class User {
         if (queryRequest.error || queryRequest.data.length === 0) {
             return null;
         }
-    
+
         return queryRequest.data[0];
     }
 
@@ -31,8 +31,8 @@ export default class User {
         if (queryRequest.error || queryRequest.data.length === 0) {
             return null;
         }
-    
-        return queryRequest.data[0]; 
+
+        return queryRequest.data[0];
     }
 
     static async getStaffStatistics(staffID) {

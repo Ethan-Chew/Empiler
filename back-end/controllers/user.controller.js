@@ -1,23 +1,22 @@
 import supabase from '../utils/supabase.js';
 import User from '../models/user.js';
 
-const getUserWithId = async (req, res) => {
+const getUser = async (req, res) => {
     try {
-        const { id } = req.params;
+        //fetch users, exclude the password field
+        const { data, error } = await supabase
+            .from('user')
+            .select('id, username, email, role')
+            .eq('id', req.user.id);
 
-        const user = await User.getUserWithId(id);
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        } else {
-            res.status(200).json(user);
+        if (error) {
+            return res.status(500).json({ message: error.message });
         }
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({
-            status: "error",
-            message: "Internal Server Error",
-            error: err
-        });
+
+        res.status(200).json(data);
+    } catch (error) {
+        console.error("An unexpected error occurred:", error);
+        res.status(500).json({ message: "An unexpected error occurred" });
     }
 }
 
@@ -143,7 +142,7 @@ const getStaffFeedback = async (req, res) => {
 };
 
 export default {
-    getUserWithId,
+    getUser,
     getMonthlyChatCounts,
     getAverageWaitingTime,
     getStaffFeedback
