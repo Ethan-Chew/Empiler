@@ -120,7 +120,6 @@ const CustomerSupportStatistics = () => {
         return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
     };
 
-    // Calculate percentage change
     const calculatePercentageChange = (current, previous) => {
         if (previous === 0) return current > 0 ? 100 : 0;
         return (((current - previous) / previous) * 100).toFixed(2);

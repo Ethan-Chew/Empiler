@@ -10,6 +10,10 @@ router.route("/staff-feedback")
 router.route("/", authoriseJWT)
     .get(UserController.getUser)
 
+router.route("/user/:id")
+    .get(authoriseJWT, UserController.getUserWithId);
+
+
 router.route("/monthly-chat-counts")
     .get(authoriseJWT, UserController.getMonthlyChatCounts);
 

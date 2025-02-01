@@ -3,7 +3,6 @@ import User from '../models/user.js';
 
 const getUser = async (req, res) => {
     try {
-        //fetch users, exclude the password field
         const { data, error } = await supabase
             .from('user')
             .select('id, username, email, role')
@@ -20,10 +19,31 @@ const getUser = async (req, res) => {
     }
 }
 
+const getUserWithId = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const user = await User.getUserWithId(id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        } else {
+            res.status(200).json(user);
+        }
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({
+            status: "error",
+            message: "Internal Server Error",
+            error: err
+        });
+    }
+}
+
+
 const getMonthlyChatCounts = async (req, res) => {
     try {
-        const staffId = req.user.id; // Get the staff ID from the JWT
-        const { month } = req.query; // Extract the month from query parameters (format: YYYY-MM)
+        const staffId = req.user.id;
+        const { month } = req.query;
 
         if (!month) {
             return res.status(400).json({ message: "Month is required in YYYY-MM format." });
@@ -43,11 +63,11 @@ const getMonthlyChatCounts = async (req, res) => {
             return res.status(404).json({ message: "No chat data found for this staff." });
         }
 
-        // Filter and count chats by month
+
         const chatCount = data.reduce((count, record) => {
             const chats = record.chatLog || [];
             const filteredChats = chats.filter(chat => {
-                const chatMonth = new Date(chat.timestamp).toISOString().slice(0, 7); // Extract YYYY-MM
+                const chatMonth = new Date(chat.timestamp).toISOString().slice(0, 7);
                 return chatMonth === month;
             });
             return count + filteredChats.length;
@@ -60,38 +80,11 @@ const getMonthlyChatCounts = async (req, res) => {
     }
 };
 
-const getAverageWaitingTime = async (req, res) => {
-    const staffId = req.user.id;
-
-    try {
-        const { data, error } = await supabase
-            .from("chat_history")
-            .select("waitTime") // Assuming `waitTime` is a field in the chat history that stores the waiting time for each chat
-            .eq("staffId", staffId);
-
-        if (error) {
-            console.error("Supabase error:", error);
-            return res.status(500).json({ message: error.message });
-        }
-
-        if (!data || data.length === 0) {
-            return res.status(404).json({ message: "No waiting time data found for this staff." });
-        }
-
-        const totalWaitTime = data.reduce((total, record) => total + (record.waitTime || 0), 0);
-        const averageWaitTime = totalWaitTime / data.length;
-
-        return res.status(200).json({ averageWaitingTime: averageWaitTime.toFixed(2) });
-    } catch (error) {
-        console.error('Error fetching average waiting time:', error);
-        res.status(500).json({ message: "An unexpected error occurred." });
-    }
-};
 
 const getStaffFeedback = async (req, res) => {
     try {
         const staffId = req.user.id;
-        console.log("Staff ID:", staffId); // Log staff ID to confirm JWT decoding works
+        console.log("Staff ID:", staffId); 
 
         const { data, error } = await supabase
             .from('chat_history')
@@ -99,12 +92,12 @@ const getStaffFeedback = async (req, res) => {
             .eq('staffId', staffId);
 
         if (error) {
-            console.error("Supabase error:", error); // Debug
+            console.error("Supabase error:", error); 
             return res.status(500).json({ message: error.message });
         }
 
         if (!data || data.length === 0) {
-            console.log("No feedback found for this staff."); // Debug
+            console.log("No feedback found for this staff.");
             return res.status(404).json({ message: 'No feedback found for this staff.' });
         }
 
@@ -133,7 +126,7 @@ const getStaffFeedback = async (req, res) => {
             totalRatings,
         };
 
-        console.log("Response data:", response); // Debug the response
+        console.log("Response data:", response);
         res.status(200).json(response);
     } catch (error) {
         console.error("Unexpected error:", error);
@@ -143,7 +136,7 @@ const getStaffFeedback = async (req, res) => {
 
 export default {
     getUser,
+    getUserWithId,
     getMonthlyChatCounts,
-    getAverageWaitingTime,
     getStaffFeedback
 };
