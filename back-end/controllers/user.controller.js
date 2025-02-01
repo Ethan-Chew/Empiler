@@ -11,33 +11,13 @@ const getUserWithId = async (req, res) => {
         } else {
             res.status(200).json(user);
         }
-    } catch (err){
+    } catch (err) {
         console.error(err);
         res.status(500).json({
             status: "error",
             message: "Internal Server Error",
             error: err
         });
-    }
-}
-
-const getUser = async (req, res) => {
-    try {
-        // Fetch all users but exclude the password field
-        const { data, error } = await supabase
-            .from('user')
-            .select('id, username, email, role') // Exclude 'password' field
-            .eq('id', req.user.id);
-
-        if (error) {
-            return res.status(500).json({ message: error.message });
-        }
-
-        res.status(200).json(data);
-    } catch (error) {
-        // Handle any unexpected errors
-        console.error("An unexpected error occurred:", error);
-        res.status(500).json({ message: "An unexpected error occurred" });
     }
 }
 
@@ -81,6 +61,33 @@ const getMonthlyChatCounts = async (req, res) => {
     }
 };
 
+const getAverageWaitingTime = async (req, res) => {
+    const staffId = req.user.id;
+
+    try {
+        const { data, error } = await supabase
+            .from("chat_history")
+            .select("waitTime") // Assuming `waitTime` is a field in the chat history that stores the waiting time for each chat
+            .eq("staffId", staffId);
+
+        if (error) {
+            console.error("Supabase error:", error);
+            return res.status(500).json({ message: error.message });
+        }
+
+        if (!data || data.length === 0) {
+            return res.status(404).json({ message: "No waiting time data found for this staff." });
+        }
+
+        const totalWaitTime = data.reduce((total, record) => total + (record.waitTime || 0), 0);
+        const averageWaitTime = totalWaitTime / data.length;
+
+        return res.status(200).json({ averageWaitingTime: averageWaitTime.toFixed(2) });
+    } catch (error) {
+        console.error('Error fetching average waiting time:', error);
+        res.status(500).json({ message: "An unexpected error occurred." });
+    }
+};
 
 const getStaffFeedback = async (req, res) => {
     try {
@@ -137,7 +144,7 @@ const getStaffFeedback = async (req, res) => {
 
 export default {
     getUserWithId,
-    getUser,
-    getStaffFeedback,
     getMonthlyChatCounts,
-}
+    getAverageWaitingTime,
+    getStaffFeedback
+};
