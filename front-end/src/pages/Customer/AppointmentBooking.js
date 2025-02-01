@@ -12,60 +12,76 @@ const markerIcon = L.icon({ iconUrl: "/marker-icon.png" });
 export default function AppointmentBooking() {
     const [branches, setBranches] = useState([]);
     const [index, setIndex] = useState(0);
+    const [locationPermission, setLocationPermission] = useState(null);
+    const [locationServicesEnabled, setLocationServicesEnabled] = useState(true); // To check if location is enabled in the browser
 
     // User Location
     const [userLatitude, setUserLatitude] = useState(null);
     const [userLongitude, setUserLongitude] = useState(null);
     const [userLocation, setUserLocation] = useState("");
 
-    useEffect(() => {
-        const fetchBranches = async (lat, lon) => {
-            try {
-                const response = await fetch(`http://localhost:8080/api/branches?page=${index}`, {
-                    method: "POST",
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        "lat": lat,
-                        "lon": lon,
-                    })
-                });
-                const data = await response.json();
-                setBranches(data.branches);
-            } catch (error) {
-                console.error(error);
-            }
+    const fetchBranches = async (lat, lon) => {
+        try {
+            const response = await fetch(`http://localhost:8080/api/branches?page=${index}`, {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    "lat": lat,
+                    "lon": lon,
+                })
+            });
+            const data = await response.json();
+            setBranches(data.branches);
+        } catch (error) {
+            console.error(error);
         }
+    }
 
-        const fetchUserLocation = async (lat, lon) => {
-            try {
-                const response = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
-                const data = await response.json();
-                const placeName = data.display_name.split(',')[0];
-                setUserLocation(placeName);
-            } catch (error) {
-                console.error(error);
-            }
+    const fetchUserLocation = async (lat, lon) => {
+        try {
+            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
+            const data = await response.json();
+            const placeName = data.display_name.split(',')[0];
+            setUserLocation(placeName);
+        } catch (error) {
+            console.error(error);
         }
-        
-        const locationSuccess = async (position) => {
-            const { latitude, longitude } = position.coords;
-            fetchBranches(latitude, longitude);
-            fetchUserLocation(latitude, longitude);
+    }
 
-            setUserLatitude(latitude);
-            setUserLongitude(longitude);
-        }
-        
-        const locationError = () => {
-            console.log("Unable to retrieve location");
-        }
+    const locationSuccess = async (position) => {
+        const { latitude, longitude } = position.coords;
+        fetchBranches(latitude, longitude);
+        fetchUserLocation(latitude, longitude);
 
+        setUserLatitude(latitude);
+        setUserLongitude(longitude);
+    }
+
+    const locationError = (error) => {
+        if (error.code === error.PERMISSION_DENIED) {
+            setLocationPermission(false);
+        } else {
+            setLocationServicesEnabled(false); // Set flag to false if geolocation is not supported or disabled in the browser
+        }
+    }
+
+    const enableLocation = () => {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(locationSuccess, locationError);
         } else {
             console.log("Geolocation not supported");
+            setLocationServicesEnabled(false); // Handle case when geolocation API is not supported in the browser
+        }
+    }
+
+    useEffect(() => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(locationSuccess, locationError);
+        } else {
+            console.log("Geolocation not supported");
+            setLocationServicesEnabled(false); // Handle case when geolocation is not supported in the browser
         }
     }, [index]);
 
@@ -111,7 +127,23 @@ export default function AppointmentBooking() {
                                     </Marker>
                                 ))}
                             </MapContainer>
-                        ) : <p>Loading Map...</p>}
+                        ) : locationPermission === false ? (
+                            <div>
+                                <p>Please enable location sharing to view nearby branches.</p>
+                                <button 
+                                    onClick={enableLocation}
+                                    className="mt-4 p-2 bg-blue-500 text-white rounded-lg"
+                                >
+                                    Refresh
+                                </button>
+                            </div>
+                        ) : locationServicesEnabled === false ? (
+                            <div>
+                                <p>It seems like location services are disabled in your browser. Please enable them in your browser settings and refresh the page.</p>
+                            </div>
+                        ) : (
+                            <p>Loading...</p>
+                        )}
                     </div>
                 </div>
             </div>
