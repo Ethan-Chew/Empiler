@@ -8,7 +8,7 @@ import dotenv from 'dotenv';
 import request from '../utils/sttConfig.js';
 
 dotenv.config();
-const credentials = JSON.parse(process.env.GOOGLE_TRANSLATE_KEY);
+const credentials = JSON.parse(process.env.GOOGLE_STT_KEY);
 const speechClient = new speech.SpeechClient({
     credentials: credentials,
     projectId: credentials.project_id

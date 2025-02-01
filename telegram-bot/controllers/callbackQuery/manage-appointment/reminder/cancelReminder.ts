@@ -7,7 +7,7 @@ const cqCancelReminder = async (ctx: MyContext, reminderInfo: string) => {
     }
 
     // Check if the user has any appointment to cancel
-    const appointment = await axios.delete(`http://localhost:8080/api/appointments/reminder/${ctx.session.selectedAppt}`, {
+    const appointment = await axios.delete(`http://localhost:8080/api/appointments/reminders`, {
         headers: {
             "Content-Type": "application/json",
         },
