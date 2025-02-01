@@ -1,5 +1,6 @@
 import { Context } from "grammy";
 import axios from "axios";
+import bot from "../bot";
 
 const unlinkController = async (ctx: Context) => {
     try {
@@ -18,6 +19,10 @@ const unlinkController = async (ctx: Context) => {
         } else {
             throw new Error(unlinkRequest.data.message);
         }
+
+        await bot.api.setMyCommands([
+            { command: "start", description: "Start the bot" },
+        ]);          
     } catch (error) {
         console.log(error);
         await ctx.reply("Failed to unlink your account, please try again later!");

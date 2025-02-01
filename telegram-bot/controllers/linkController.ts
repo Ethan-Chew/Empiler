@@ -1,6 +1,7 @@
 import { Context } from "grammy";
 import axios, { AxiosError } from "axios";
 import validateUUID from "../utils/validateUUID";
+import bot from "../bot";
 
 const linkController = async (ctx: Context) => {
     try {
@@ -32,6 +33,12 @@ const linkController = async (ctx: Context) => {
         } else {
             await ctx.reply(response.data.message);
         }
+
+        // Remove the options to Start and Link the Bot
+        await bot.api.setMyCommands([
+            { command: "unlink", description: "Unlink the bot from your OCBC Account (you will not be able to access services until you re-link it.)" },
+            { command: "upcoming", description: "View all Upcoming Appointments" }
+        ]);
     } catch (error) {
         if (error instanceof AxiosError) {
             if (error.response?.data.message) {
