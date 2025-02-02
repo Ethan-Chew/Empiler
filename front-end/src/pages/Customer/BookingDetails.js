@@ -295,12 +295,18 @@ export default function BookingDetails() {
         setIsModalOpen(!isModalOpen);
     };
 
+    const [reminderMethod, setReminderMethod] = useState('email'); // Default to email
+
+    const handleMethodChange = (e) => {
+        setReminderMethod(e.target.value);
+    };
+
     const handleReminderSet = async () => {
         // if getCurrentReminder is not null then update reminder
         // else set reminder
 
         const currentReminder = await getCurrentReminder();
-        console.log(currentReminder);
+
         if (currentReminder) {
             const response = await fetch('http://localhost:8080/api/appointments/reminders', {
                 method: 'PUT',
@@ -311,7 +317,7 @@ export default function BookingDetails() {
                     appointmentId: booking.id,
                     reminderType: selectedReminder,
                     reminderTime: currentReminder.reminderTime,
-                    area: 'email'
+                    area: reminderMethod
                 }),
             });
 
@@ -336,7 +342,7 @@ export default function BookingDetails() {
                 appointmentId: booking.id,
                 reminderType: selectedReminder,
                 reminderTime: unixTimestamp,
-                area: 'email'
+                area: reminderMethod
             }),
         });
 
@@ -345,6 +351,7 @@ export default function BookingDetails() {
 
         alert('Reminder set successfully!');
         toggleModal();
+        window.location.reload();
     };
 
     const getCurrentReminder = async () => {
@@ -406,7 +413,7 @@ export default function BookingDetails() {
 
             alert('Reminder deleted successfully!');
             toggleModal();
-            return result;
+            window.location.reload();
 
         } catch (error) {
             console.error("Error deleting reminder:", error);
@@ -483,6 +490,36 @@ export default function BookingDetails() {
                                     </option>
                                 ))}
                             </select>
+
+                            <div className="mt-4">
+                                <label className="mr-4">
+                                    <input
+                                        type="radio"
+                                        name="reminderMethod"
+                                        value="email"
+                                        checked={reminderMethod === "email"}
+                                        onChange={handleMethodChange}
+                                        className="mr-2"
+                                    />
+                                    Email
+                                </label>
+
+                                <label>
+                                    <input
+                                        type="radio"
+                                        name="reminderMethod"
+                                        value="telegram"
+                                        checked={reminderMethod === "telegram"}
+                                        onChange={handleMethodChange}
+                                        className="mr-2"
+                                    />
+                                    Telegram
+                                </label>
+                            </div>
+
+                            <p className="mt-4">
+                                Selected Method: <strong>{reminderMethod}</strong>
+                            </p>
 
                             <div>
                                 <button className="bg-gray-300 text-black py-2 px-4 rounded mx-2" onClick={toggleModal}>Close</button>

@@ -347,8 +347,6 @@ export default class Appointment {
                 console.error(error);
                 return { error: "Error deleting reminders" };
             }
-
-            return data;
         } catch (error) {
             console.error(error);
             return { error: "Error deleting reminders" };
