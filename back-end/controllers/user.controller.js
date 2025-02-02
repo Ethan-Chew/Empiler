@@ -95,7 +95,7 @@ const getStaffFeedback = async (req, res) => {
 
         const { data, error } = await supabase
             .from('chat_history')
-            .select('rating')
+            .select('rating, chatWaitingTime')
             .eq('staffId', staffId);
 
         if (error) {
@@ -115,15 +115,26 @@ const getStaffFeedback = async (req, res) => {
             excellent: 0,
         };
 
+        let totalWaitingTime = 0;
+        let totalChats = 0;
+
         data.forEach(item => {
             const rating = item.rating;
+            const waitingTime = item.chatWaitingTime;
             if (rating === 1) counts.poor++;
             else if (rating === 2) counts.mediocre++;
             else if (rating === 3 || rating === 4) counts.good++;
             else if (rating === 5) counts.excellent++;
+
+            if (waitingTime) {
+                totalWaitingTime += waitingTime;
+                totalChats++;
+            }
         });
 
         const totalRatings = counts.poor + counts.mediocre + counts.good + counts.excellent;
+
+        const averageWaitingTime = totalChats > 0 ? (totalWaitingTime / totalChats).toFixed(2) : null;
 
         const response = {
             excellentPercentage: counts.excellent,
@@ -131,6 +142,7 @@ const getStaffFeedback = async (req, res) => {
             mediocrePercentage: counts.mediocre,
             poorPercentage: counts.poor,
             totalRatings,
+            averageWaitingTime,
         };
 
         console.log("Response data:", response);
@@ -141,33 +153,10 @@ const getStaffFeedback = async (req, res) => {
     }
 };
 
-const getAverageWaitingTime = async (req, res) => {
-    try {
-        if (!db) {
-            return res.status(500).json({ message: "Database is not initialized yet. Try again later." });
-        }
-
-        const staffId = req.user.id;
-        const queueLengths = await getQueueLengthsForStaff(db, staffId);
-
-        if (!queueLengths.length) {
-            return res.status(200).json({ averageWaitingTime: "8" });
-        }
-
-        const totalWaitingTime = queueLengths.reduce((sum, length) => sum + length, 0);
-        const averageWaitingTime = (totalWaitingTime / queueLengths.length).toFixed(2);
-
-        res.status(200).json({ averageWaitingTime });
-    } catch (error) {
-        console.error("Error calculating average waiting time:", error);
-        res.status(500).json({ message: "An unexpected error occurred" });
-    }
-};
 
 export default {
     getUser,
     getUserWithId,
     getMonthlyChatCounts,
     getStaffFeedback,
-    getAverageWaitingTime
 };

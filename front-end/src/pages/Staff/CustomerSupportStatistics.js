@@ -21,6 +21,7 @@ const CustomerSupportStatistics = () => {
 
     const [averageRating, setAverageRating] = useState(null);
     const [totalChats, setTotalChats] = useState(0);
+    const [averageWaitingTime, setAverageWaitingTime] = useState(null);
     const [prevMonthlyChats, setPrevMonthlyChats] = useState(0);
     const [selectedMonth, setSelectedMonth] = useState(() => {
         const now = new Date();
@@ -57,6 +58,7 @@ const CustomerSupportStatistics = () => {
                 setRatings(newRatings);
                 setTotalChats(statsData.totalRatings);
                 setPersonalRating(determineMostCommonRating(newRatings));
+                setAverageWaitingTime(statsData.averageWaitingTime);
             } catch (error) {
                 console.error("Error fetching feedback data:", error);
             }
@@ -167,31 +169,7 @@ const CustomerSupportStatistics = () => {
         ],
     };
 
-    const [averageWaitingTime, setAverageWaitingTime] = useState(null);
 
-    useEffect(() => {
-        const fetchAverageWaitingTime = async () => {
-            try {
-                const response = await fetch(`http://localhost:8080/api/user/staff/average-waiting-time`, {
-                    method: 'GET',
-                    credentials: 'include',
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    console.error("Error fetching average waiting time:", errorData);
-                    return;
-                }
-
-                const data = await response.json();
-                setAverageWaitingTime(data.averageWaitingTime);
-            } catch (error) {
-                console.error("Error fetching average waiting time:", error);
-            }
-        };
-
-        fetchAverageWaitingTime();
-    }, []);
 
     return (
         <div className="font-inter">
@@ -261,10 +239,8 @@ const CustomerSupportStatistics = () => {
 
             <div className="px-8 mt-6 grid grid-cols-2 gap-4">
                 <div className="bg-gray-100 rounded-lg p-6 flex flex-col justify-center">
-                    <div className="text-[#000000] text-[18px] font-bold">Average Customer Waiting Time</div>
-                    <div className="text-[#7F7F7F] text-[14px]">Data from {selectedMonth}</div>
-                    <div className="text-[72px] text-[#D00E35] font-bold mt-4 flex-grow flex items-center justify-center">
-                        {averageWaitingTime !== null ? `${averageWaitingTime} minutes` : "8 minutes"}
+                    <div className="text-[#000000] text-[18px] font-bold">
+                        Average Customer Waiting Time: {averageWaitingTime || "No Data"}
                     </div>
                 </div>
 

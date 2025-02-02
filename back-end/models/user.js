@@ -39,10 +39,11 @@ export default class User {
         const queryRequest = await supabase
             .from("chat_history")
             .select(`
-            count(caseId) as numOfTotalChats, 
-            avg(rating) as averageRating
-          `)
-            .eq("staff_id", staffID)
+                count(caseId) as numOfTotalChats, 
+                avg(rating) as averageRating,
+                avg(chatWaitingTime) as averageWaitingTime
+            `)
+            .eq("staffId", staffID)
             .single();
 
         if (queryRequest.error) {
@@ -52,7 +53,8 @@ export default class User {
         if (!queryRequest.data || queryRequest.data.numOfTotalChats === 0) {
             return {
                 numOfTotalChats: 0,
-                averageRating: null
+                averageRating: null,
+                averageWaitingTime: null
             };
         }
 
