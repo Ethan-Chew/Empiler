@@ -49,6 +49,8 @@ export const initialiseDB = async () => {
             sender TEXT,
             key TEXT,
             iv TEXT,
+            queueLength INTEGER,
+            staffID TEXT,
             PRIMARY KEY (caseID, timestamp, sender)
         );
     `);
@@ -250,7 +252,7 @@ export const getQueueLengthsForStaff = async (db, staffId) => {
         );
 
         if (!results || results.length === 0) {
-            return "7 counts";
+            return "error";
         }
 
         return results.map(row => row.queueLength || 0);
