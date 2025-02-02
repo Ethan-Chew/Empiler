@@ -50,7 +50,7 @@ const axios_1 = __importStar(require("axios"));
 const validateUUID_1 = __importDefault(require("../utils/validateUUID"));
 const bot_1 = __importDefault(require("../bot"));
 const startController = (ctx) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c;
+    var _a, _b, _c, _d;
     const welcomeMessage = `__*OCBC Support Bot*__\n` +
         `Hi, I am the 'official' Support Bot for OCBC, here to help you with your queries\.\n\n` +
         `*Commands*\n` +
@@ -59,11 +59,20 @@ const startController = (ctx) => __awaiter(void 0, void 0, void 0, function* () 
         `- \`/unlink\` - Unlink the bot from your OCBC Account (you will not be able to access services until you re-link it\.)\n` +
         `- \`/upcoming\` - View all Upcoming Appointments\.\n\n` +
         `If you're trying to connect your account, you need to provide a verification code\.\n` +
-        `Run the command in the format of \`/start _verification_code_\`\.`;
+        `Run the command in the format of \`/start verification_code\`\.`;
     yield ctx.reply(welcomeMessage, {
         parse_mode: "Markdown",
         reply_parameters: { message_id: ctx.msg.message_id },
     });
+    const checkAccountLinked = yield axios_1.default.get(`http://localhost:8080/api/telegram/verify/tele/${(_a = ctx.from) === null || _a === void 0 ? void 0 : _a.id}`);
+    const accountLinkedStatus = yield checkAccountLinked.data.status;
+    if (accountLinkedStatus === "success") {
+        // Remove the options to Start and Link the Bot
+        yield bot_1.default.api.setMyCommands([
+            { command: "unlink", description: "Unlink the bot from your OCBC Account (you will not be able to access services until you re-link it.)" },
+            { command: "upcoming", description: "View all Upcoming Appointments" }
+        ]);
+    }
     const payload = ctx.match;
     if (payload) {
         yield ctx.reply("Verifying your account...");
@@ -74,8 +83,8 @@ const startController = (ctx) => __awaiter(void 0, void 0, void 0, function* () 
             }
             const response = yield axios_1.default.put(`http://localhost:8080/api/telegram/link`, {
                 verificationCode: payload,
-                telegramId: (_a = ctx.from) === null || _a === void 0 ? void 0 : _a.id,
-                telegramUsername: (_b = ctx.from) === null || _b === void 0 ? void 0 : _b.username,
+                telegramId: (_b = ctx.from) === null || _b === void 0 ? void 0 : _b.id,
+                telegramUsername: (_c = ctx.from) === null || _c === void 0 ? void 0 : _c.username,
             }, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -88,8 +97,6 @@ const startController = (ctx) => __awaiter(void 0, void 0, void 0, function* () 
                     { command: "unlink", description: "Unlink the bot from your OCBC Account (you will not be able to access services until you re-link it.)" },
                     { command: "upcoming", description: "View all Upcoming Appointments" }
                 ]);
-                const commands = yield bot_1.default.api.getMyCommands();
-                console.log(commands);
             }
             else {
                 yield ctx.reply(response.data.message);
@@ -98,7 +105,7 @@ const startController = (ctx) => __awaiter(void 0, void 0, void 0, function* () 
         catch (error) {
             console.log(error);
             if (error instanceof axios_1.AxiosError) {
-                if ((_c = error.response) === null || _c === void 0 ? void 0 : _c.data.message) {
+                if ((_d = error.response) === null || _d === void 0 ? void 0 : _d.data.message) {
                     yield ctx.reply(`Error: ${error.response.data.message}`);
                     return;
                 }

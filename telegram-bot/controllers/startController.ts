@@ -18,6 +18,17 @@ const startController = async (ctx: Context) => {
         reply_parameters: { message_id: ctx.msg!.message_id },
     });
 
+    const checkAccountLinked = await axios.get(`http://localhost:8080/api/telegram/verify/tele/${ctx.from?.id}`);
+    const accountLinkedStatus = await checkAccountLinked.data.status;
+
+    if (accountLinkedStatus === "success") {
+        // Remove the options to Start and Link the Bot
+        await bot.api.setMyCommands([
+            { command: "unlink", description: "Unlink the bot from your OCBC Account (you will not be able to access services until you re-link it.)" },
+            { command: "upcoming", description: "View all Upcoming Appointments" }
+        ]);
+    }
+
     const payload = ctx.match;
     if (payload) {
         await ctx.reply("Verifying your account...");

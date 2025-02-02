@@ -250,9 +250,15 @@ export default function StaffChats() {
                         decryptedKey = await RSAHandler.decryptDataWithRSAPrivate(msg.key);
                         decryptedMessage = await AESHandler.decryptDataWithAESKey(decryptedKey, msg.iv, msg.fileUrl || msg.message);
                     }
-                    msg.message = decryptedMessage;
+
+                    if (msg.fileUrl) {
+                        msg.fileUrl = decryptedMessage;
+                    } else {
+                        msg.message = decryptedMessage;
+                    }
                 }
             });
+            console.log(chats)
             setConnectedChats(chats);
             socket.emit("utils:add-socket", null, "staff", (res) => {});
             for (const chat of chats) {
