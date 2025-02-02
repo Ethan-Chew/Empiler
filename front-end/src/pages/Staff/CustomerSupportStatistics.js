@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-const CustomerSupportStatistics = () => {
+const CustomerSupportStatistics = (props) => {
     const navigate = useNavigate();
 
     const [ratings, setRatings] = useState({
@@ -19,7 +19,6 @@ const CustomerSupportStatistics = () => {
         poor: 0,
     });
 
-    const [averageRating, setAverageRating] = useState(null);
     const [totalChats, setTotalChats] = useState(0);
     const [averageWaitingTime, setAverageWaitingTime] = useState(null);
     const [prevMonthlyChats, setPrevMonthlyChats] = useState(0);
@@ -28,14 +27,13 @@ const CustomerSupportStatistics = () => {
         return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
     });
     const [monthlyChats, setMonthlyChats] = useState(0);
-    const [staffId, setStaffId] = useState(null);
     const [personalRating, setPersonalRating] = useState(null);
 
     useEffect(() => {
         const fetchMonthlyFeedback = async () => {
             try {
                 const response = await fetch(
-                    `http://localhost:8080/api/user/staff-feedback?month=${selectedMonth}`,
+                    `http://localhost:8080/api/user/staff-feedback/${props.userId}?month=${selectedMonth}`,
                     {
                         method: 'GET',
                         credentials: 'include',
@@ -71,7 +69,7 @@ const CustomerSupportStatistics = () => {
         const fetchMonthlyChats = async () => {
             try {
                 const response = await fetch(
-                    `http://localhost:8080/api/user/monthly-chat-counts?month=${selectedMonth}`,
+                    `http://localhost:8080/api/user/monthly-chat-counts/${props.userId}?month=${selectedMonth}`,
                     {
                         method: "GET",
                         credentials: "include",
@@ -90,7 +88,7 @@ const CustomerSupportStatistics = () => {
 
                 const prevMonth = getPreviousMonth(selectedMonth);
                 const prevResponse = await fetch(
-                    `http://localhost:8080/api/user/monthly-chat-counts?month=${prevMonth}`,
+                    `http://localhost:8080/api/user/monthly-chat-counts/${props.userId}?month=${prevMonth}`,
                     {
                         method: "GET",
                         credentials: "include",

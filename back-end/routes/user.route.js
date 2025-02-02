@@ -4,17 +4,16 @@ import authoriseJWT from "../middleware/authoriseJWT.js";
 
 const router = express.Router()
 
-router.route("/staff-feedback")
-    .get(authoriseJWT, UserController.getStaffFeedback);
+router.route("/staff-feedback/:id")
+    .get(UserController.getStaffFeedback);
 
-router.route("/", authoriseJWT)
+router.route("/monthly-chat-counts/:id")
+    .get(UserController.getMonthlyChatCounts);
+
+router.route("/")
     .get(UserController.getUser)
 
-router.route("/user/:id")
-    .get(authoriseJWT, UserController.getUserWithId);
-
-
-router.route("/monthly-chat-counts")
-    .get(authoriseJWT, UserController.getMonthlyChatCounts);
+router.route("/:id")
+    .get(UserController.getUserWithId)
 
 export default router

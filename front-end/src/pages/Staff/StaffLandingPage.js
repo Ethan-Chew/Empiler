@@ -7,12 +7,12 @@ import { MdOutlinePersonOutline } from "react-icons/md";
 import { LuTicket } from "react-icons/lu";
 import { useState, useEffect } from 'react';
 
-const StaffLandingPage = () => {
+const StaffLandingPage = (props) => {
     const [user, setUser] = useState();
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                const response = await fetch(`http://localhost:8080/api/user/user`);
+                const response = await fetch(`http://localhost:8080/api/user/${props.userId}`);
                 const data = await response.json();
                 setUser(data);
             } catch (error) {
@@ -20,14 +20,16 @@ const StaffLandingPage = () => {
             }
         };
         fetchUser();
-    } , []
-    );
+    } , []);
+
+    if (!user) { return <p>Loading...</p> }
+
     return (
         <div className="bg-white font-inter">
             <Navbar />
 
             <div className="text-left mt-6 px-4 lg:px-8">
-                <h1 className="text-[48px] text-[#343434]">Good Afternoon, John Admin!</h1>
+                <h1 className="text-[48px] text-[#343434]">Good Afternoon, {user.username}!</h1>
                 <p className="text-[20px] text-[#999999] mt-2">What would you like to do today?</p>
                 <hr className="border-t-[2px] border-[#DCD6D6] mt-12" />
             </div>

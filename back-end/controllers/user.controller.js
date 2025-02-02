@@ -1,6 +1,6 @@
-import supabase from '../utils/supabase.js';
 import User from '../models/user.js';
-import { initialiseDB, getQueueLengthsForStaff } from '../utils/sqliteDB.js';
+import supabase from '../utils/supabase.js';
+import { initialiseDB } from '../utils/sqliteDB.js';
 
 let db;
 
@@ -49,7 +49,7 @@ const getUserWithId = async (req, res) => {
 
 const getMonthlyChatCounts = async (req, res) => {
     try {
-        const staffId = req.user.id;
+        const staffId = req.params.id;
         const { month } = req.query;
 
         if (!month) {
@@ -90,8 +90,7 @@ const getMonthlyChatCounts = async (req, res) => {
 
 const getStaffFeedback = async (req, res) => {
     try {
-        const staffId = req.user.id;
-        console.log("Staff ID:", staffId); 
+        const staffId = req.params.id;
 
         const { data, error } = await supabase
             .from('chat_history')
