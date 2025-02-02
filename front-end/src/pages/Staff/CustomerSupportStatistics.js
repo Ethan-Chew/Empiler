@@ -302,9 +302,7 @@ const CustomerSupportStatistics = () => {
                         </div>
                     </div>
 
-                    <button className="mt-4 bg-[#D00E35] text-white font-medium py-2 px-4 rounded-lg w-full">
-                        View More Feedback
-                    </button>
+                 
                 </div>
             </div>
 
