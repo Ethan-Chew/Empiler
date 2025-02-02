@@ -36,7 +36,7 @@ export const initialiseDB = async () => {
             faqSection TEXT,
             faqQuestion TEXT,
             userID TEXT,
-            timeConnected INTEGER,
+            chatWaitingTime INTEGER,
             staffID TEXT
         );
         CREATE TABLE IF NOT EXISTS chatHistory (
@@ -138,10 +138,14 @@ export const searchForAvailStaff = async (db, staffID) => {
 };
 
 export const startActiveChat = async (db, activeChat) => {
+    // Retrieve the Customer from the Waiting Customers DB
+    const currentTime = Date.now();
+    const chatWaitingTime = (currentTime - activeChat.customer.timeConnected) / 60000; // Converted to Minutes
+
     activeChat.customer.socketIDs = JSON.stringify(activeChat.customer.socketIDs);
     activeChat.staff.socketIDs = JSON.stringify(activeChat.staff.socketIDs);
-    await db.run('INSERT INTO activeChats (caseID, customerSessionIdentifier, customerSocketIDs, faqSection, faqQuestion, userID, timeConnected, staffID) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', 
-        activeChat.caseID, activeChat.customer.customerSessionIdentifier, activeChat.customer.socketIDs, activeChat.customer.faqSection, activeChat.customer.faqQuestion, activeChat.customer.userID, activeChat.customer.timeConnected, activeChat.staff.staffID);
+    await db.run('INSERT INTO activeChats (caseID, customerSessionIdentifier, customerSocketIDs, faqSection, faqQuestion, userID, chatWaitingTime, staffID) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', 
+        activeChat.caseID, activeChat.customer.customerSessionIdentifier, activeChat.customer.socketIDs, activeChat.customer.faqSection, activeChat.customer.faqQuestion, activeChat.customer.userID, chatWaitingTime, activeChat.staff.staffID);
 };
 
 export const endActiveChat = async (db, caseID, isCustomerDisconnect) => {
@@ -156,8 +160,7 @@ export const endActiveChat = async (db, caseID, isCustomerDisconnect) => {
 
     // DEV: Commented to prevent spam to Databse when testing.
     try {
-        const status = isCustomerDisconnect ? "userdisconnect" : null;
-        await chatHistory.createChatHistory(chat.caseID, chat.userID, chat.staffID, formattedChatMessages, status);
+        await chatHistory.createChatHistory(chat.caseID, chat.userID, chat.staffID, formattedChatMessages, chat.chatWaitingTime);
     } catch (err) {
         console.error(err);
     }
