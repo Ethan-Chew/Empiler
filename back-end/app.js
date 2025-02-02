@@ -51,7 +51,6 @@ const db = await initialiseDB();
 // API Routes
 app.use("/api/user", user);
 app.use("/api/chatHistory", chatHistory);
-app.use("/api/staff-feedback", authoriseJWT, user);
 app.use("/api/faq", faq);
 app.use("/api/auth", auth);
 app.post("/api/branches", branches.getOCBCBranches);
