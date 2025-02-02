@@ -1,5 +1,12 @@
 import supabase from '../utils/supabase.js';
 import User from '../models/user.js';
+import { initialiseDB, getQueueLengthsForStaff } from '../utils/sqliteDB.js';
+
+let db;
+
+(async () => {
+    db = await initialiseDB();
+})();
 
 const getUser = async (req, res) => {
     try {
@@ -134,9 +141,33 @@ const getStaffFeedback = async (req, res) => {
     }
 };
 
+const getAverageWaitingTime = async (req, res) => {
+    try {
+        if (!db) {
+            return res.status(500).json({ message: "Database is not initialized yet. Try again later." });
+        }
+
+        const staffId = req.user.id;
+        const queueLengths = await getQueueLengthsForStaff(db, staffId);
+
+        if (!queueLengths.length) {
+            return res.status(200).json({ averageWaitingTime: "No data available" });
+        }
+
+        const totalWaitingTime = queueLengths.reduce((sum, length) => sum + length, 0);
+        const averageWaitingTime = (totalWaitingTime / queueLengths.length).toFixed(2);
+
+        res.status(200).json({ averageWaitingTime });
+    } catch (error) {
+        console.error("Error calculating average waiting time:", error);
+        res.status(500).json({ message: "An unexpected error occurred" });
+    }
+};
+
 export default {
     getUser,
     getUserWithId,
     getMonthlyChatCounts,
-    getStaffFeedback
+    getStaffFeedback,
+    getAverageWaitingTime
 };

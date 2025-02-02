@@ -5,10 +5,13 @@ import { FaChevronUp, FaChevronDown } from 'react-icons/fa';
 import { FaArrowLeft } from 'react-icons/fa';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { useNavigate } from 'react-router-dom';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 const CustomerSupportStatistics = () => {
+    const navigate = useNavigate();
+
     const [ratings, setRatings] = useState({
         excellent: 0,
         good: 0,
@@ -164,13 +167,42 @@ const CustomerSupportStatistics = () => {
         ],
     };
 
+    const [averageWaitingTime, setAverageWaitingTime] = useState(null);
+
+    useEffect(() => {
+        const fetchAverageWaitingTime = async () => {
+            try {
+                const response = await fetch(`http://localhost:8080/api/user/staff/average-waiting-time`, {
+                    method: 'GET',
+                    credentials: 'include',
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error("Error fetching average waiting time:", errorData);
+                    return;
+                }
+
+                const data = await response.json();
+                setAverageWaitingTime(data.averageWaitingTime);
+            } catch (error) {
+                console.error("Error fetching average waiting time:", error);
+            }
+        };
+
+        fetchAverageWaitingTime();
+    }, []);
+
     return (
         <div className="font-inter">
             <Navbar />
             <hr className="border-t-[2px] border-[#DCD6D6]" />
 
             <div className="px-8 mt-6 flex items-center space-x-4">
-                <button className="text-[#7F7F7F] text-[18px] flex items-center hover:text-[#D00E35]">
+                <button
+                    className="text-[#7F7F7F] text-[18px] flex items-center hover:text-[#D00E35]"
+                    onClick={() => navigate('/staff/home')}
+                >
                     <FaArrowLeft className="mr-2" />
                 </button>
 
@@ -231,7 +263,9 @@ const CustomerSupportStatistics = () => {
                 <div className="bg-gray-100 rounded-lg p-6 flex flex-col justify-center">
                     <div className="text-[#000000] text-[18px] font-bold">Average Customer Waiting Time</div>
                     <div className="text-[#7F7F7F] text-[14px]">Data from {selectedMonth}</div>
-                    <div className="text-[72px] text-[#D00E35] font-bold mt-4 flex-grow flex items-center justify-center">5 minutes</div>
+                    <div className="text-[72px] text-[#D00E35] font-bold mt-4 flex-grow flex items-center justify-center">
+                        {averageWaitingTime !== null ? `${averageWaitingTime} minutes` : "8 minutes"}
+                    </div>
                 </div>
 
                 <div className="bg-gray-100 rounded-lg p-6 flex flex-col">

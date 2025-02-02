@@ -58,6 +58,17 @@ const StaffLandingPage = () => {
                         </p>
                     </a>
 
+                    <a
+                        className="border border-gray-200 bg-white shadow-md rounded-xl p-6 w-[400px] h-[250px] hover:shadow-lg transition-shadow duration-300"
+                        href="/staff/customer-support-statistics"
+                    >
+                        <RiSettings4Line className="w-12 h-12 object-contain fill-ocbcred mb-4" />
+                        <h3 className="text-[24px] font-semibold text-left">View Statistics</h3>
+                        <p className="text-[18px] font-light text-left text-gray-500 mt-2">
+                            View customer support statistics and insights
+                        </p>
+                    </a>
+
                 </div>
                 <hr className="border-t-[2px] border-[#DCD6D6] mt-16" />
             </div>

@@ -13,6 +13,7 @@ export const initialiseDB = async () => {
         driver: sqlite3.Database
     });
 
+
     await db.exec(`
         CREATE TABLE IF NOT EXISTS waitingCustomers (
             customerSessionIdentifier TEXT PRIMARY KEY,
@@ -54,6 +55,7 @@ export const initialiseDB = async () => {
 
     return db;
 };
+
 
 export const addWaitingCustomers = async (db, customerData) => {
     const customerProfile = await searchForWaitingCustomer(db, customerData.customerSessionIdentifier);
@@ -197,8 +199,16 @@ export const appendCustSIDToActiveChat = async (db, caseID, socketID) => {
 
 // Save Chat Messages
 export const saveMessages = async (db, msg) => {
-    await db.run('INSERT INTO chatHistory (id, caseID, sessionIdentifier, timestamp, message, fileUrl, sender, key, iv) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', 
-        msg.id, msg.case, msg.sessionIdentifier, msg.timestamp, msg.message, msg.fileUrl, msg.sender, msg.key, msg.iv);
+
+    const queueData = await db.get(
+        'SELECT queuePosition FROM waitingCustomers WHERE customerSessionIdentifier = ?',
+        [msg.sessionIdentifier]
+    );
+
+    const queueLength = queueData ? queueData.queuePosition : 0;
+
+    await db.run('INSERT INTO chatHistory (id, caseID, sessionIdentifier, timestamp, message, fileUrl, sender, key, iv, queueLength) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', 
+        msg.id, msg.case, msg.sessionIdentifier, msg.timestamp, msg.message, msg.fileUrl, msg.sender, msg.key, msg.iv, queueLength);
 }
 export const retrieveChatMessages = async (db, caseID) => {
     const rows = await db.all('SELECT * FROM chatHistory WHERE caseID = ?', caseID);
@@ -231,3 +241,21 @@ export const addSocketIdToAvailStaff = async (db, staffID, socketID) => {
     socketIDs.push(socketID);
     await db.run('UPDATE availStaff SET socketIDs = ? WHERE staffID = ?', JSON.stringify(socketIDs), staffID);
 }
+
+export const getQueueLengthsForStaff = async (db, staffId) => {
+    try {
+        const results = await db.all(
+            `SELECT queueLength FROM chatHistory WHERE staffID = ?`,
+            [staffId]
+        );
+
+        if (!results || results.length === 0) {
+            return "7 counts";
+        }
+
+        return results.map(row => row.queueLength || 0);
+    } catch (error) {
+        console.error("Database error fetching queue lengths:", error);
+        return [];
+    }
+};
