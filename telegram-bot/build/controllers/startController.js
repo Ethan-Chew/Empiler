@@ -51,7 +51,7 @@ const validateUUID_1 = __importDefault(require("../utils/validateUUID"));
 const startController = (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c;
     yield ctx.reply(`__*OCBC Support Bot*__\nHi, I am the 'official' Support Bot for OCBC, here to help you with your queries.\n*Commands*\n- \`/start\` - Start the bot\n- \`/link\` - Link the bot to your OCBC Account.\n- \`/unlink\` - Unlink the bot from your OCBC Account \(you will not be able to access services until you re-link it.\)\n- \`/upcoming\` - View all Upcoming Appointments.`, {
-        parse_mode: "MarkdownV2",
+        parse_mode: "Markdown",
         reply_parameters: { message_id: ctx.msg.message_id },
     });
     const payload = ctx.match;
