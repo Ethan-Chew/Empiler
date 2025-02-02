@@ -59,7 +59,7 @@ const startController = (ctx) => __awaiter(void 0, void 0, void 0, function* () 
         `- \`/unlink\` - Unlink the bot from your OCBC Account (you will not be able to access services until you re-link it\.)\n` +
         `- \`/upcoming\` - View all Upcoming Appointments\.\n\n` +
         `If you're trying to connect your account, you need to provide a verification code\.\n` +
-        `Run the command in the format of \`/start _verification_code_\`\.`;
+        `Run the command in the format of \`/start verification_code\`\.`;
     yield ctx.reply(welcomeMessage, {
         parse_mode: "Markdown",
         reply_parameters: { message_id: ctx.msg.message_id },
@@ -88,8 +88,6 @@ const startController = (ctx) => __awaiter(void 0, void 0, void 0, function* () 
                     { command: "unlink", description: "Unlink the bot from your OCBC Account (you will not be able to access services until you re-link it.)" },
                     { command: "upcoming", description: "View all Upcoming Appointments" }
                 ]);
-                const commands = yield bot_1.default.api.getMyCommands();
-                console.log(commands);
             }
             else {
                 yield ctx.reply(response.data.message);

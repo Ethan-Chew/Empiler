@@ -41,10 +41,7 @@ export default async function startAutoNotifJob() {
                             if (err) {
                                 console.error(err);
                             } else {
-                                sentApptIds.push({
-                                    apptId: appt.id,
-                                    reminderId: reminder.reminderId
-                                });
+                                sentApptIds.push(reminder.reminderId);
                             }
                         });
                     })
