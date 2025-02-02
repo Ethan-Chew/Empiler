@@ -55,7 +55,8 @@ export default function Login() {
                     body: JSON.stringify({ email: data.email }),
                 });
                 const twofaData = await has2fa.json();
-                if (twofaData.status === "Success" && twofaData.data === true) {
+                console.log(twofaData);
+                if (twofaData.status === "Success" && twofaData.otpEnabled === true) {
                     setCurrentUser(data);
                     setIs2faOpen(true);
                 } else {
