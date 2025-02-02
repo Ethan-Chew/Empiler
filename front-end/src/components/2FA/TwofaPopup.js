@@ -84,7 +84,6 @@ function TwoFactorPopup({ isOpen, setIsOpen, on2faComplete }) {
       try {
         const response = await fetch(`http://localhost:8080/api/user/${userSession.id}`);
         const data = await response.json();
-        console.log(data);
         setCurrentUser(data);
       }
       catch (error) {
