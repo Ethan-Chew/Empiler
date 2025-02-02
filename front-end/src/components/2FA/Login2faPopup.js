@@ -90,7 +90,7 @@ function Login2faPopup({ isOpen, setIsOpen, currentUser, handleSuccessfulLogin }
               animate="animate"
               exit="exit"
             >
-              <h2 className="text-xl font-bold mb-4">Setup Two-Factor Authentication</h2>
+              <h2 className="text-xl font-bold mb-4">Two-Factor Authentication</h2>
               <p className="text-gray-600 mb-6">
                 Enter the 6-digit code you see on your authenticator app.
               </p>

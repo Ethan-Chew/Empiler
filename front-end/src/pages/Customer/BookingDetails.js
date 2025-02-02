@@ -14,6 +14,10 @@ export default function BookingDetails() {
     const [availableDates, setAvailableDates] = useState([]);
     const [availableTimes, setAvailableTimes] = useState([]);
     const [loadingTimeslots, setLoadingTimeslots] = useState(false);
+    const [reminderTypes, setReminderTypes] = useState([]);
+    const [selectedReminder, setSelectReminder] = useState('');
+    const [isModalOpen, setIsModalOpen] = useState(false); // Modal visibility state
+
     // Destructure booking details and branch details
     const { branchDetails } = booking;
     const { address, landmark } = branchDetails;
@@ -34,6 +38,24 @@ export default function BookingDetails() {
             loadAvailableDates();
             fetchAvailableTimeslots(booking.date);
         }
+
+        const fetchReminderTypes = async () => {
+            const response = await fetch('http://localhost:8080/api/appointments/remindertypes');
+            const data = await response.json();
+            setReminderTypes(data);
+
+            reminderTypes.forEach(async (reminder) => { console.log(reminder.type) });
+
+            console.log(booking);
+
+            const combinedDateTime = new Date(booking.date + 'T' + booking.time.split('-')[0]);
+            console.log(combinedDateTime);
+            const unixTimestamp = combinedDateTime.getTime() / 1000;
+            console.log(unixTimestamp);
+        }
+        fetchReminderTypes();
+        console.log( 'Reminder Types: ', reminderTypes);
+
     }, [booking]);
 
     const loadAvailableDates = () => {
@@ -48,8 +70,8 @@ export default function BookingDetails() {
         setSelectedDate(dates[0]);
     };
 
-    const getEarliestAvailableTime = (openingHours) => {
-        const today = new Date();
+    const getEarliestAvailableTime = (openingHours, selectedDate) => {
+        const today = new Date(selectedDate);
         const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
         const todayName = dayNames[today.getDay()];
     
@@ -186,7 +208,8 @@ export default function BookingDetails() {
             }
     
             const data = await response.json();
-            const operatingHours = getEarliestAvailableTime(booking.branchDetails.openingHours);
+            const operatingHours = getEarliestAvailableTime(booking.branchDetails.openingHours, selectedDate);
+            console.log(operatingHours);
     
             if (operatingHours === "Closed" || !operatingHours) {
                 alert('The selected branch is closed on this date.');
@@ -267,6 +290,39 @@ export default function BookingDetails() {
         setSelectedTime(e.target.value);
     };
 
+    const handleReminderChange = (e) => {
+        setSelectReminder(e.target.value);
+    };
+
+    // Toggle the modal
+    const toggleModal = () => {
+        setIsModalOpen(!isModalOpen);
+    };
+
+    const handleReminderSet = async () => {
+        const combinedDateTime = new Date(booking.date + 'T' + booking.time.split('-')[0]);
+        const unixTimestamp = combinedDateTime.getTime() / 1000;
+
+        const response = await fetch('http://localhost:8080/api/appointments/reminders', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                appointmentId: booking.id,
+                reminderType: selectedReminder,
+                reminderTime: unixTimestamp,
+                area: 'telegram'
+            }),
+        });
+
+        const data = await response.json();
+        console.log(data);
+
+        alert('Reminder set successfully!');
+        toggleModal();
+    };
+
     if (!booking) {
         return <p>No booking details found</p>;
     }
@@ -301,6 +357,13 @@ export default function BookingDetails() {
                                             <img src="/scheduleAppointment.svg" alt="Schedule Appointment" className="w-12 h-12 mb-4" />
                                             <p>Cancel Appointment</p>
                                         </button>
+                                        <button 
+                                            className="w-1/3 h-full border-2 border-gray-100 shadow-md rounded-lg font-semibold text-2xl flex flex-col items-center justify-center m-5 p-5"
+                                            onClick={toggleModal}
+                                        >
+                                            <img src="/scheduleAppointment.svg" alt="Schedule Appointment" className="w-12 h-12 mb-4" />
+                                            <p>Set Reminder</p>
+                                        </button>
                                     </div>
                                     <button className="w-2/3 h-full border-2 border-gray-100 shadow-md rounded-lg font-semibold text-2xl flex flex-col items-center justify-center m-5 p-5" onClick={() => navigate("/appointments/viewBooking")}>
                                         Back
@@ -310,6 +373,35 @@ export default function BookingDetails() {
                         </div>
                     </div>
                 </div>
+                {/* Modal for selecting reminder */}
+                {isModalOpen && (
+                    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+                        <div className="bg-white rounded-lg shadow-lg w-3/4 max-w-md p-6">
+                            <h3 className="text-2xl font-semibold mb-4">Set Reminder</h3>
+                            <label htmlFor="block mb-2">Choose a Reminder Time:</label>
+                            <select
+                                className="w-full border border-gray-300 rounded p-2 mb-4"
+                                id="reminderType"
+                                value={selectedReminder}
+                                onChange={handleReminderChange}
+                            >
+                                <option value="">Select a reminder</option>
+                                {reminderTypes.map((reminder, index) => (
+                                    <option key={index} value={reminder.type}>
+                                        {reminder.type}
+                                    </option>
+                                ))}
+                            </select>
+
+                            <div>
+                                <button className="bg-gray-300 text-black py-2 px-4 rounded mr-2" onClick={toggleModal}>Close</button>
+                                <button className="bg-[#007B00] text-white py-2 px-4 rounded" onClick={handleReminderSet} disabled={!selectedReminder}>
+                                    Confirm
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Reschedule Modal */}
                 {showRescheduleModal && (

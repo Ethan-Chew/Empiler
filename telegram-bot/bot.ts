@@ -137,6 +137,12 @@ bot.catch((err) => {
 // Handle Auto Notification CRON Job
 autoNotification(bot);
 
+// Setup default Bot Commands
+bot.api.setMyCommands([
+  { command: "start", description: "Start the bot" },
+  { command: "link", description: "Link the bot to your OCBC Account" },
+]);
+
 // Start the Bot
 console.log("Telegram Bot Started");
 bot.start();

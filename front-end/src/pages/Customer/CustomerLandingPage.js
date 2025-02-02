@@ -12,41 +12,54 @@ import UserSettingsPopup from '../../components/User/UserSettingsPopup';
 const CustomerLandingPage = (props) => {
     const [isOpen, setIsOpen] = useState(false);
     const [custSettingsPopup, setCustSettingsPopup] = useState(false);
-    const [twofaIsOpen, setTwofaIsOpen] = useState(false); 
-    const [isTwofaDisabled, setIsTwofaDisabled] = useState(true);
-    const [settingsIsOpen, setSettingsIsOpen] = useState(false);
-
-    useEffect(() => {
-        window.watsonAssistantChatOptions = {
-          integrationID: "28a57c46-95a2-4cc5-8d50-5e71acea277c",
-          region: "au-syd",
-          serviceInstanceID: "1ed83c75-5245-4e65-8a4c-73196c629cd3",
-          onLoad: async (instance) => {
-            await instance.render();
-          },
-        };
+    const [user, setUser] = useState();
     
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const response = await fetch(`http://localhost:8080/api/user/${props.userId}`);
+                const data = await response.json();
+                setUser(data);
+            } catch (error) {
+                console.error('Error fetching user:', error);
+            }
+        };
+
+        window.watsonAssistantChatOptions = {
+            integrationID: "28a57c46-95a2-4cc5-8d50-5e71acea277c",
+            region: "au-syd",
+            serviceInstanceID: "1ed83c75-5245-4e65-8a4c-73196c629cd3",
+            onLoad: async (instance) => {
+                await instance.render();
+            },
+        };
+        
         const script = document.createElement("script");
         script.src =
-          "https://web-chat.global.assistant.watson.appdomain.cloud/versions/" +
-          (window.watsonAssistantChatOptions.clientVersion || "latest") +
-          "/WatsonAssistantChatEntry.js";
+        "https://web-chat.global.assistant.watson.appdomain.cloud/versions/" +
+        (window.watsonAssistantChatOptions.clientVersion || "latest") +
+        "/WatsonAssistantChatEntry.js";
         script.async = true;
         document.head.appendChild(script);
-    
+        
+        fetchUser();
         return () => {
-          document.head.removeChild(script);
+            document.head.removeChild(script);
         };
-      }, []);
+    } , []);
   
+    if (!user) { return <p>Loading...</p> }
+
     return (
         <div className="bg-white font-inter">
             <NavBar />
 
             <div className="text-left mt-6 px-4 lg:px-8">
                 <div className='flex flex-row'>
-                    <h1 className="text-[48px] text-[#343434] mr-auto">Good Afternoon, John Customer!</h1>
-                    <button onClick={() => setCustSettingsPopup(true)}>
+                    <h1 className="text-[48px] text-[#343434] mr-auto">Good Afternoon, {user.username}!</h1>
+                    <button
+                        onClick={() => setCustSettingsPopup(true)}
+                    >
                         <FaGear className="w-8 h-8" />
                     </button>
                 </div>

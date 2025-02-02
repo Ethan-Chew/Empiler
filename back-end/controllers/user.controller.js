@@ -1,4 +1,3 @@
-import supabase from '../utils/supabase.js';
 import User from '../models/user.js';
 
 const getUserWithId = async (req, res) => {

@@ -127,7 +127,7 @@ const verifyTelegramLinked = async (req, res) => {
 
         const telegramInfo = await telegramVerification.verifyTelegramLinked(telegramId);
         if (telegramInfo == null) {
-            return res.status(404).json({
+            return res.status(400).json({
                 status: "error",
                 message: "You need to link your account before you can view upcoming appointments"
             });

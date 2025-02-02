@@ -50,6 +50,11 @@ export default function ViewBookings() {
 
             const data = await response.json();
 
+            if (!Array.isArray(data) || data.length === 0) {
+                setBookings([]); // Set bookings to an empty array if no data is received
+                return;
+            }
+
             const bookingsWithBranchDetails = await Promise.all(data.map(async (booking) => {
                 const branchDetails = await fetchBranchDetails(booking.branchName);
                 return { ...booking, branchDetails };
@@ -57,7 +62,8 @@ export default function ViewBookings() {
 
             setBookings(bookingsWithBranchDetails);
         } catch (error) {
-            setError(error.message);
+            console.error('Error fetching bookings:', error);
+            setBookings([]); // Set bookings to an empty array if an error occurs
         } finally {
             setLoading(false);
         }
