@@ -13,9 +13,23 @@ import UserSettingsPopup from '../../components/User/UserSettingsPopup';
 const CustomerLandingPage = (props) => {
     const [isOpen, setIsOpen] = useState(false);
     const [custSettingsPopup, setCustSettingsPopup] = useState(false);
-    const [twofaIsOpen, setTwofaIsOpen] = useState(false); 
-    const [isTwofaDisabled, setIsTwofaDisabled] = useState(true);
-    const [settingsIsOpen, setSettingsIsOpen] = useState(false);
+    const [user, setUser] = useState();
+    
+    useEffect(() => {
+            const fetchUser = async () => {
+                try {
+                    const response = await fetch(`http://localhost:8080/api/user/${props.userId}`);
+                    const data = await response.json();
+                    setUser(data);
+                } catch (error) {
+                    console.error('Error fetching user:', error);
+                }
+            };
+            fetchUser();
+    } , []);
+
+    if (!user) { return <p>Loading...</p> }
+
 
     return (
         <div className="bg-white font-inter">
@@ -23,7 +37,7 @@ const CustomerLandingPage = (props) => {
 
             <div className="text-left mt-6 px-4 lg:px-8">
                 <div className='flex flex-row'>
-                    <h1 className="text-[48px] text-[#343434] mr-auto">Good Afternoon, John Customer!</h1>
+                    <h1 className="text-[48px] text-[#343434] mr-auto">Good Afternoon, {user.username}!</h1>
                     <button
                         onClick={() => setCustSettingsPopup(true)}
                     >

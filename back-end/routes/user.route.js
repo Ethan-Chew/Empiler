@@ -4,7 +4,7 @@ import authoriseJWT from "../middleware/authoriseJWT.js";
 
 const router = express.Router()
 
-router.route("/:id", authoriseJWT)
+router.route("/:id")
     .get(UserController.getUserWithId)
 
 export default router

@@ -58,9 +58,8 @@ export default function DetailedAppointmentBooking() {
         return closedDays.includes(dayOfWeek); // Return true if the day is closed
     };
 
-    const getEarliestAvailableTime = (openingHours) => {
-        console.log(openingHours);
-        const today = new Date();
+    const getEarliestAvailableTime = (openingHours, selectedDate) => {
+        const today = new Date(selectedDate);
         const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
         const todayName = dayNames[today.getDay()];
     
@@ -134,7 +133,7 @@ export default function DetailedAppointmentBooking() {
             
             const data = await response.json();
 
-            const operatingHours = getEarliestAvailableTime(branchDetails.openingHours);
+            const operatingHours = getEarliestAvailableTime(branchDetails.openingHours, selectedDate);
 
             if (operatingHours === "Closed" || !operatingHours) {
                 alert('The selected branch is closed on this date.');

@@ -48,13 +48,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.linkController = void 0;
 const axios_1 = __importStar(require("axios"));
 const validateUUID_1 = __importDefault(require("../utils/validateUUID"));
+const bot_1 = __importDefault(require("../bot"));
 const linkController = (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c;
     try {
         // Verify that a UUID Payload is attached
         const payload = ctx.match;
         if (!payload) {
-            yield ctx.reply("You need to provide a verification code to link your account. Run the command in the format of '\\link <verification_code>'");
+            yield ctx.reply("You need to provide a verification code to link your account. Run the command in the format of '/link <verification_code>'");
             return;
         }
         if (!(0, validateUUID_1.default)(payload)) {
@@ -77,6 +78,11 @@ const linkController = (ctx) => __awaiter(void 0, void 0, void 0, function* () {
         else {
             yield ctx.reply(response.data.message);
         }
+        // Remove the options to Start and Link the Bot
+        yield bot_1.default.api.setMyCommands([
+            { command: "unlink", description: "Unlink the bot from your OCBC Account (you will not be able to access services until you re-link it.)" },
+            { command: "upcoming", description: "View all Upcoming Appointments" }
+        ]);
     }
     catch (error) {
         if (error instanceof axios_1.AxiosError) {
