@@ -17,6 +17,7 @@ export default function BookingDetails() {
     const [reminderTypes, setReminderTypes] = useState([]);
     const [selectedReminder, setSelectReminder] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false); // Modal visibility state
+    const [existingReminder, setExistingReminder] = useState(null);
 
     // Destructure booking details and branch details
     const { branchDetails } = booking;
@@ -43,19 +44,14 @@ export default function BookingDetails() {
             const response = await fetch('http://localhost:8080/api/appointments/remindertypes');
             const data = await response.json();
             setReminderTypes(data);
-
-            reminderTypes.forEach(async (reminder) => { console.log(reminder.type) });
-
-            console.log(booking);
-
-            const combinedDateTime = new Date(booking.date + 'T' + booking.time.split('-')[0]);
-            console.log(combinedDateTime);
-            const unixTimestamp = combinedDateTime.getTime() / 1000;
-            console.log(unixTimestamp);
         }
         fetchReminderTypes();
-        console.log( 'Reminder Types: ', reminderTypes);
 
+        getCurrentReminder().then(reminder => {
+            setExistingReminder(reminder);
+        });
+
+        console.log(existingReminder);
     }, [booking]);
 
     const loadAvailableDates = () => {
@@ -300,6 +296,34 @@ export default function BookingDetails() {
     };
 
     const handleReminderSet = async () => {
+        // if getCurrentReminder is not null then update reminder
+        // else set reminder
+
+        const currentReminder = await getCurrentReminder();
+        console.log(currentReminder);
+        if (currentReminder) {
+            const response = await fetch('http://localhost:8080/api/appointments/reminders', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    appointmentId: booking.id,
+                    reminderType: selectedReminder,
+                    reminderTime: currentReminder.reminderTime,
+                    area: 'email'
+                }),
+            });
+
+            const data = await response.json();
+            console.log(data);
+
+            alert('Reminder updated successfully!');
+            toggleModal();
+
+            return;
+        }
+
         const combinedDateTime = new Date(booking.date + 'T' + booking.time.split('-')[0]);
         const unixTimestamp = combinedDateTime.getTime() / 1000;
 
@@ -312,7 +336,7 @@ export default function BookingDetails() {
                 appointmentId: booking.id,
                 reminderType: selectedReminder,
                 reminderTime: unixTimestamp,
-                area: 'telegram'
+                area: 'email'
             }),
         });
 
@@ -321,6 +345,72 @@ export default function BookingDetails() {
 
         alert('Reminder set successfully!');
         toggleModal();
+    };
+
+    const getCurrentReminder = async () => {
+        try {
+            // Get userid from sessionStorage userDetails
+            const userDetails = sessionStorage.getItem('userDetails');
+            if (!userDetails) {
+                console.error("No user details found in sessionStorage");
+                return null;
+            }
+    
+            const userid = JSON.parse(userDetails).id;
+            const response = await fetch(`http://localhost:8080/api/appointments/reminders/${userid}`);
+    
+            if (!response.ok) {
+                console.error("Failed to fetch reminders:", response.statusText);
+                return null;
+            }
+    
+            const data = await response.json();
+    
+            // Check appointment id and compare with booking id
+            const reminder = data.find(reminder => reminder.id === booking?.id);
+    
+            // Ensure reminder and appointment_reminder array exists
+            return reminder?.appointment_reminder?.[0]?.type || null;
+        } catch (error) {
+            console.error("Error fetching reminder:", error);
+            return null;
+        }
+    };
+
+    const deleteReminder = async () => {
+        try {
+            const response = await fetch (`http://localhost:8080/api/appointments/viewbooking/${booking.id}`)
+            if (!response.ok) {
+                throw new Error('Failed to retrieve reminder');
+            }
+            const data = await response.json();
+
+            const reminderId = data.reminders[0].reminderId;
+            console.log(reminderId);
+            const deleteResponse = await fetch(`http://localhost:8080/api/appointments/reminders`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    reminderIds: reminderId
+                }),
+            });
+
+            if (!deleteResponse.ok) {
+                const errorData = await deleteResponse.json();
+                throw new Error(errorData.error || 'Failed to delete reminder');
+            }
+
+            const result = await deleteResponse.json();
+
+            alert('Reminder deleted successfully!');
+            toggleModal();
+            return result;
+
+        } catch (error) {
+            console.error("Error deleting reminder:", error);
+        }
     };
 
     if (!booking) {
@@ -378,6 +468,7 @@ export default function BookingDetails() {
                     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
                         <div className="bg-white rounded-lg shadow-lg w-3/4 max-w-md p-6">
                             <h3 className="text-2xl font-semibold mb-4">Set Reminder</h3>
+                            <p className="mb-4">Current reminder: <span className="font-semibold">{existingReminder}</span></p>
                             <label htmlFor="block mb-2">Choose a Reminder Time:</label>
                             <select
                                 className="w-full border border-gray-300 rounded p-2 mb-4"
@@ -394,10 +485,14 @@ export default function BookingDetails() {
                             </select>
 
                             <div>
-                                <button className="bg-gray-300 text-black py-2 px-4 rounded mr-2" onClick={toggleModal}>Close</button>
-                                <button className="bg-[#007B00] text-white py-2 px-4 rounded" onClick={handleReminderSet} disabled={!selectedReminder}>
+                                <button className="bg-gray-300 text-black py-2 px-4 rounded mx-2" onClick={toggleModal}>Close</button>
+                                <button className="bg-[#007B00] text-white py-2 px-4 rounded mx-2" onClick={handleReminderSet} disabled={!selectedReminder}>
                                     Confirm
                                 </button>
+                                <button className="bg-red-500 text-white py-2 px-4 rounded mx-2" onClick={deleteReminder}>
+                                    Delete Reminder
+                                </button>
+
                             </div>
                         </div>
                     </div>
