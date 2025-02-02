@@ -52,22 +52,6 @@ export default function BookingDetails() {
             console.log(combinedDateTime);
             const unixTimestamp = combinedDateTime.getTime() / 1000;
             console.log(unixTimestamp);
-
-            // const response2 = await fetch('http://localhost:8080/api/appointments/reminders', {
-            //     method: 'POST',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //     },
-            //     body: JSON.stringify({
-            //         appointmentId: booking.id,
-            //         reminderType: selectReminder,
-            //         reminderTime: unixTimestamp,
-            //         area: 'telegram'
-            //     }),
-            // });
-
-            // const data2 = await response2.json();
-            // console.log(data2);
         }
         fetchReminderTypes();
         console.log( 'Reminder Types: ', reminderTypes);
