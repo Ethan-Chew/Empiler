@@ -1,9 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import NavBar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import LiveChatPopup from '../../components/Chat/LiveChatPopup';
 import TwofaPopup from '../../components/2FA/TwofaPopup';
-import { useState } from 'react';
 import { PiChats, PiCalendarBlank } from "react-icons/pi";
 import { LuTicket } from "react-icons/lu";
 import { MdEditCalendar } from "react-icons/md";
@@ -17,6 +16,29 @@ const CustomerLandingPage = (props) => {
     const [isTwofaDisabled, setIsTwofaDisabled] = useState(true);
     const [settingsIsOpen, setSettingsIsOpen] = useState(false);
 
+    useEffect(() => {
+        window.watsonAssistantChatOptions = {
+          integrationID: "28a57c46-95a2-4cc5-8d50-5e71acea277c",
+          region: "au-syd",
+          serviceInstanceID: "1ed83c75-5245-4e65-8a4c-73196c629cd3",
+          onLoad: async (instance) => {
+            await instance.render();
+          },
+        };
+    
+        const script = document.createElement("script");
+        script.src =
+          "https://web-chat.global.assistant.watson.appdomain.cloud/versions/" +
+          (window.watsonAssistantChatOptions.clientVersion || "latest") +
+          "/WatsonAssistantChatEntry.js";
+        script.async = true;
+        document.head.appendChild(script);
+    
+        return () => {
+          document.head.removeChild(script);
+        };
+      }, []);
+  
     return (
         <div className="bg-white font-inter">
             <NavBar />
@@ -24,9 +46,7 @@ const CustomerLandingPage = (props) => {
             <div className="text-left mt-6 px-4 lg:px-8">
                 <div className='flex flex-row'>
                     <h1 className="text-[48px] text-[#343434] mr-auto">Good Afternoon, John Customer!</h1>
-                    <button
-                        onClick={() => setCustSettingsPopup(true)}
-                    >
+                    <button onClick={() => setCustSettingsPopup(true)}>
                         <FaGear className="w-8 h-8" />
                     </button>
                 </div>
@@ -85,9 +105,9 @@ const CustomerLandingPage = (props) => {
             {/* Footer */}
             <Footer />
 
-            { custSettingsPopup && (
+            {custSettingsPopup && (
                 <UserSettingsPopup closePopup={() => setCustSettingsPopup(false)} userId={props.userId} />
-            ) }
+            )}
         </div>
     );
 }
