@@ -48,8 +48,8 @@ export default function BookingDetails() {
         setSelectedDate(dates[0]);
     };
 
-    const getEarliestAvailableTime = (openingHours) => {
-        const today = new Date();
+    const getEarliestAvailableTime = (openingHours, selectedDate) => {
+        const today = new Date(selectedDate);
         const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
         const todayName = dayNames[today.getDay()];
     
@@ -186,7 +186,8 @@ export default function BookingDetails() {
             }
     
             const data = await response.json();
-            const operatingHours = getEarliestAvailableTime(booking.branchDetails.openingHours);
+            const operatingHours = getEarliestAvailableTime(booking.branchDetails.openingHours, selectedDate);
+            console.log(operatingHours);
     
             if (operatingHours === "Closed" || !operatingHours) {
                 alert('The selected branch is closed on this date.');
