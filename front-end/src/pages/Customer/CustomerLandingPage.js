@@ -1,9 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import NavBar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import LiveChatPopup from '../../components/Chat/LiveChatPopup';
 import TwofaPopup from '../../components/2FA/TwofaPopup';
-import { useState } from 'react';
 import { PiChats, PiCalendarBlank } from "react-icons/pi";
 import { LuTicket } from "react-icons/lu";
 import { MdEditCalendar } from "react-icons/md";
@@ -16,18 +15,39 @@ const CustomerLandingPage = (props) => {
     const [user, setUser] = useState();
     
     useEffect(() => {
-            const fetchUser = async () => {
-                try {
-                    const response = await fetch(`http://localhost:8080/api/user/${props.userId}`);
-                    const data = await response.json();
-                    setUser(data);
-                } catch (error) {
-                    console.error('Error fetching user:', error);
-                }
-            };
-            fetchUser();
-    } , []);
+        const fetchUser = async () => {
+            try {
+                const response = await fetch(`http://localhost:8080/api/user/${props.userId}`);
+                const data = await response.json();
+                setUser(data);
+            } catch (error) {
+                console.error('Error fetching user:', error);
+            }
+        };
 
+        window.watsonAssistantChatOptions = {
+            integrationID: "28a57c46-95a2-4cc5-8d50-5e71acea277c",
+            region: "au-syd",
+            serviceInstanceID: "1ed83c75-5245-4e65-8a4c-73196c629cd3",
+            onLoad: async (instance) => {
+                await instance.render();
+            },
+        };
+        
+        const script = document.createElement("script");
+        script.src =
+        "https://web-chat.global.assistant.watson.appdomain.cloud/versions/" +
+        (window.watsonAssistantChatOptions.clientVersion || "latest") +
+        "/WatsonAssistantChatEntry.js";
+        script.async = true;
+        document.head.appendChild(script);
+        
+        fetchUser();
+        return () => {
+            document.head.removeChild(script);
+        };
+    } , []);
+  
     if (!user) { return <p>Loading...</p> }
 
     return (
@@ -98,9 +118,9 @@ const CustomerLandingPage = (props) => {
             {/* Footer */}
             <Footer />
 
-            { custSettingsPopup && (
+            {custSettingsPopup && (
                 <UserSettingsPopup closePopup={() => setCustSettingsPopup(false)} userId={props.userId} />
-            ) }
+            )}
         </div>
     );
 }
