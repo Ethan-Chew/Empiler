@@ -35,7 +35,28 @@ const FAQListPage = () => {
             fetchFaqItems();
         }
     }, [title]);
-
+    useEffect(() => {
+            window.watsonAssistantChatOptions = {
+              integrationID: "28a57c46-95a2-4cc5-8d50-5e71acea277c",
+              region: "au-syd",
+              serviceInstanceID: "1ed83c75-5245-4e65-8a4c-73196c629cd3",
+              onLoad: async (instance) => {
+                await instance.render();
+              },
+            };
+        
+            const script = document.createElement("script");
+            script.src =
+              "https://web-chat.global.assistant.watson.appdomain.cloud/versions/" +
+              (window.watsonAssistantChatOptions.clientVersion || "latest") +
+              "/WatsonAssistantChatEntry.js";
+            script.async = true;
+            document.head.appendChild(script);
+        
+            return () => {
+              document.head.removeChild(script);
+            };
+          }, []);
     return (
         <div className="font-inter">
             {/* Navbar */}
