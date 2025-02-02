@@ -51,10 +51,10 @@ export default class chatHistory {
         return data;
     }
 
-    static async createChatHistory(caseId, customerId, staffId, chatLog) {
+    static async createChatHistory(caseId, customerId, staffId, chatLog, chatWaitingTime) {
         const { data, error } = await supabase
             .from('chat_history')
-            .insert([{ caseId, customerId, staffId, chatLog }])
+            .insert([{ caseId, customerId, staffId, chatLog, chatWaitingTime }])
             .single();
 
         if (error) {

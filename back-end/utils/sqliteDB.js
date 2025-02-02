@@ -13,6 +13,7 @@ export const initialiseDB = async () => {
         driver: sqlite3.Database
     });
 
+
     await db.exec(`
         CREATE TABLE IF NOT EXISTS waitingCustomers (
             customerSessionIdentifier TEXT PRIMARY KEY,
@@ -35,7 +36,7 @@ export const initialiseDB = async () => {
             faqSection TEXT,
             faqQuestion TEXT,
             userID TEXT,
-            timeConnected INTEGER,
+            chatWaitingTime INTEGER,
             staffID TEXT
         );
         CREATE TABLE IF NOT EXISTS chatHistory (
@@ -48,12 +49,15 @@ export const initialiseDB = async () => {
             sender TEXT,
             key TEXT,
             iv TEXT,
+            queueLength INTEGER,
+            staffID TEXT,
             PRIMARY KEY (caseID, timestamp, sender)
         );
     `);
 
     return db;
 };
+
 
 export const addWaitingCustomers = async (db, customerData) => {
     const customerProfile = await searchForWaitingCustomer(db, customerData.customerSessionIdentifier);
@@ -134,10 +138,14 @@ export const searchForAvailStaff = async (db, staffID) => {
 };
 
 export const startActiveChat = async (db, activeChat) => {
+    // Retrieve the Customer from the Waiting Customers DB
+    const currentTime = Date.now();
+    const chatWaitingTime = (currentTime - activeChat.customer.timeConnected) / 60000; // Converted to Minutes
+
     activeChat.customer.socketIDs = JSON.stringify(activeChat.customer.socketIDs);
     activeChat.staff.socketIDs = JSON.stringify(activeChat.staff.socketIDs);
-    await db.run('INSERT INTO activeChats (caseID, customerSessionIdentifier, customerSocketIDs, faqSection, faqQuestion, userID, timeConnected, staffID) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', 
-        activeChat.caseID, activeChat.customer.customerSessionIdentifier, activeChat.customer.socketIDs, activeChat.customer.faqSection, activeChat.customer.faqQuestion, activeChat.customer.userID, activeChat.customer.timeConnected, activeChat.staff.staffID);
+    await db.run('INSERT INTO activeChats (caseID, customerSessionIdentifier, customerSocketIDs, faqSection, faqQuestion, userID, chatWaitingTime, staffID) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', 
+        activeChat.caseID, activeChat.customer.customerSessionIdentifier, activeChat.customer.socketIDs, activeChat.customer.faqSection, activeChat.customer.faqQuestion, activeChat.customer.userID, chatWaitingTime, activeChat.staff.staffID);
 };
 
 export const endActiveChat = async (db, caseID, isCustomerDisconnect) => {
@@ -152,8 +160,7 @@ export const endActiveChat = async (db, caseID, isCustomerDisconnect) => {
 
     // DEV: Commented to prevent spam to Databse when testing.
     try {
-        const status = isCustomerDisconnect ? "userdisconnect" : null;
-        await chatHistory.createChatHistory(chat.caseID, chat.userID, chat.staffID, formattedChatMessages, status);
+        await chatHistory.createChatHistory(chat.caseID, chat.userID, chat.staffID, formattedChatMessages, chat.chatWaitingTime);
     } catch (err) {
         console.error(err);
     }
@@ -197,8 +204,16 @@ export const appendCustSIDToActiveChat = async (db, caseID, socketID) => {
 
 // Save Chat Messages
 export const saveMessages = async (db, msg) => {
-    await db.run('INSERT INTO chatHistory (id, caseID, sessionIdentifier, timestamp, message, fileUrl, sender, key, iv) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', 
-        msg.id, msg.case, msg.sessionIdentifier, msg.timestamp, msg.message, msg.fileUrl, msg.sender, msg.key, msg.iv);
+
+    const queueData = await db.get(
+        'SELECT queuePosition FROM waitingCustomers WHERE customerSessionIdentifier = ?',
+        [msg.sessionIdentifier]
+    );
+
+    const queueLength = queueData ? queueData.queuePosition : 0;
+
+    await db.run('INSERT INTO chatHistory (id, caseID, sessionIdentifier, timestamp, message, fileUrl, sender, key, iv, queueLength) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', 
+        msg.id, msg.case, msg.sessionIdentifier, msg.timestamp, msg.message, msg.fileUrl, msg.sender, msg.key, msg.iv, queueLength);
 }
 export const retrieveChatMessages = async (db, caseID) => {
     const rows = await db.all('SELECT * FROM chatHistory WHERE caseID = ?', caseID);
@@ -231,3 +246,21 @@ export const addSocketIdToAvailStaff = async (db, staffID, socketID) => {
     socketIDs.push(socketID);
     await db.run('UPDATE availStaff SET socketIDs = ? WHERE staffID = ?', JSON.stringify(socketIDs), staffID);
 }
+
+export const getQueueLengthsForStaff = async (db, staffId) => {
+    try {
+        const results = await db.all(
+            `SELECT queueLength FROM chatHistory WHERE staffID = ?`,
+            [staffId]
+        );
+
+        if (!results || results.length === 0) {
+            return "error";
+        }
+
+        return results.map(row => row.queueLength || 0);
+    } catch (error) {
+        console.error("Database error fetching queue lengths:", error);
+        return [];
+    }
+};

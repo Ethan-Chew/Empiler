@@ -1,12 +1,14 @@
 import React from 'react';
 import Navbar from '../../components/Navbar';
 import { PiChats } from "react-icons/pi";
+import { BsCalendarCheck } from "react-icons/bs";
+import { RiSettings4Line } from "react-icons/ri";
+import { MdOutlinePersonOutline } from "react-icons/md";
 import { LuTicket } from "react-icons/lu";
 import { useState, useEffect } from 'react';
 
 const StaffLandingPage = (props) => {
     const [user, setUser] = useState();
-
     useEffect(() => {
         const fetchUser = async () => {
             try {
@@ -55,6 +57,17 @@ const StaffLandingPage = (props) => {
                         <h3 className="text-[24px] font-semibold text-left">View Tickets</h3>
                         <p className="text-[18px] font-light text-left text-gray-500 mt-2">
                             View tickets submitted by customers
+                        </p>
+                    </a>
+
+                    <a
+                        className="border border-gray-200 bg-white shadow-md rounded-xl p-6 w-[400px] h-[250px] hover:shadow-lg transition-shadow duration-300"
+                        href="/staff/customer-support-statistics"
+                    >
+                        <RiSettings4Line className="w-12 h-12 object-contain fill-ocbcred mb-4" />
+                        <h3 className="text-[24px] font-semibold text-left">View Statistics</h3>
+                        <p className="text-[18px] font-light text-left text-gray-500 mt-2">
+                            View customer support statistics and insights
                         </p>
                     </a>
 

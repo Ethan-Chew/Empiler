@@ -18,7 +18,7 @@ export default class User {
         if (queryRequest.error || queryRequest.data.length === 0) {
             return null;
         }
-    
+
         return queryRequest.data[0];
     }
 
@@ -31,19 +31,20 @@ export default class User {
         if (queryRequest.error || queryRequest.data.length === 0) {
             return null;
         }
-    
-        return queryRequest.data[0]; 
+
+        return queryRequest.data[0];
     }
 
     static async getStaffStatistics(staffID) {
         const queryRequest = await supabase
-        .from("chat_history")
-        .select(`
-            count(caseId) as numOfTotalChats, 
-            avg(rating) as averageRating
-          `)
-        .eq("staff_id", staffID)
-        .single();
+            .from("chat_history")
+            .select(`
+                count(caseId) as numOfTotalChats, 
+                avg(rating) as averageRating,
+                avg(chatWaitingTime) as averageWaitingTime
+            `)
+            .eq("staffId", staffID)
+            .single();
 
         if (queryRequest.error) {
             return null;
@@ -52,10 +53,11 @@ export default class User {
         if (!queryRequest.data || queryRequest.data.numOfTotalChats === 0) {
             return {
                 numOfTotalChats: 0,
-                averageRating: null
+                averageRating: null,
+                averageWaitingTime: null
             };
         }
-    
+
         return queryRequest.data;
     }
 }

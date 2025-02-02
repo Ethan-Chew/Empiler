@@ -30,7 +30,6 @@ const CustomerLandingPage = (props) => {
 
     if (!user) { return <p>Loading...</p> }
 
-
     return (
         <div className="bg-white font-inter">
             <NavBar />

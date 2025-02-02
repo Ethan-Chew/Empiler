@@ -42,7 +42,7 @@ app.use(cors({
     credentials: true,
 }));
 
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 // Initialize Local Database
