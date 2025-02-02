@@ -311,7 +311,7 @@ export default function BookingDetails() {
                     appointmentId: booking.id,
                     reminderType: selectedReminder,
                     reminderTime: currentReminder.reminderTime,
-                    area: 'telegram'
+                    area: 'email'
                 }),
             });
 
@@ -336,7 +336,7 @@ export default function BookingDetails() {
                 appointmentId: booking.id,
                 reminderType: selectedReminder,
                 reminderTime: unixTimestamp,
-                area: 'telegram'
+                area: 'email'
             }),
         });
 
