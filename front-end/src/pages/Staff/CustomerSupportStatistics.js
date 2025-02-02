@@ -239,8 +239,10 @@ const CustomerSupportStatistics = () => {
 
             <div className="px-8 mt-6 grid grid-cols-2 gap-4">
                 <div className="bg-gray-100 rounded-lg p-6 flex flex-col justify-center">
-                    <div className="text-[#000000] text-[18px] font-bold">
-                        Average Customer Waiting Time: {averageWaitingTime || "No Data"}
+                    <div className="text-[#000000] text-[18px] font-bold">Average Customer Waiting Time</div>
+                    <div className="text-[#7F7F7F] text-[14px]">Data from {selectedMonth}</div>
+                    <div className="text-[72px] text-[#D00E35] font-bold mt-4 flex-grow flex items-center justify-center">
+                     {averageWaitingTime || "No Data"} minutes
                     </div>
                 </div>
 
